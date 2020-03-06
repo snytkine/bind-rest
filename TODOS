@@ -1,0 +1,4 @@
+- Environment can be moved to Bind and refactored to be more flexible.
+so that instead of looking for NODE_ENV the name of process.env prop can
+be user-defined.
+- Move EnvOverride to Bind

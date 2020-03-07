@@ -82,6 +82,7 @@ export const decorate2 = (pathOrTarget: string | Target): IPropKey2MethodDecorat
 };
 
 export function GET(target: string): IMethodDecorator
+export function GET(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>): void
 export function GET(target: string | Target, propertyKey?: string, descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
 
   return decorate(target, propertyKey, RequestMethod.GET);

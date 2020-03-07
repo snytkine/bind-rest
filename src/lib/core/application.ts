@@ -99,15 +99,16 @@ export class Application {
 
     this.router = new RouterClass(routerOptions);
 
-    const extraComponents = loadExtraComponents(extras);
-    debug(`LOADED EXTRA COMPONENTS **** ${extraComponents.length}   ${JSON.stringify(extraComponents)}`);
+    //const extraComponents = loadExtraComponents(extras);
+    //debug(`LOADED EXTRA COMPONENTS **** ${extraComponents.length}   ${JSON.stringify(extraComponents)}`);
 
     //const loadedComponents = loadComponents(options.baseDir);
     //debug(`LOADED FILES **** ${loadedComponents.length}   ${JSON.stringify(loadedComponents)}`);
    // debug(`Registered Components: \n${Container.componentsList}`);
 
-    const allComponents = loadedComponents.concat(extraComponents);
+    //const allComponents = loadedComponents.concat(extraComponents);
 
+/*
 
     const aMW: Array<MiddlewareFunc> = allComponents
     .filter(_ => _.type === ComponentType.MIDDLEWARE)
@@ -143,6 +144,7 @@ export class Application {
 
     registerProcessEventListeners(Container);
     registerProcessEventListeners(this);
+*/
 
   }
 
@@ -164,7 +166,7 @@ export class Application {
       resolve(cleared);
     })
   }
-
+/*
   private setCustomErrorHandler(c: IContainer) {
     debug(`${TAG} Entered setCustomErrorHandler()`);
     if (c.hasComponent(SYM_ERROR_HANDLER)) {
@@ -175,7 +177,7 @@ export class Application {
       debug(`${TAG} Custom Error Handler Not Found in Container`);
       this.customErrorHandler = this.errorHandler;
     }
-  }
+  }*/
 
 
   /**
@@ -205,7 +207,7 @@ export class Application {
    * it is not visible inside init()
    * @returns {Promise<(req:http.IncomingMessage, res:http.ServerResponse)=>undefined>}
    */
-  init() {
+  /*init() {
     return Container.init()
     //.then(_ => this.initAllRoutesComponent(_))
     .then(_ => {
@@ -216,7 +218,7 @@ export class Application {
         this.handleRequest(req, res);
       }
     });
-  }
+  }*/
 
   toString() {
     return 'Application Instance';

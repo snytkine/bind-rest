@@ -21,7 +21,8 @@
     "node_modules",
     "__node_modules__",
     "build",
-    "sandbox",
+    "src/lib/core",
+    "lib/core/application.ts",
     "*.js"
   ]
 }

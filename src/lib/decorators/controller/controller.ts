@@ -33,6 +33,6 @@ export function Controller(target: Target) {
   let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
   metaData[IS_CONTROLLER] = true;
 
-  defineMetadata(COMPONENT_META_DATA, metaData, target);
+  defineMetadata(COMPONENT_META_DATA, metaData, target)();
 
 }

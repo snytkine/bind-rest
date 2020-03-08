@@ -1,4 +1,5 @@
 import {PathDetailsType} from "../enums/pathdetails";
+import {StringOrSymbol} from 'bind';
 /**
  * Created by snytkind on 12/29/16.
  */

@@ -1,11 +1,23 @@
-import "reflect-metadata";
-import {SYM_METHOD_PARAMS} from '../metaprops'
-import {PathDetailsParam} from '../../interfaces/pathdetailsparams'
-import {PathDetailsType} from '../../enums/pathdetails'
+import 'reflect-metadata';
+import { SYM_METHOD_PARAMS } from '../metaprops';
+import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
+import { PathDetailsType } from '../../enums/pathdetails';
+import {
+  getTargetStereotype,
+  Target,
+  TargetStereoType,
+} from 'bind';
+import { getMethodParamName } from '../../core/apputils';
+
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'METHOD-ARGUMENTS';
+export type ParamDecoratorFunction = (target: Target,
+                                      propertyKey: string,
+                                      parameterIndex: number) => void;
 
-function applyParamAnnotation(methodArgumentDetail: PathDetailsParam, target: Object, propertyKey: string | symbol) {
+function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
+                              target: Target,
+                              propertyKey: string): undefined {
 
   const index = methodArgumentDetail.position;
   /**
@@ -15,13 +27,16 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam, target: Ob
    *  are annotated with @PathParam
    */
   let metaDetails: Array<PathDetailsParam>;
+  const targetStereoType = getTargetStereotype(target);
+  debug('%s targetStereoType="%s"', TAG, targetStereoType);
 
-  if (!target.constructor || !target.constructor.name) {
-    throw new TypeError(`${PathDetailsType[methodArgumentDetail['type']]} can be added only to class method`);
+  if (targetStereoType!==TargetStereoType.PROTOTYPE) {
+    throw new TypeError(`${PathDetailsType[methodArgumentDetail['type']]} 
+    can be added only to class method`);
   }
 
-  debug(`Defining @PathParam ${methodArgumentDetail['name']} for arg ${index} of method ${target.constructor.name}.${String(propertyKey)}`);
-
+  debug(`Defining @PathParam ${String(methodArgumentDetail['name'])} for arg ${index} 
+  of method ${target.constructor.name}.${String(propertyKey)}`);
 
   metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey);
 
@@ -33,16 +48,18 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam, target: Ob
   if (metaDetails[index]) {
 
     /**
-     * This may be a the case when element so has @Required decorator
+     * This may be a the case when element has @Required decorator
      * in which case this method will be called twice.
      * But calling this method twice with different values of .name and .type is not allowed
      */
     if (metaDetails[index].type && methodArgumentDetail.type) {
-      throw new Error(`Method parameter ${index} already defined on method ${target.constructor.name}.${String(propertyKey)} - ${JSON.stringify(metaDetails[index])}`);
+      throw new Error(`Method parameter ${index} already defined 
+      on method ${target.constructor.name}.${String(propertyKey)} 
+      - ${JSON.stringify(metaDetails[index])}`);
     }
 
     /**
-     * If this the .required was added first then instead
+     * If the .required was added first then instead
      * add other values from passed methodArgumentDetails
      */
     metaDetails[index].name = methodArgumentDetail.name;
@@ -76,10 +93,14 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam, target: Ob
    * Now set SYM_METHOD_PARAMS meta of this method with metaDetails value
    */
   Reflect.defineMetadata(SYM_METHOD_PARAMS, metaDetails, target, propertyKey);
+
+  return undefined;
 }
 
 
-function applySingleAnnotation(annotationType: PathDetailsType = null, target: Object, propertyKey: string | symbol, parameterIndex: number, required = false) {
+function applySingleAnnotation(annotationType: PathDetailsType = null,
+                               target: Object, propertyKey: string,
+                               parameterIndex: number, required = false) {
 
   /**
    *  Array of objects of PathDetailsParam
@@ -93,7 +114,8 @@ function applySingleAnnotation(annotationType: PathDetailsType = null, target: O
     throw new TypeError(`${PathDetailsType[annotationType]} can be added only to class method`);
   }
 
-  debug(`Defining ${PathDetailsType[annotationType]} for arg ${parameterIndex} of method ${target.constructor.name}.${String(propertyKey)}`);
+  debug(`Defining ${PathDetailsType[annotationType]} for arg ${parameterIndex} 
+  of method ${target.constructor.name}.${String(propertyKey)}`);
 
   metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey);
 
@@ -110,7 +132,9 @@ function applySingleAnnotation(annotationType: PathDetailsType = null, target: O
      * But calling this method twice with different values of .name and .type is not allowed
      */
     if (metaDetails[parameterIndex].type && annotationType) {
-      throw new Error(`Method parameter ${parameterIndex} already defined on method ${target.constructor.name}.${String(propertyKey)} - ${JSON.stringify(metaDetails[parameterIndex])}`);
+      throw new Error(`Method parameter ${parameterIndex} already defined 
+      on method ${target.constructor.name}.${String(propertyKey)} 
+      - ${JSON.stringify(metaDetails[parameterIndex])}`);
     }
 
     /**
@@ -150,10 +174,10 @@ function applySingleAnnotation(annotationType: PathDetailsType = null, target: O
      */
     metaDetails[parameterIndex] = {
       type: annotationType,
-      name: "",
-      value: "",
+      name: '',
+      value: '',
       position: parameterIndex,
-      required: required
+      required: required,
     };
   }
   /**
@@ -162,148 +186,171 @@ function applySingleAnnotation(annotationType: PathDetailsType = null, target: O
   Reflect.defineMetadata(SYM_METHOD_PARAMS, metaDetails, target, propertyKey);
 }
 
-export function RequestBody(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function RequestBody(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.RequestBody, target, propertyKey, parameterIndex);
 }
 
-export function Request(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Request(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Request, target, propertyKey, parameterIndex);
 }
 
 
-export function Response(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Response(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Response, target, propertyKey, parameterIndex);
 }
 
 
-export function OriginalUrl(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function OriginalUrl(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.OriginalUrl, target, propertyKey, parameterIndex);
 }
 
 
-export function RequestMethod(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function RequestMethod(target: Target,
+                              propertyKey: string,
+                              parameterIndex: number) {
 
-  return applySingleAnnotation(PathDetailsType.RequestMethod, target, propertyKey, parameterIndex);
+  return applySingleAnnotation(
+    PathDetailsType.RequestMethod,
+    target,
+    propertyKey,
+    parameterIndex,
+  );
 }
 
 
-export function Headers(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Headers(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Headers, target, propertyKey, parameterIndex);
 }
 
 
-export function Coookies(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Coookies(target: Target,
+                         propertyKey: string,
+                         parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Cookies, target, propertyKey, parameterIndex);
 }
 
 
-export function UriInfo(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function UriInfo(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.UriInfo, target, propertyKey, parameterIndex);
 }
 
 
-export function Context(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Context(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Context, target, propertyKey, parameterIndex);
 }
 
 
-export function ContextScope(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function ContextScope(target: Target,
+                             propertyKey: string,
+                             parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.ContextScope, target, propertyKey, parameterIndex);
 }
 
 
-export function QueryString(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function QueryString(target: Target,
+                            propertyKey: string,
+                            parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.QueryString, target, propertyKey, parameterIndex);
 }
 
 
-export function Query(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Query(target: Target,
+                      propertyKey: string,
+                      parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Query, target, propertyKey, parameterIndex);
 }
 
-export function Required(target: Object, propertyKey: string | symbol, parameterIndex: number) {
+export function Required(target: Target,
+                         propertyKey: string,
+                         parameterIndex: number) {
 
   return applySingleAnnotation(null, target, propertyKey, parameterIndex, true);
 }
 
-/**
- * @Required decorator is somewhat special
- */
+export const doParamAnnotation = (name: string,
+                                  paramType: PathDetailsType): ParamDecoratorFunction =>
+  (target: Target,
+   propertyKey: string,
+   parameterIndex: number): undefined => {
 
-export function PathParam(name: string) {
-
-  return function (target: Object, propertyKey: string | symbol, parameterIndex: number) {
     return applyParamAnnotation({
-      type: PathDetailsType.PathParam,
+      type: paramType,
       name: name,
-      position: parameterIndex
+      position: parameterIndex,
     }, target, propertyKey);
-  }
+  };
 
+export const delegateParamAnnotation =
+  (target: Target | string) =>
+    (paramType: PathDetailsType) =>
+      (propertyKey: string, parameterIndex: number): ParamDecoratorFunction | undefined => {
+        if (typeof target==='string') {
+          return doParamAnnotation(target, paramType);
+        } else {
+          const paramName = getMethodParamName(target, propertyKey, parameterIndex);
+          doParamAnnotation(paramName, paramType)(target, propertyKey, parameterIndex);
+          return undefined;
+        }
+      };
+
+export function PathParam(name: string)
+export function PathParam(target: Target, propertyKey: string, parameterIndex: number)
+export function PathParam(target: Target | string,
+                          propertyKey?: string,
+                          parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.PathParam)(propertyKey,
+    parameterIndex);
 }
 
-export function QueryParam(name: string) {
-
-  return function (target: Object, propertyKey: string | symbol, parameterIndex: number) {
-
-    return applyParamAnnotation({
-      type: PathDetailsType.QueryParam,
-      name: name,
-      position: parameterIndex
-    }, target, propertyKey);
-  }
-
+export function QueryParam(name: string)
+export function QueryParam(target: Target, propertyKey: string, parameterIndex: number)
+export function QueryParam(target: Target | string,
+                           propertyKey?: string,
+                           parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.QueryParam)(propertyKey,
+    parameterIndex);
 }
 
-
-export function HeaderParam(name: string) {
-
-  return function (target: Object, propertyKey: string | symbol, parameterIndex: number) {
-
-    return applyParamAnnotation({
-      type: PathDetailsType.HeaderParam,
-      name: name,
-      position: parameterIndex
-    }, target, propertyKey);
-  }
-
+export function HeaderParam(name: string)
+export function HeaderParam(target: Target, propertyKey: string, parameterIndex: number)
+export function HeaderParam(target: Target | string,
+                            propertyKey?: string,
+                            parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.HeaderParam)(propertyKey,
+    parameterIndex);
 }
 
-
-export function CookieParam(name: string) {
-
-  return function (target: Object, propertyKey: string | symbol, parameterIndex: number) {
-
-    return applyParamAnnotation({
-      type: PathDetailsType.CookieParam,
-      name: name,
-      position: parameterIndex
-    }, target, propertyKey);
-  }
-
+export function CookieParam(name: string)
+export function CookieParam(target: Target, propertyKey: string, parameterIndex: number)
+export function CookieParam(target: Target | string,
+                            propertyKey?: string,
+                            parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.CookieParam)(propertyKey,
+    parameterIndex);
 }
 
-
-export function ContextScopeParam(name: string) {
-
-  return function (target: Object, propertyKey: string | symbol, parameterIndex: number) {
-
-    return applyParamAnnotation({
-      type: PathDetailsType.ContextScopeParam,
-      name: name,
-      position: parameterIndex
-    }, target, propertyKey);
-  }
-
+export function ContextParam(name: string)
+export function ContextParam(target: Target, propertyKey: string, parameterIndex: number)
+export function ContextParam(target: Target | string,
+                             propertyKey?: string,
+                             parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.ContextScopeParam)(propertyKey,
+    parameterIndex);
 }

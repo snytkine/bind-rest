@@ -188,7 +188,7 @@ export function paramsValidatorFactory(method: ClassMethod): MiddlewareFunc {
 
       }
 
-      if (isUndefined(res)) {
+      if (res === undefined) {
 
         debug(`Argument  ${PathDetailsType[paramsMeta[i].type]} (arg ${i + 1})  '${arg}' passed to ${o.constructor.name}.${p} cannot be converted to ${paramTypes[i].name}.`)
         if (paramsMeta[i].required === true) {

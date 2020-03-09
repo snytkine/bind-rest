@@ -6,8 +6,8 @@ import {
   getTargetStereotype,
   Target,
   TargetStereoType,
+  getMethodParamName,
 } from 'bind';
-import { getMethodParamName } from '../../core/apputils';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'METHOD-ARGUMENTS';
@@ -297,6 +297,15 @@ export const doParamAnnotation = (name: string,
     }, target, propertyKey);
   };
 
+/**
+ * @todo refactor this function
+ * It's possible to take in 4 parameters
+ * target, paramType, propertyKey, parameterIndex
+ * and then either return function (target, propKey, paramIndex): void
+ * or to call applyParamAnnotation
+ *
+ * @param target
+ */
 export const delegateParamAnnotation =
   (target: Target | string) =>
     (paramType: PathDetailsType) =>

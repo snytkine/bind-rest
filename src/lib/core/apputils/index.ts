@@ -8,7 +8,6 @@ export {registerProcessEventListeners} from './processexithelper';
 export {copyHeaders} from './copyheaders'
 export {KoaRouterFactory, getRouter} from './routerfactory';
 export {RouterErrorHandler} from './routererrorhandler';
-export * from './getfunctionparams'
 export * from './allroutes';
 
 

@@ -94,7 +94,7 @@ export class Context {
             return this._query;
         }
 
-        // @ts-ignore
+        // @_ts-ignore
       this._query = QueryString.parse(this.querystring);
 
         return this._query;

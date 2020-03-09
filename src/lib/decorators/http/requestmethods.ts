@@ -15,8 +15,8 @@ function addMethodAnnotation(target: any, propertyKey: string, method: RequestMe
   let paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
   debug(`paramTypes for ${target.constructor.name}.${propertyKey} is ${JSON.stringify(paramTypes)}`);
 
-  p = p || [];
-  p.push(method);
+  p = p || new Set();
+  p.add(method);
 
   debug(`Annotated methods ${JSON.stringify(p)}`);
 
@@ -27,9 +27,10 @@ function addMethodAnnotation(target: any, propertyKey: string, method: RequestMe
 }
 
 export type IMethodDecorator = (target: Target, propertyKey: string, descriptor: PropertyDescriptor) => void
-export type IPropKey2MethodDecorator = (propertyKey: string, method: RequestMethod) => IMethodDecorator | undefined;
 
-export const decorate = (pathOrTarget: string | Target, propertyKey: string, method: RequestMethod): IMethodDecorator => {
+export const decorate = (pathOrTarget: string | Target,
+                         propertyKey: string,
+                         method: RequestMethod): IMethodDecorator => {
 
   if (typeof pathOrTarget==='string') {
     /**
@@ -53,37 +54,13 @@ export const decorate = (pathOrTarget: string | Target, propertyKey: string, met
   }
 };
 
-
-export const decorate2 = (pathOrTarget: string | Target): IPropKey2MethodDecorator => {
-
-  if (typeof pathOrTarget==='string') {
-    /**
-     * Return function that takes target, property key, descriptor and then applies
-     * metadata
-     */
-    return (p, method) => (target: Target, prop: string, desc: PropertyDescriptor) => {
-      addMethodAnnotation(target, prop, method);
-      /**
-       * And now also apply @Path function
-       */
-      Path(pathOrTarget)(target, prop, desc);
-    };
-  } else {
-    /**
-     * target is actual class.
-     * apply method annotation
-     * but need to return function?
-     */
-    return (p, method) => {
-      addMethodAnnotation(pathOrTarget, p, method);
-      return undefined;
-    };
-  }
-};
-
 export function GET(target: string): IMethodDecorator
-export function GET(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>): void
-export function GET(target: string | Target, propertyKey?: string, descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
+export function GET(target: Target,
+                    propertyKey: string,
+                    descriptor: TypedPropertyDescriptor<ControllerFunc>): void
+export function GET(target: string | Target,
+                    propertyKey?: string,
+                    descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
 
   return decorate(target, propertyKey, RequestMethod.GET);
 }

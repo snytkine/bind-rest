@@ -8,10 +8,7 @@ import {
   Identity,
 } from 'bind';
 import { Context } from '../context';
-
-
-export const SERVER_REQUEST = Symbol.for('bind:rest:component:server_request');
-export const SERVER_RESPONSE = Symbol.for('bind:rest:component:server_response');
+import { SERVER_REQUEST } from '../../consts';
 
 function contextGetter(scopedStorages?: Array<IScopedComponentStorage>): Context | undefined {
   let ret;

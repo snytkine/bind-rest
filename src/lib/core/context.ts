@@ -1,117 +1,165 @@
-import {IContext} from "../interfaces/context";
 import * as url from 'url';
 import * as http from 'http';
 import * as QueryString from 'querystring';
 import * as cookie from 'cookie';
-import {IAppResponse} from "../interfaces/appresponse";
+import { IAppResponse } from '../interfaces/appresponse';
+import { UrlWithStringQuery } from 'url';
+import { ParsedUrlQuery } from 'querystring';
+import {
+  IScopedComponentStorage,
+  IfComponentIdentity,
+  ComponentScope,
+  StringOrSymbol,
+  Identity,
+  isSameIdentity,
+} from 'bind';
 
 const debug = require('debug')('promiseoft:context');
-const TAG = "ContextClass";
+const TAG = 'ContextClass';
 
-export class Context {
+export class Context implements IScopedComponentStorage {
 
-    private readonly _req: http.IncomingMessage;
-    private readonly _res: http.ServerResponse;
-    private readonly _originalUrl: string;
-    private _UriInfo: url.Url;
-    private _cookies;
-    private _controllerName = "";
+  private readonly selfIdentity: IfComponentIdentity;
+  public readonly req: http.IncomingMessage;
+  public readonly res: http.ServerResponse;
+  private readonly reqUrl: string;
+  private uriInfo: UrlWithStringQuery;
+  private cookies;
+  private myControllerName = '';
+  /**
+   * Parsed url query
+   */
+  private query: ParsedUrlQuery;
+
+  /**
+   * Path params injected by router
+   */
+  params: { [key: string]: string };
+
+  readonly startTime: number;
+
+  appResponse: IAppResponse;
+
+  private scopedComponents: Array<[IfComponentIdentity, any]>;
+
+  /**
+   * Storage container for anything
+   */
+  readonly storage: Map<StringOrSymbol, any>;
+
+  readonly scope = ComponentScope.REQUEST;
+
+  constructor(req: http.IncomingMessage, res: http.ServerResponse) {
+    this.req = req;
+    this.res = res;
+    this.reqUrl = req.url;
+    this.startTime = Date.now();
+    this.selfIdentity = Identity(Context);
+  }
+
+  getComponent(id: IfComponentIdentity) {
+
     /**
-     * Parsed url query
+     * Special case if looking for instance of Context (this object)
+     * then just return this
+     * otherwise look in scopedComponents map
      */
-    private _query: { [p: string]: string | string[] };
+    if (isSameIdentity(id, this.selfIdentity)) {
+      debug('%s getComponent Returning instance of this', TAG);
+      return this;
+    }
+
+    return this.scopedComponents.find(component => isSameIdentity(component[0], id));
+  }
+
+  setComponent(id: IfComponentIdentity, component: any): void {
 
     /**
-     * Path params injected by router
+     * Special case do not set Context instance (instance of this class)
+     * into storage
      */
-    params: { [key: string]: string };
-
-    readonly startTime: number;
-
-    appResponse: IAppResponse;
-    /**
-     * Storage container for anything
-     */
-    readonly scope: { [p: string]: any };
-
-    constructor(req: http.IncomingMessage, res: http.ServerResponse) {
-        this._req = req;
-        this._res = res;
-        this._originalUrl = req.url;
-        this.startTime = Date.now();
-        this.scope = {};
+    if (!isSameIdentity(id, this.selfIdentity)) {
+      /**
+       * Not testing if component with same identity
+       * already exists before adding it. The consumer of this method
+       * is part of bind framework and it already checks if
+       * component exists in scoped storage and only adds new object
+       * into scoped storage if component is not found in storage
+       */
+      this.scopedComponents.push([id, component]);
     }
 
-    get controllerName() {
-        return this._controllerName;
+  }
+
+  get controllerName() {
+    return this.myControllerName;
+  }
+
+  set controllerName(name: string) {
+    if (!this.myControllerName) {
+      this.myControllerName = name;
+    } else {
+      throw new Error(`Controller name is already set to '${this.myControllerName}' Cannot set new value '${name}'`);
+    }
+  }
+
+  /*get method() {
+   return this.req.method;
+   }*/
+
+  get path() {
+    return this.parsedUrl.pathname;
+  }
+
+  get originalUrl() {
+    return this.reqUrl;
+  }
+
+  get request() {
+    return this.req;
+  }
+
+  get response() {
+    return this.res;
+  }
+
+  get parsedUrl(): UrlWithStringQuery {
+    if (this.uriInfo) {
+      return this.uriInfo;
     }
 
-    set controllerName(name: string) {
-        if (!this._controllerName) {
-            this._controllerName = name;
-        } else {
-            console.error(`${TAG} ERROR. Controller name is already set to '${this._controllerName}' Cannot set new value '${name}'`);
-        }
+    this.uriInfo = url.parse(this.reqUrl);
+
+    return this.uriInfo;
+  }
+
+  get querystring(): string {
+    const uri = this.parsedUrl;
+    return uri.query || '';
+  }
+
+  get parsedQuery(): ParsedUrlQuery {
+    if (this.query) {
+      return this.query;
     }
 
-    get method() {
-        return this._req.method;
-    }
+    this.query = QueryString.parse(this.querystring);
 
-    get path() {
-        return this.UriInfo.pathname;
-    }
+    return this.query;
+  }
 
-    get originalUrl() {
-        return this._originalUrl;
-    }
+  get parsedCookies() {
+    if (this.cookies) return this.cookies;
 
-    get req() {
-        return this._req;
-    }
+    this.cookies = cookie.parse(this.req.headers.cookie);
 
-    get res() {
-        return this._res;
-    }
+    return this.cookies;
 
-    get UriInfo() {
-        if (this._UriInfo) {
-            return this._UriInfo;
-        }
+    //throw new Error('cookies() getter not implemented in context');
+  }
 
-        this._UriInfo = url.parse(this._originalUrl);
+  controllerArguments: Array<any> = [];
 
-        return this._UriInfo;
-    }
-
-    get querystring() {
-        const uri = this.UriInfo;
-        return uri.query || "";
-    }
-
-    get query() {
-        if (this._query) {
-            return this._query;
-        }
-
-        // @_ts-ignore
-      this._query = QueryString.parse(this.querystring);
-
-        return this._query;
-    }
-
-    get cookies() {
-        if (this._cookies) return this._cookies;
-
-        //this._cookies = cookie.parse(this._req.headers.cookie);
-
-        //return this._cookies;
-
-        throw new Error("cookies() getter not implemented in context");
-    }
-
-    controllerArguments: Array<any> = [];
-
-    parsedBody: any;
+  parsedBody: any;
 
 }

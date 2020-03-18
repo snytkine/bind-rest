@@ -19,7 +19,7 @@ const TAG = 'ContextClass';
 
 export class Context implements IScopedComponentStorage {
 
-  private readonly selfIdentity: IfComponentIdentity;
+  private readonly id: IfComponentIdentity;
   public readonly req: http.IncomingMessage;
   public readonly res: http.ServerResponse;
   private readonly reqUrl: string;
@@ -54,7 +54,7 @@ export class Context implements IScopedComponentStorage {
     this.res = res;
     this.reqUrl = req.url;
     this.startTime = Date.now();
-    this.selfIdentity = Identity(Context);
+    this.id = Identity(Context);
   }
 
   getComponent(id: IfComponentIdentity) {
@@ -64,10 +64,12 @@ export class Context implements IScopedComponentStorage {
      * then just return this
      * otherwise look in scopedComponents map
      */
-    if (isSameIdentity(id, this.selfIdentity)) {
-      debug('%s getComponent Returning instance of this', TAG);
+    if (isSameIdentity(id, this.id)) {
+      debug('%s getComponent Returning instance of self', TAG);
       return this;
     }
+
+
 
     return this.scopedComponents.find(component => isSameIdentity(component[0], id));
   }
@@ -78,7 +80,7 @@ export class Context implements IScopedComponentStorage {
      * Special case do not set Context instance (instance of this class)
      * into storage
      */
-    if (!isSameIdentity(id, this.selfIdentity)) {
+    if (!isSameIdentity(id, this.id)) {
       /**
        * Not testing if component with same identity
        * already exists before adding it. The consumer of this method
@@ -111,7 +113,7 @@ export class Context implements IScopedComponentStorage {
     return this.parsedUrl.pathname;
   }
 
-  get originalUrl() {
+  get requestUrl() {
     return this.reqUrl;
   }
 
@@ -124,11 +126,9 @@ export class Context implements IScopedComponentStorage {
   }
 
   get parsedUrl(): UrlWithStringQuery {
-    if (this.uriInfo) {
-      return this.uriInfo;
+    if (!this.uriInfo) {
+      this.uriInfo = url.parse(this.reqUrl);
     }
-
-    this.uriInfo = url.parse(this.reqUrl);
 
     return this.uriInfo;
   }
@@ -138,12 +138,10 @@ export class Context implements IScopedComponentStorage {
     return uri.query || '';
   }
 
-  get parsedQuery(): ParsedUrlQuery {
-    if (this.query) {
-      return this.query;
+  get parsedUrlQuery(): ParsedUrlQuery {
+    if (!this.query) {
+      this.query = QueryString.parse(this.querystring);
     }
-
-    this.query = QueryString.parse(this.querystring);
 
     return this.query;
   }

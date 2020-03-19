@@ -16,14 +16,14 @@ export enum ErrorCategory {
   AppError
 }
 
-export class FrameworkError extends Error {
+export class BindRestError extends Error {
 
   constructor(public message: string, public readonly type: ErrorType, public readonly category: ErrorCategory){
     super(message);
   }
 }
 
-export class AppError extends FrameworkError {
+export class ApplicationError extends BindRestError {
 
   constructor(message:string, type:ErrorType = ErrorType.AppError) {
     super(message, type, ErrorCategory.AppError);
@@ -45,7 +45,7 @@ export class SystemError extends Error {
 }
 
 
-export class TypeValidationError extends AppError {
+export class TypeValidationError extends ApplicationError {
   constructor(message:string){
     super(message, ErrorType.InputValidation)
   }

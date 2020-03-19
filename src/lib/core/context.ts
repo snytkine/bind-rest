@@ -13,6 +13,7 @@ import {
   Identity,
   isSameIdentity,
 } from 'bind';
+import { SERVER_REQUEST, SERVER_RESPONSE } from '../consts';
 
 const debug = require('debug')('promiseoft:context');
 const TAG = 'ContextClass';
@@ -66,10 +67,17 @@ export class Context implements IScopedComponentStorage {
      */
     if (isSameIdentity(id, this.id)) {
       debug('%s getComponent Returning instance of self', TAG);
+
       return this;
+    } else if (id.componentName===SERVER_REQUEST) {
+      debug('%s getComponent returning .req', TAG);
+
+      return this.req;
+    } else if (id.componentName===SERVER_RESPONSE) {
+      debug('%s getComponent returning .res', TAG);
+
+      return this.res;
     }
-
-
 
     return this.scopedComponents.find(component => isSameIdentity(component[0], id));
   }

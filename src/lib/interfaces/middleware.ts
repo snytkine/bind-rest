@@ -1,9 +1,10 @@
-/**
- * Created by snytkind on 12/4/16.
- */
-import {IContext} from "./context";
+import { Context } from '../core/context';
 
-export type MiddlewareFunc = (ctx: IContext) => Promise<IContext>
+export type MiddlewareFunc = (ctx: Context) => Promise<Context>
+
+export interface IMiddleware {
+  doFilter: () => boolean
+}
 
 
 

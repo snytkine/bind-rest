@@ -1,10 +1,28 @@
-import "reflect-metadata";
-import {SYM_MIDDLEWARE_PRIORITY} from "./metaprops";
-import {ComponentType} from "../enums/componenttype";
-import {MiddlewareFunc} from "../interfaces/middleware";
+import 'reflect-metadata';
+import { MIDDLEWARE_PRIORITY, SYM_MIDDLEWARE_PRIORITY } from './metaprops';
+import { IMiddleware, MiddlewareFunc } from '../interfaces/middleware';
 import { Newable } from '../interfaces';
+import { Component, COMPONENT_META_DATA, defineMetadata } from 'bind';
+import { Constructor } from '../types';
+
 const debug = require('debug')('promiseoft:decorators');
 
+const TAG = 'Middleware';
+
+/**
+ * Decorate the target as Component,
+ * Add MIDDLEWARE as
+ * @param target
+ * @param priority
+ */
+function decorateMiddleware(target: Constructor<IMiddleware>, priority: number) {
+  debug('Defining %s for constructor %s', TAG, target.name);
+  Component(target);
+  let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
+  metaData[MIDDLEWARE_PRIORITY] = priority;
+
+  defineMetadata(COMPONENT_META_DATA, metaData, target)();
+}
 
 function addMiddlewareFuncAnnotation(target: any, propertyKey: string, descriptor: PropertyDescriptor, priority: number): void {
 
@@ -48,7 +66,7 @@ function addMiddlewareFuncAnnotation(target: any, propertyKey: string, descripto
 }
 
 
-export function Middleware(target: Newable<any>, propertyKey?: string, descriptor?: PropertyDescriptor) {
+export function Middleware_(target: Newable<any>, propertyKey?: string, descriptor?: PropertyDescriptor) {
 
   debug(`Defining @Middleware for constructor ${target.name}`);
   let proto = target.prototype;
@@ -73,37 +91,51 @@ export function Middleware(target: Newable<any>, propertyKey?: string, descripto
 
 export function Before(priority: number) {
   if (!validatePriority(priority)) {
-    throw new TypeError(`Value passed to @Before annotations '${priority}' is invalid.  It must be a number between 1 and 100. `)
+    throw new TypeError(`Value passed to @Before annotations '${priority}' is invalid.  It must be a number between 1 and 100. `);
   }
 
   return function (target: any, propertyKey?: string, descriptor?: TypedPropertyDescriptor<MiddlewareFunc>) {
     addMiddlewareFuncAnnotation(target, propertyKey, descriptor, Number.MIN_SAFE_INTEGER + ~~priority);
-  }
+  };
 }
 
 
 export function AfterController(priority: number) {
   if (!validatePriority(priority)) {
-    throw new TypeError(`Value passed to @AfterController annotations '${priority}' is invalid.  It must be a number between 1 and 100. `)
+    throw new TypeError(`Value passed to @AfterController annotations '${priority}' is invalid.  It must be a number between 1 and 100. `);
   }
   return function (target: any, propertyKey?: string, descriptor?: TypedPropertyDescriptor<MiddlewareFunc>) {
     addMiddlewareFuncAnnotation(target, propertyKey, descriptor, ~~priority);
-  }
+  };
 }
 
 
 export function AfterResponse(priority: number) {
   if (!validatePriority(priority)) {
-    throw new TypeError(`Value passed to @AfterResponse annotations '${priority}' is invalid.  It must be a number between 1 and 100. `)
+    throw new TypeError(`Value passed to @AfterResponse annotations '${priority}' is invalid.  It must be a number between 1 and 100. `);
   }
   return function (target: any, propertyKey?: string, descriptor?: TypedPropertyDescriptor<MiddlewareFunc>) {
     addMiddlewareFuncAnnotation(target, propertyKey, descriptor, ~~priority + 100);
-  }
+  };
 }
 
 const validatePriority = (i: any): boolean => {
 
   let res = Number(i);
 
-  return !isNaN(res) && res > 0 && res < 100;
+  return !isNaN(res) && res > 0 && res < 1000;
 };
+
+
+export function Middleware(priority: number) {
+
+  if (!validatePriority(priority)) {
+    throw new TypeError(`Value passed to @Middleware decorator '${priority}' is invalid.  
+    It must be a number between 1 and 1000`);
+  }
+
+  return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
+    decorateMiddleware(constructor, (Number.MIN_SAFE_INTEGER + ~~priority));
+  };
+
+}

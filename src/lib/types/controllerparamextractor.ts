@@ -1,4 +1,4 @@
-import { Context } from '../core/context';
+import Context from '../core/context';
 import {IfIocContainer} from 'bind';
 
 export type ParamExtractor = (context: Context) => Promise<any>

@@ -8,6 +8,7 @@ import {IRouter} from "../../interfaces/irouter";
 import { Context } from '../context';
 const debug = require('debug')('promiseoft:runtime:router');
 const TAG = "ROUTER-WRAPPER";
+/*
 
 export function routerWrapper(router: IRouter<IContext, Promise<IAppResponse>>): MiddlewareFunc {
 
@@ -22,13 +23,13 @@ export function routerWrapper(router: IRouter<IContext, Promise<IAppResponse>>):
     } else {
 
 
-      /**
+      /!**
        * Custom error response if route not found for request method
        * attempt to find matches for other http methods and if found
        * return method not allowed error 405
        * @returns {ErrorResponse}
-       */
-    /*  const notAllowed = function () {
+       *!/
+    /!*  const notAllowed = function () {
         let allowed: string[];
         if (ctx.matched) {
           allowed = ctx.matched.reduce((prev, next) => {
@@ -44,7 +45,7 @@ export function routerWrapper(router: IRouter<IContext, Promise<IAppResponse>>):
         }
         debug(`NO MATCHES FOR ANY METHOD for url: ${ctx.originalUrl}`);
         return Promise.resolve(new ErrorResponse(HttpStatusCode.NOT_FOUND, `Resource Not Found ${ctx.originalUrl}`));
-      };*/
+      };*!/
 
 
       return router.route(ctx).then(ctrlResponse => {
@@ -59,4 +60,5 @@ export function routerWrapper(router: IRouter<IContext, Promise<IAppResponse>>):
 
   return ret;
 }
+*/
 

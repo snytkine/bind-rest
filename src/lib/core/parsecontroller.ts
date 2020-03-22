@@ -4,7 +4,6 @@ import {
   stringifyIdentity,
   Maybe,
   isDefined,
-  getOrElse,
   notEmpty,
 } from 'bind';
 import {
@@ -22,7 +21,7 @@ import {
 import { RequestMethod } from '../enums/requestmethods';
 import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
 import { ParamExtractor } from '../types/controllerparamextractor';
-import { Context } from './context';
+import Context from './context';
 
 const debug = require('debug')('promiseoft:runtime:controller');
 const TAG = 'ControllerParser';
@@ -54,6 +53,7 @@ export function parseController(container: IfIocContainer) {
 
     return props.map(p => {
       let ctrl: ControllerFunc;
+      let ctrlWithMiddleware: ControllerFunc;
       let methods: Array<RequestMethod>;
       let middleware: MiddlewareFunc;
       let metaMethods: Maybe<Set<RequestMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
@@ -70,22 +70,50 @@ export function parseController(container: IfIocContainer) {
       }
 
       const paramExtractors: Array<ParamExtractor> = paramsMeta.map(meta => meta.f(container));
+      /**
+       * @todo
+       * type: Array<any> => Array<any> or Throw ValidationError
+       * ValidationError should have detailed error what did not validate
+       * include paramName, paramIndex reason. Prefer Multiple validation errors
+       * over throwing on single validation error.
+       *
+       * makeValidators can combine validating types and .required
+       *
+       * paramTypesValidator = paramsMeta.map(makeValidators)
+       * validateRequired = paramsMeta.map(makeRequiredValidators)
+       * customValidators = paramsMeta.map(makeCustomValidators)
+       */
       ctrl = (context: Context) => {
 
-        const oCtrl = component.get([context]);
-        return Promise.all(paramExtractors.map(f => f(context)))
-          .then(aParams => {
-            debug('%s got params for controller %s params="%o"', TAG, controllerName, aParams);
-            context.controllerName = controllerName;
-            context.controllerArguments = aParams;
+        context.controllerName = controllerName;
 
-            return oCtrl[p](...aParams);
-          });
+        const oCtrl = component.get([context]);
+        /**
+         * paramsExtractors may be empty array. Must check first
+         */
+        if (paramExtractors.length > 0) {
+          return Promise.all(paramExtractors.map(f => f(context)))
+            .then(aParams => {
+              debug('%s got params for controller %s params="%o"', TAG, controllerName, aParams);
+
+              /**
+               * @todo here we can join array of controller arguments with
+               * controller argument names.
+               */
+              context.controllerArguments = aParams;
+
+              return oCtrl[p](...aParams);
+            });
+        } else {
+          debug('%s calling controller "%s" with NO params', TAG, controllerName);
+          return oCtrl[p]();
+        }
       };
 
       if (isDefined(controllerMiddleware)) {
+        debug('%s adding controller middleware for controller="%s"', TAG, controllerName);
         middleware = controllerMiddleware(container);
-        ctrl = (context: Context) => {
+        ctrlWithMiddleware = (context: Context) => {
           return middleware(context).then(ctrl);
         };
       }
@@ -94,7 +122,7 @@ export function parseController(container: IfIocContainer) {
         name: controllerName,
         requestMethods: methods,
         routePath: joinPath(basePath, metaPath),
-        ctrl: ctrl,
+        ctrl: ctrlWithMiddleware || ctrl,
       };
 
     }).filter(notEmpty);

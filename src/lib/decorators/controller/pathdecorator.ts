@@ -4,7 +4,7 @@ const debug = require('debug')('promiseoft:decorators');
 
 
 export function Path(path: string) {
-  debug(`Path decorator called with ${path}`);
+  debug('Path decorator called with %s', path);
   /**
    * @todo
    * Can validate path string and throw if not valid like if contains invalid chars, spaces, etc.

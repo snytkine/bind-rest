@@ -33,7 +33,7 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
    * I cannot think of any use case where same middleware can be
    * used more than once in the REQUEST lifecycle
    */
-  defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target);
+  defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
 
   if (priority) {
     if (!validatePriority(priority)) {

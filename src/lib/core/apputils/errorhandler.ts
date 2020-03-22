@@ -1,5 +1,5 @@
 import HttpStatusCode from 'http-status-enum';
-import { Context } from '../context';
+import Context from '../context';
 
 const debug = require('debug')('promiseoft:runtime:errorhandler');
 const TAG = "DEFAULT-ERROR-HANDLER";
@@ -22,7 +22,7 @@ export function errorHandler(ctx: Context) {
         end = Date.now();
         responseTime = (end - ctx.startTime);
 
-        if (!ctx.res.finished) {
+        if (!ctx.res.writableEnded) {
             ctx.res.statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR;
             ctx.res.end(errorMessage);
             console.error(`${TAG} originalUrl=${ctx.requestUrl} requestMethod=${ctx.req.method} statusCode=${HttpStatusCode.INTERNAL_SERVER_ERROR} elapsedTime=${responseTime} errorMessage=${errorMessage}`);

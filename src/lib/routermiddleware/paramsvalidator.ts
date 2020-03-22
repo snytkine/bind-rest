@@ -7,7 +7,7 @@ import {IContext} from "../interfaces/context";
 import {ClassMethod} from "../types/controllers";
 //import {isUndefined} from "util";
 import {PathDetailsParam} from "../interfaces/pathdetailsparams";
-import { Context } from '../core/context';
+import Context from '../core/context';
 
 const debug = require('debug')('promiseoft:runtime:middleware');
 const TAG = 'paramsValidatorFactory';

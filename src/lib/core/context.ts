@@ -18,7 +18,7 @@ import { SERVER_REQUEST, SERVER_RESPONSE } from '../consts';
 const debug = require('debug')('promiseoft:context');
 const TAG = 'ContextClass';
 
-export class Context implements IScopedComponentStorage {
+export default class Context implements IScopedComponentStorage {
 
   private readonly id: IfComponentIdentity;
   public readonly req: http.IncomingMessage;
@@ -112,10 +112,6 @@ export class Context implements IScopedComponentStorage {
       throw new Error(`Controller name is already set to '${this.myControllerName}' Cannot set new value '${name}'`);
     }
   }
-
-  /*get method() {
-   return this.req.method;
-   }*/
 
   get path() {
     return this.parsedUrl.pathname;

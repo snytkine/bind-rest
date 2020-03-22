@@ -3,6 +3,8 @@ import {
   Component,
   COMPONENT_META_DATA,
   defineMetadata,
+  DEFAULT_SCOPE,
+  ComponentScope,
 } from 'bind';
 import { IS_CONTROLLER } from '../metaprops';
 
@@ -14,6 +16,9 @@ const TAG = '@Controller';
  * Process @Controller decorator for the class
  * @Controller is a component so first apply @Component decorator
  * and then add metadata indicating that this component is a controller.
+ * Also add DefaultScope because Controllers should be Prototype scoped by default
+ * Individual controller scope can be overwritten using @Scope or @Singleton decorator
+ *
  *
  * @todo by this time this class should already have some controller methods defined
  * we should validate that it has at least one controller method or else throw error
@@ -26,7 +31,7 @@ const TAG = '@Controller';
  * @constructor
  * @returns undefined
  */
-export function Controller(target: Target) {
+export function Controller(target: Target):void {
 
   debug('Defining %s for constructor %s', TAG, target.name);
   Component(target);
@@ -34,5 +39,6 @@ export function Controller(target: Target) {
   metaData[IS_CONTROLLER] = true;
 
   defineMetadata(COMPONENT_META_DATA, metaData, target)();
+  defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
 
 }

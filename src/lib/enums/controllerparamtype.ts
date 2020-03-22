@@ -1,0 +1,23 @@
+
+export enum PathDetailsType {
+  PathParam = 2001,
+  QueryString,
+  QueryParam,
+  ParsedQuery,
+  Header,
+  Headers,
+  Cookie,
+  Cookies,
+  Request,
+  Response,
+  Router,
+  Context,
+  ContextStore,
+  ContextParam,
+  RequestUrl,
+  UriInfo,
+  RequestMethod,
+  Body,
+  Form,
+  FormParam,
+}

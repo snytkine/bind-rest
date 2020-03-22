@@ -1,12 +1,11 @@
 import * as http from 'http';
-import { Context } from './context';
+import Context from './context';
 import {
   IContext,
   IAppResponse,
   ApplicationOptions,
   ControllerDetails,
   AppErrorHandlerFunc,
-  SYM_ERROR_HANDLER,
   AppErrorHandler,
 } from '../interfaces';
 import {MiddlewareFunc} from '../types'
@@ -22,7 +21,6 @@ import {
 import {
   errorHandler,
   responseWriter,
-  routerWrapper,
   rejectLater,
   registerProcessEventListeners,
   getRouter,

@@ -1,8 +1,8 @@
 import {IAppResponse} from "./appresponse";
 import {RequestMethod} from "../enums/requestmethods";
-import {IContext} from "./context";
+import { Context } from '../core/context';
 export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>
-export type IController = (ctx: IContext) => Promise<IAppResponse>
+export type IController = (ctx: Context) => Promise<IAppResponse>
 
 
 export interface ControllerDetails {

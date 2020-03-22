@@ -1,8 +1,4 @@
-/**
- * Created by snytkind on 12/6/16.
- */
-
-import {IContext} from "../interfaces/context";
+import { Context } from '../core/context';
 export type ClassMethod = [{}, string];
 
 /**
@@ -14,5 +10,5 @@ export type ClassMethod = [{}, string];
  * validation error or throw with details about all validation errors
  */
 export type ParamsValidator = (params: Array<any>)  => Array<any>
-export type contextToParam = (ctx?: IContext) => any;
-export type HandlerFunc = (ctx:IContext) => Promise<IContext>
+export type contextToParam = (ctx: Context) => any;
+export type HandlerFunc = (ctx:Context) => Promise<Context>

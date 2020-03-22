@@ -9,4 +9,3 @@ export * from "./jsonschema"
 export * from "./errorhandler";
 export * from "./middlewares";
 export * from "./envoverride";
-export * from "./controllermiddleware"

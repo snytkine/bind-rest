@@ -1,8 +1,8 @@
 import {ClassMethod, contextToParam} from "../../types/controllers";
-import {IContext} from "../../interfaces/context";
 import {SYM_METHOD_PARAMS} from "../../decorators/metaprops";
 import {PathDetailsParam} from "../../interfaces/pathdetailsparams";
 import {PathDetailsType} from "../../enums/pathdetails";
+import { Context } from '../context';
 const debug = require('debug')('promiseoft:util:paramsgenerator');
 export function paramsMapGenerator(cm: ClassMethod): contextToParam[] {
   let [o, p] = cm;
@@ -31,67 +31,67 @@ export function paramsMapGenerator(cm: ClassMethod): contextToParam[] {
     let f: contextToParam;
     switch (a.type) {
       case PathDetailsType.PathParam:
-        f = (ctx: IContext) => ctx.params[a.name];
+        f = (ctx: Context) => ctx.params[a.name];
         break;
 
       case PathDetailsType.QueryParam:
-        f = (ctx: IContext) => ctx.query[a.name];
+        f = (ctx: Context) => ctx.query[a.name];
         break;
 
       case PathDetailsType.HeaderParam:
-        f = (ctx: IContext) => ctx.req.headers[a.name.toLocaleLowerCase()];
+        f = (ctx: Context) => ctx.req.headers[a.name.toLocaleLowerCase()];
         break;
 
       case PathDetailsType.CookieParam:
-        f = (ctx: IContext) => ctx.cookies[a.name.toLocaleLowerCase()];
+        f = (ctx: Context) => ctx.cookies[a.name.toLocaleLowerCase()];
         break;
 
       case PathDetailsType.QueryString:
-        f = (ctx: IContext) => ctx.querystring;
+        f = (ctx: Context) => ctx.querystring;
         break;
 
       case PathDetailsType.Request:
-        f = (ctx: IContext) => ctx.req;
+        f = (ctx: Context) => ctx.req;
         break;
 
       case PathDetailsType.Response:
-        f = (ctx: IContext) => ctx.res;
+        f = (ctx: Context) => ctx.res;
         break;
 
       case PathDetailsType.OriginalUrl:
-        f = (ctx: IContext) => ctx.originalUrl;
+        f = (ctx: Context) => ctx.requestUrl;
         break;
 
       case PathDetailsType.UriInfo:
-        f = (ctx: IContext) => ctx.UriInfo;
+        f = (ctx: Context) => ctx.UriInfo;
         break;
 
       case PathDetailsType.Headers:
-        f = (ctx: IContext) => ctx.req.headers;
+        f = (ctx: Context) => ctx.req.headers;
         break;
 
       case PathDetailsType.Context:
-        f = (ctx: IContext) => ctx;
+        f = (ctx: Context) => ctx;
         break;
 
       case PathDetailsType.ContextScope:
-        f = (ctx: IContext) => ctx.scope;
+        f = (ctx: Context) => ctx.scope;
         break;
 
       case PathDetailsType.ContextScopeParam:
-        f = (ctx: IContext) => ctx.scope[a.name];
+        f = (ctx: Context) => ctx.scope[a.name];
         break;
 
       case PathDetailsType.RequestMethod:
-        f = (ctx: IContext) => ctx.req.method;
+        f = (ctx: Context) => ctx.req.method;
         break;
 
       case PathDetailsType.RequestBody:
-        f = (ctx: IContext) => ctx.parsedBody;
+        f = (ctx: Context) => ctx.parsedBody;
         break;
 
       case PathDetailsType.Query:
-        f = (ctx: IContext) => ctx.query;
+        f = (ctx: Context) => ctx.query;
         break;
 
       default:

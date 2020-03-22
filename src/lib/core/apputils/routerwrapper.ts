@@ -1,24 +1,23 @@
 import "reflect-metadata";
-import {MiddlewareFunc} from "../../interfaces/middleware";
+import {MiddlewareFunc} from "../../types";
 import {IContext, IAppResponse} from "../../interfaces/";
 import {ErrorResponse} from "../appresponse";
 import HttpStatusCode from 'http-status-enum';
 import {SYM_MIDDLEWARE_NAME, SYM_MIDDLEWARE_PRIORITY} from "../../decorators/metaprops";
 import {IRouter} from "../../interfaces/irouter";
+import { Context } from '../context';
 const debug = require('debug')('promiseoft:runtime:router');
 const TAG = "ROUTER-WRAPPER";
 
 export function routerWrapper(router: IRouter<IContext, Promise<IAppResponse>>): MiddlewareFunc {
 
-  //const handler = router.routes();
-
-  const ret = function routeDispatcher(ctx: IContext): Promise<IContext> {
+  const ret = function routeDispatcher(ctx: Context): Promise<Context> {
     debug("Entered Router Middleware");
-    if (!ctx || !ctx.res || ctx.res.finished) {
-      debug(`Response already sent. Controller function will not be called`);
+    if (!ctx || !ctx.res || ctx.res.writableEnded) {
+      debug('Response already sent. Controller function will not be called');
       return Promise.resolve(ctx);
     } else if (ctx.appResponse) {
-      debug(`${TAG} appResponse already set`);
+      debug('%s appResponse already set', TAG);
       return Promise.resolve(ctx);
     } else {
 

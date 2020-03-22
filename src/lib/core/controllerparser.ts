@@ -1,27 +1,31 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 import {
-    SYM_METHOD_PARAMS,
-    SYM_REQUEST_METHOD,
-    SYM_REQUEST_PATH, SYM_COMPONENT_TYPE, PARAM_TYPES, SYM_JSON_SCHEMA, SYM_CONTROLLER_MIDDLEWARES,
-    CONTROLLER_MIDDLEWARE_METHOD
+  PARAM_TYPES,
+  SYM_COMPONENT_TYPE,
+  SYM_CONTROLLER_MIDDLEWARES,
+  SYM_JSON_SCHEMA,
+  SYM_METHOD_PARAMS,
+  SYM_REQUEST_METHOD,
+  SYM_REQUEST_PATH,
 } from '../decorators/metaprops';
 import {
-    ControllerDetails,
-    ControllerFunc,
-    MiddlewareFunc,
-    IAppResponse,
-    IContext,
-    IBodyParserOptions,
-    ParsedBodyType
+  ControllerDetails,
+  ControllerFunc,
+  IAppResponse,
+  IBodyParserOptions,
+  IContext,
+  ParsedBodyType,
 } from '../interfaces';
-import {RequestMethod} from '../enums/requestmethods';
-import {controllerArgumentsFactory, paramsValidatorFactory, RequestBodyParserMiddleware} from '../routermiddleware';
-import {paramsMapGenerator} from './apputils/paramsmapgenerator'
-import {ClassMethod} from "../types/controllers";
-import {PathDetailsParam} from "../interfaces/pathdetailsparams";
-import {PathDetailsType, ComponentType} from "../enums";
+import { RequestMethod } from '../enums/requestmethods';
+import { controllerArgumentsFactory, paramsValidatorFactory, RequestBodyParserMiddleware } from '../routermiddleware';
+import { paramsMapGenerator } from './apputils/paramsmapgenerator';
+import { ClassMethod } from '../types/controllers';
+import { PathDetailsParam } from '../interfaces/pathdetailsparams';
+import { ComponentType, PathDetailsType } from '../enums';
 import Container from './container';
-import {getDependencies} from "../decorators/container/utils";
+import { getDependencies } from '../decorators/container/utils';
+import { Context } from './context';
+import { MiddlewareFunc } from '../types';
 
 const debug = require('debug')('promiseoft:runtime:controller');
 const TAG = "ControllerParser";
@@ -232,7 +236,7 @@ export function parseController(controllerClass): Array<ControllerDetails> {
         } else {
             debug("%s Making no-deps controller Function", TAG);
 
-            ctrl = (ctx: IContext): Promise<IAppResponse> => {
+            ctrl = (ctx: Context): Promise<IAppResponse> => {
                 debug("_setting_ controllerName property of Context Object to %s", controllerName);
                 ctx.controllerName = controllerName;
                 const oCtrl = new controllerClass();
@@ -246,7 +250,7 @@ export function parseController(controllerClass): Array<ControllerDetails> {
             requestMethods: metaMethods,
             routePath: joinPath(basePath, metaPath),
 
-            ctrl: (ctx: IContext) => {
+            ctrl: (ctx: Context) => {
                 return aControllerMiddlewares.reduce((prev, cur) => prev.then(cur), Promise.resolve(ctx)).then(ctrl)
             }
         }

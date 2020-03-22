@@ -10,5 +10,6 @@ export * from "./exithandler";
 export * from "./irouter";
 export * from "./logger";
 export * from './newable';
+export * from './controllerparammeta';
 
 

@@ -1,2 +1,2 @@
-import {IContext} from "../interfaces/context";
-export type ComponentGetter = (ctx?: IContext) => any
+import { Context } from '../core/context';
+export type ComponentGetter = (ctx?: Context) => any

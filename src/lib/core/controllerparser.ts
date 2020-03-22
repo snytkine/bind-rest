@@ -116,7 +116,7 @@ const needsBodyParser = function (cm: ClassMethod): IBodyParserOptions | undefin
  * @return array of objects {routeName:string, method:RequestMethod, route:string, controllerFunc:ControllerFunc} | empty array IF passed object is not an annocatedController
  *
  */
-export function parseController(controllerClass): Array<ControllerDetails> {
+export function parseController_(controllerClass): Array<ControllerDetails> {
 
     const o = controllerClass.prototype;
     debug(`Entered parseController for class ${o.constructor.name}`);

@@ -1,4 +1,4 @@
-import { Context } from '../core/context';
+import Context from '../core/context';
 export type ClassMethod = [{}, string];
 
 /**

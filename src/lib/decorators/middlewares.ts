@@ -9,7 +9,7 @@ import {
   IfComponentIdentity,
   IfIocContainer,
 } from 'bind';
-import { Context } from '../core/context';
+import Context from '../core/context';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = '@Middlewares';
@@ -21,6 +21,7 @@ export const toMWFactory = (middleware: Constructor<IMiddleware>): MiddlewareFun
 
     return (context: Context) => {
       const oMW = <IMiddleware>container.getComponent(mwID, [context]);
+
       return oMW.doFilter(context);
     };
   };

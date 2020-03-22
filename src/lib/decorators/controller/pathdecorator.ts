@@ -1,6 +1,5 @@
 import "reflect-metadata";
 import {SYM_REQUEST_PATH} from '../metaprops'
-import {ComponentType} from "../../enums/componenttype";
 const debug = require('debug')('promiseoft:decorators');
 
 

@@ -1,5 +1,5 @@
 import "reflect-metadata";
-import * as raw from 'raw-body';
+import raw from 'raw-body';
 import * as inflate from 'inflation';
 import {parse as formatBytes} from 'bytes';
 import {IContext, IBodyParserOptions, ParsedBodyType} from "../interfaces";

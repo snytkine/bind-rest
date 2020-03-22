@@ -2,11 +2,12 @@ import "reflect-metadata";
 import {TypeValidationError} from "../core/apperrors";
 import {PathDetailsType} from "../enums/pathdetails";
 import {PARAM_TYPES, SYM_METHOD_PARAMS} from "../decorators/metaprops";
-import {MiddlewareFunc} from "../interfaces/middleware";
+import {MiddlewareFunc} from "../types";
 import {IContext} from "../interfaces/context";
 import {ClassMethod} from "../types/controllers";
-import {isUndefined} from "util";
+//import {isUndefined} from "util";
 import {PathDetailsParam} from "../interfaces/pathdetailsparams";
+import { Context } from '../core/context';
 
 const debug = require('debug')('promiseoft:runtime:middleware');
 const TAG = 'paramsValidatorFactory';
@@ -23,7 +24,7 @@ const toNumber = (i: any): Number|TypeError => {
    * Do not convert to number. This way
    * it will be possible to use default value in controller
    */
-  if (isUndefined(i)) return i;
+  if (i === undefined) return i;
 
   let x = Number(i);
   if (isNaN(x)) {
@@ -48,7 +49,7 @@ const toBoolean = (s: any): boolean|TypeError => {
    * Do not convert to boolean. This way
    * it will be possible to use default value in controller
    */
-  if (isUndefined(s)) return s;
+  if (s === undefined) return s;
 
   if (typeof s === "boolean") return s;
 
@@ -83,7 +84,7 @@ const toString = (s: any): string|TypeError => {
    * Do not convert to string. This way
    * it will be possible to use default value in controller
    */
-  if (isUndefined(s)) return s;
+  if (s === undefined) return s;
   if (s === null) return "";
   if (typeof s === 'string') return s;
   if (s instanceof String) return s.valueOf();
@@ -113,7 +114,7 @@ export function paramsValidatorFactory(method: ClassMethod): MiddlewareFunc {
    * Also if there are no paramTypes or no paramsMeta just return stub function
    * that returns same input, if (!paramTypes || !paramsMeta) { ... can be avoided at runtime
    */
-  return function paramsValidator(ctx: IContext): Promise<IContext> {
+  return function paramsValidator(ctx: Context): Promise<Context> {
 
     if (!paramsMeta) {
       debug('%s no paramsMeta nothing to validate in %s', TAG, (o.constructor.name + '.' + p));

@@ -1,7 +1,6 @@
 import * as http from 'http';
 import { Context } from './context';
 import {
-  MiddlewareFunc,
   IContext,
   IAppResponse,
   ApplicationOptions,
@@ -10,6 +9,7 @@ import {
   SYM_ERROR_HANDLER,
   AppErrorHandler,
 } from '../interfaces';
+import {MiddlewareFunc} from '../types'
 import {
   SYM_MIDDLEWARE_PRIORITY,
   SYM_MIDDLEWARE_NAME
@@ -187,7 +187,7 @@ export class Application {
    * @param req Node.js request http.IncomingMessage
    * @param res Node.js response http.ServerResponse
    */
-  public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+  /*public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
 
     const ctx = new Context(req, res);
     const handlerPromise = this.handlerStack.reduce((prev, next) => prev.then(next), Promise.resolve(<IContext>ctx));
@@ -200,7 +200,7 @@ export class Application {
     .catch(this.customErrorHandler(ctx))
     .catch(this.errorHandler(ctx));
     debug('handleRequest method called');
-  }
+  }*/
 
   /**
    * Important - handleRequest method must be defined before this method otherwise

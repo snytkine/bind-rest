@@ -1,7 +1,3 @@
-/**
- * Created by snytkind on 11/24/16.
- */
-
 export const CONTROLLER_MIDDLEWARE_METHOD = 'doFilter';
 export const CONTEXT_SERVICE_METHOD = 'runService';
 export const SYM_METHOD_PARAMS = Symbol.for('method-params');

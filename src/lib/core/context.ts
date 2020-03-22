@@ -166,6 +166,4 @@ export class Context implements IScopedComponentStorage {
 
   controllerArguments: Array<any> = [];
 
-  parsedBody: any;
-
 }

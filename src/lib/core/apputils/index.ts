@@ -9,5 +9,6 @@ export {copyHeaders} from './copyheaders'
 export {KoaRouterFactory, getRouter} from './routerfactory';
 export {RouterErrorHandler} from './routererrorhandler';
 export * from './allroutes';
+export * from './registercontextcomponent';
 
 

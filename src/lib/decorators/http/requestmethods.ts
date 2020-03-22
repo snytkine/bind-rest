@@ -2,20 +2,20 @@ import { PARAM_TYPES, RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
 import { RequestMethod } from '../../enums/requestmethods';
 import { ControllerFunc } from '../../interfaces/controller';
 import { Path } from '../controller/pathdecorator';
-import { Target } from 'bind';
+import { Target, Maybe, isDefined } from 'bind';
 
 const debug = require('debug')('promiseoft:decorators');
 
 function addMethodAnnotation(target: any, propertyKey: string, method: RequestMethod): undefined {
 
-  let p = Reflect.getMetadata(SYM_REQUEST_METHOD, target, propertyKey);
+  let p: Maybe<Set<RequestMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, target, propertyKey);
   let rt = Reflect.getMetadata(RETURN_TYPE, target, propertyKey);
   debug(`Adding Method annotation ${RequestMethod[method]} to ${target.constructor.name}.${propertyKey} returnType: ${rt}`);
 
-  let paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
-  debug(`paramTypes for ${target.constructor.name}.${propertyKey} is ${JSON.stringify(paramTypes)}`);
+  //let paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
+  //debug(`paramTypes for ${target.constructor.name}.${propertyKey} is ${JSON.stringify(paramTypes)}`);
 
-  p = p || new Set();
+  p = p || new Set<RequestMethod>();
   p.add(method);
 
   debug(`Annotated methods ${JSON.stringify(p)}`);

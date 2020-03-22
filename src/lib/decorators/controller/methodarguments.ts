@@ -99,8 +99,10 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
 
 
 function applySingleAnnotation(annotationType: PathDetailsType = null,
-                               target: Object, propertyKey: string,
-                               parameterIndex: number, required = false) {
+                               target: Object,
+                               propertyKey: string,
+                               parameterIndex: number,
+                               required = false) {
 
   /**
    *  Array of objects of PathDetailsParam

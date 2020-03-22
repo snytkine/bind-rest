@@ -25,5 +25,4 @@ export interface IBodyParserOptions {
   schema?:any
   proto?:any
   parsedBodyType:ParsedBodyType
-
 }

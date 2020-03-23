@@ -16,6 +16,13 @@ const TAG = 'Middleware';
 
 export type NumberOrMiddleware = number | Constructor<IMiddleware>;
 
+const validatePriority = (i: any): boolean => {
+
+  let res = Number(i);
+
+  return !isNaN(res) && res > 0 && res <= 1000;
+};
+
 /**
  * Decorate the target as Component,
  * Add MIDDLEWARE as
@@ -36,10 +43,6 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
   defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
 
   if (priority) {
-    if (!validatePriority(priority)) {
-      throw new TypeError(`Value passed to @${decoratorName} decorator '${priority}' is invalid.  
-      It must be a number between 1 and 1000`);
-    }
 
     let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
 
@@ -49,12 +52,6 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
   }
 }
 
-const validatePriority = (i: any): boolean => {
-
-  let res = Number(i);
-
-  return !isNaN(res) && res > 0 && res < 1000;
-};
 
 export function Middleware(constructor: Constructor<IMiddleware>);
 export function Middleware(priority: number);
@@ -62,8 +59,13 @@ export function Middleware(priority: number);
 export function Middleware(val: NumberOrMiddleware) {
 
   if (typeof val==='number') {
+    if (!validatePriority(val)) {
+      throw new TypeError(`Value passed to @Middleware decorator '${val}' is invalid.  
+      It must be a number between 0 and 1000`);
+    }
+
     return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
-      decorateMiddleware(constructor, (Number.MIN_SAFE_INTEGER + val), 'Middlewre');
+      decorateMiddleware(constructor, (Number.MIN_SAFE_INTEGER + val), 'Middleware');
     };
   } else {
     decorateMiddleware(val);
@@ -73,6 +75,11 @@ export function Middleware(val: NumberOrMiddleware) {
 
 
 export function Afterware(priority: number) {
+
+  if (!validatePriority(priority)) {
+    throw new TypeError(`Value passed to @Middleware decorator '${priority}' is invalid.  
+      It must be a number between 0 and 1000`);
+  }
 
   return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
     decorateMiddleware(constructor, priority, 'Afterware');

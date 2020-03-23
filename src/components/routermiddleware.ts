@@ -61,7 +61,6 @@ export default class RouterMiddleware {
       }
 
       context.routeParams = routeMatch.params;
-      context.controllerName = ctrlContainer.id;
 
       return ctrlContainer.controller(context).then(response => {
         context.appResponse = response;

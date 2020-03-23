@@ -18,10 +18,13 @@ import {
   SYM_REQUEST_METHOD,
   SYM_REQUEST_PATH,
 } from '../decorators';
+import { makeParamsValidator } from '../core/paramsvalidator';
 import { RequestMethod } from '../enums/requestmethods';
 import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
-import { ParamExtractor } from '../types/controllerparamextractor';
+import { FutureParam, ParamExtractor } from '../types/controllerparamextractor';
 import Context from './context';
+import { PARAM_TYPE_STRING } from '../consts';
+
 
 const debug = require('debug')('promiseoft:runtime:controller');
 const TAG = 'ControllerParser';
@@ -48,7 +51,7 @@ export function parseController(container: IfIocContainer) {
     }
 
     const basePath = Reflect.getMetadata(SYM_REQUEST_PATH, component.identity.clazz) || '';
-    debug(`basePath for ${o.constructor.name}: ${basePath}`);
+    debug('%s basePath for "%s" = "%s"', TAG, o.constructor.name, basePath);
     const props = Object.getOwnPropertyNames(o);
 
     return props.map(p => {
@@ -70,6 +73,7 @@ export function parseController(container: IfIocContainer) {
       }
 
       const paramExtractors: Array<ParamExtractor> = paramsMeta.map(meta => meta.f(container));
+      const validateParams = makeParamsValidator(paramsMeta, controllerName);
       /**
        * @todo
        * type: Array<any> => Array<any> or Throw ValidationError
@@ -88,26 +92,29 @@ export function parseController(container: IfIocContainer) {
         context.controllerName = controllerName;
 
         const oCtrl = component.get([context]);
+        let futureParams: Promise<Array<any>>;
+        if (paramExtractors.length > 0) {
+          futureParams = Promise.all(paramExtractors.map(f => f(context)));
+        } else {
+          futureParams = Promise.resolve([]);
+        }
+
         /**
          * paramsExtractors may be empty array. Must check first
          */
-        if (paramExtractors.length > 0) {
-          return Promise.all(paramExtractors.map(f => f(context)))
-            .then(aParams => {
-              debug('%s got params for controller %s params="%o"', TAG, controllerName, aParams);
+        return futureParams.then(aParams => {
+          debug('%s got params for controller "%s" params="%o"', TAG, controllerName, aParams);
+          const validatedParams = validateParams(aParams);
+          /**
+           * @todo here we can join array of controller arguments with
+           * controller argument names. This is for logging and debugging only
+           * the array of names and array of arguments can be added to context
+           */
+          context.controllerArguments = validatedParams;
 
-              /**
-               * @todo here we can join array of controller arguments with
-               * controller argument names.
-               */
-              context.controllerArguments = aParams;
+          return oCtrl[p](...validatedParams);
+        });
 
-              return oCtrl[p](...aParams);
-            });
-        } else {
-          debug('%s calling controller "%s" with NO params', TAG, controllerName);
-          return oCtrl[p]();
-        }
       };
 
       if (isDefined(controllerMiddleware)) {
@@ -126,7 +133,6 @@ export function parseController(container: IfIocContainer) {
       };
 
     }).filter(notEmpty);
-
 
   };
 

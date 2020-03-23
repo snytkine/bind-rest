@@ -153,7 +153,7 @@ export default class Context implements IScopedComponentStorage {
 
   get querystring(): string {
     const uri = this.parsedUrl;
-    return uri.query || '';
+    return uri?.query;
   }
 
   get parsedUrlQuery(): ParsedUrlQuery {

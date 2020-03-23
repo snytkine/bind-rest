@@ -18,7 +18,9 @@ export enum ErrorCategory {
 
 export class BindRestError extends Error {
 
-  constructor(public message: string, public readonly type: ErrorType, public readonly category: ErrorCategory){
+  constructor(public message: string,
+              public readonly type: ErrorType,
+              public readonly category: ErrorCategory){
     super(message);
   }
 }

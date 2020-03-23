@@ -1,7 +1,7 @@
 import Context from '../lib/core/context';
 import { Middleware } from '../lib/decorators/middleware';
 import Router from './router';
-import { Inject } from 'bind';
+import { Inject, Singleton } from 'bind';
 import HTTPMethod from 'http-method-enum';
 import { toHTTPMethod } from '../lib/core/apputils';
 import { PRIORITY_ROUTER } from '../lib/consts';
@@ -11,6 +11,7 @@ const debug = require('debug')('bind:rest:runtime');
 const TAG = 'RouterMiddleware';
 
 @Middleware(PRIORITY_ROUTER)
+@Singleton
 export default class RouterMiddleware {
 
   @Inject

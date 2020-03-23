@@ -14,6 +14,7 @@ import {
   isSameIdentity,
 } from 'bind';
 import { SERVER_REQUEST, SERVER_RESPONSE } from '../consts';
+import { IUriParams } from 'holiday-router';
 
 const debug = require('debug')('promiseoft:context');
 const TAG = 'ContextClass';
@@ -27,6 +28,7 @@ export default class Context implements IScopedComponentStorage {
   private uriInfo: UrlWithStringQuery;
   private cookies;
   private myControllerName = '';
+  private myRouteParams: IUriParams;
   /**
    * Parsed url query
    */
@@ -103,6 +105,18 @@ export default class Context implements IScopedComponentStorage {
 
   get controllerName() {
     return this.myControllerName;
+  }
+
+  get routeParams(): IUriParams {
+    return this.myRouteParams;
+  }
+
+  set routeParams(params: IUriParams) {
+    if (!this.myRouteParams) {
+      this.myRouteParams = params;
+    } else {
+      throw new Error('routeParams is already set Cannot set new value');
+    }
   }
 
   set controllerName(name: string) {

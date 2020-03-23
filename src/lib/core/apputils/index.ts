@@ -10,6 +10,7 @@ export {KoaRouterFactory, getRouter} from './routerfactory';
 export {RouterErrorHandler} from './routererrorhandler';
 export * from './allroutes';
 export * from './registercontextcomponent';
-export {default as getControllerComponents} from './getcontrollercomponents'
+export {default as getControllerComponents} from './getcontrollercomponents';
+export * from './httpmethodsmap';
 
 

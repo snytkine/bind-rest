@@ -1,7 +1,7 @@
 {
-  "name": "promiseoft",
-  "version": "0.9.20",
-  "description": "A Typescript Framework for Node.js",
+  "name": "bind-rest",
+  "version": "0.9.21",
+  "description": "Framework for creating REST API with decorators and dependency injection",
   "private": false,
   "scripts": {
     "_prepare": "npm run build",
@@ -35,7 +35,9 @@
     "cookie-parser": "1.4.3",
     "cookies": "0.6.2",
     "debug": "^4.1.1",
+    "holiday-router": "^1.1.3",
     "http-errors": "^1.7.3",
+    "http-method-enum": "^1.0.0",
     "http-status-enum": "1.0.2",
     "inflate": "0.0.7",
     "inflation": "2.0.0",

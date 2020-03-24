@@ -4,6 +4,12 @@ import {PathDetailsParam} from "../../interfaces/pathdetailsparams";
 import {PathDetailsType} from "../../enums/pathdetails";
 import Context from '../context'
 const debug = require('debug')('promiseoft:util:paramsgenerator');
+
+/**
+ * @todo delete this file, will not be used.
+ *
+ * @param cm
+ */
 export function paramsMapGenerator(cm: ClassMethod): contextToParam[] {
   let [o, p] = cm;
 

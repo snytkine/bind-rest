@@ -5,3 +5,4 @@ export const PARAM_TYPE_NUMBER = 'Number';
 export const PARAM_TYPE_BOOLEAN = 'Boolean';
 export const PARAM_TYPE_PROMISE = 'Promise';
 export const PARAM_TYPE_OBJECT = 'Object';
+export const PARAM_TYPE_ARRAY = 'Array';

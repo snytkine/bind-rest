@@ -28,6 +28,14 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
       };
       break;
 
+    case PathDetailsType.PathParam:
+      ret = (c: IfIocContainer) => (ctx: Context) => {
+        const pathParam = ctx.routeParams?.pathParams?.find(p => p.paramName===paramName);
+
+        return Promise.resolve(pathParam?.paramValue);
+      };
+      break;
+
     default:
       throw new SystemError(`Unsupported PathDetailsType type ${PathDetailsType[t]}`);
   }

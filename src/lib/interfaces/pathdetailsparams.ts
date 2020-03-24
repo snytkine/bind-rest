@@ -5,7 +5,10 @@ import {StringOrSymbol} from 'bind';
  */
 
 
-
+/**
+ * @todo delete this. Not used it V2
+ * replaced with IControllerParamMeta
+ */
 export interface PathDetailsParam {
   type: PathDetailsType;
   /**

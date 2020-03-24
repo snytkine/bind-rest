@@ -3,7 +3,7 @@ export * from "./metaprops";
 export * from "./middleware";
 export * from "./http/requestmethods";
 export * from "./controller/controller";
-export * from "./controller/methodarguments";
+export * from "./controller/complexmethodparams";
 export * from "./controller/pathdecorator";
 export * from "./jsonschema"
 export * from "./errorhandler";

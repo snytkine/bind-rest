@@ -1,5 +1,6 @@
 import { IControllerParamMeta } from '../interfaces';
 import {
+  PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
   PARAM_TYPE_STRING,
@@ -13,6 +14,8 @@ const TAG = 'ParamsValidator';
 export const printErrors = (errors: Array<Error>): string => {
   return errors.map(e => e.message).join('\n');
 };
+
+type IParamsValidator = (params: ParamsWithMeta) => ParamsWithMeta;
 
 const isNullOrUndefined = (val: any): boolean => val===undefined || val===null;
 
@@ -36,6 +39,24 @@ export const toNumber = (i: any): Number | TypeError => {
   }
 
   return x;
+};
+
+
+
+export const toArray = (i: any): Array<any> | TypeError => {
+
+  /**
+   * If undefined then return it as undefined
+   * Do not convert to number. This way
+   * it will be possible to use default value in controller
+   */
+  if (isNullOrUndefined(i)) return undefined;
+
+  if(!Array.isArray(i)){
+    return new TypeError();
+  }
+
+  return i;
 };
 
 /**
@@ -103,7 +124,6 @@ interface ParamsWithMeta {
   meta: Array<IControllerParamMeta>
 }
 
-type IParamsValidator = (params: ParamsWithMeta) => ParamsWithMeta;
 
 export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
 
@@ -160,6 +180,10 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
 
         case PARAM_TYPE_BOOLEAN:
           ret = toBoolean(param);
+          break;
+
+        case PARAM_TYPE_ARRAY:
+          ret = toArray(param);
           break;
       }
     }

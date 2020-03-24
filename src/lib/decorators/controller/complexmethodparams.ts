@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { SYM_METHOD_PARAMS } from '../metaprops';
+import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
 import { PathDetailsType } from '../../enums/pathdetails';
 import {
@@ -8,9 +8,14 @@ import {
   TargetStereoType,
   getMethodParamName,
 } from 'bind';
+import { IControllerParamMeta } from '../../interfaces';
+import { getParamType } from './noargmethodparams';
+import { ParamExtractorFactory } from '../../types/controllerparamextractor';
+import makeParamExtractorFactory from './makeparamextractorfactory';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'METHOD-ARGUMENTS';
+
 export type ParamDecoratorFunction = (target: Target,
                                       propertyKey: string,
                                       parameterIndex: number) => void;
@@ -26,7 +31,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
    *  the same method which is the case where multiple arguments of the method
    *  are annotated with @PathParam
    */
-  let metaDetails: Array<PathDetailsParam>;
+  let metaDetails: Array<IControllerParamMeta>;
   const targetStereoType = getTargetStereotype(target);
   debug('%s targetStereoType="%s"', TAG, targetStereoType);
 
@@ -38,12 +43,8 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
   debug(`Defining @PathParam ${String(methodArgumentDetail['name'])} for arg ${index} 
   of method ${target.constructor.name}.${String(propertyKey)}`);
 
-  metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey);
-
-
-  if (!metaDetails) {
-    metaDetails = [];
-  }
+  metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey) || [];
+  const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
 
   if (metaDetails[index]) {
 
@@ -52,7 +53,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
      * in which case this method will be called twice.
      * But calling this method twice with different values of .name and .type is not allowed
      */
-    if (metaDetails[index].type && methodArgumentDetail.type) {
+    if (metaDetails[index].f && methodArgumentDetail.type) {
       throw new Error(`Method parameter ${index} already defined 
       on method ${target.constructor.name}.${String(propertyKey)} 
       - ${JSON.stringify(metaDetails[index])}`);
@@ -62,9 +63,13 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
      * If the .required was added first then instead
      * add other values from passed methodArgumentDetails
      */
-    metaDetails[index].name = methodArgumentDetail.name;
-    metaDetails[index].type = methodArgumentDetail.type;
-    metaDetails[index].position = methodArgumentDetail.position;
+    metaDetails[index].f = makeParamExtractorFactory(
+      methodArgumentDetail.type,
+      methodArgumentDetail.name,
+    );
+    metaDetails[index].paramName = methodArgumentDetail.name;
+    metaDetails[index].argumentType = methodArgumentDetail.type;
+    metaDetails[index].paramType = getParamType(paramTypes, index);
 
   } else {
 
@@ -87,7 +92,16 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
      *
      * @type {{type: PathDetailsType, name: string, position: number}}
      */
-    metaDetails[index] = methodArgumentDetail;
+    metaDetails[index] = {
+      f: makeParamExtractorFactory(
+        methodArgumentDetail.type,
+        methodArgumentDetail.name,
+      ),
+      argumentType: methodArgumentDetail.type,
+      isRequired: false,
+      paramName: methodArgumentDetail.name,
+      paramType: getParamType(paramTypes, index),
+    };
   }
   /**
    * Now set SYM_METHOD_PARAMS meta of this method with metaDetails value
@@ -188,11 +202,6 @@ function applySingleAnnotation(annotationType: PathDetailsType = null,
   Reflect.defineMetadata(SYM_METHOD_PARAMS, metaDetails, target, propertyKey);
 }
 
-export function RequestBody(target: Target, propertyKey: string, parameterIndex: number) {
-
-  return applySingleAnnotation(PathDetailsType.RequestBody, target, propertyKey, parameterIndex);
-}
-
 export function Request(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.Request, target, propertyKey, parameterIndex);
@@ -208,27 +217,6 @@ export function Response(target: Target, propertyKey: string, parameterIndex: nu
 export function OriginalUrl(target: Target, propertyKey: string, parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.OriginalUrl, target, propertyKey, parameterIndex);
-}
-
-
-export function RequestMethod(target: Target,
-                              propertyKey: string,
-                              parameterIndex: number) {
-
-  return applySingleAnnotation(
-    PathDetailsType.RequestMethod,
-    target,
-    propertyKey,
-    parameterIndex,
-  );
-}
-
-
-export function Headers(target: Target,
-                        propertyKey: string,
-                        parameterIndex: number) {
-
-  return applySingleAnnotation(PathDetailsType.Headers, target, propertyKey, parameterIndex);
 }
 
 
@@ -261,29 +249,6 @@ export function ContextScope(target: Target,
                              parameterIndex: number) {
 
   return applySingleAnnotation(PathDetailsType.ContextScope, target, propertyKey, parameterIndex);
-}
-
-
-export function QueryString(target: Target,
-                            propertyKey: string,
-                            parameterIndex: number) {
-
-  return applySingleAnnotation(PathDetailsType.QueryString, target, propertyKey, parameterIndex);
-}
-
-
-export function Query(target: Target,
-                      propertyKey: string,
-                      parameterIndex: number) {
-
-  return applySingleAnnotation(PathDetailsType.Query, target, propertyKey, parameterIndex);
-}
-
-export function Required(target: Target,
-                         propertyKey: string,
-                         parameterIndex: number) {
-
-  return applySingleAnnotation(null, target, propertyKey, parameterIndex, true);
 }
 
 export const doParamAnnotation = (name: string,

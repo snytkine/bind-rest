@@ -5,7 +5,7 @@ import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import inflate from 'inflation';
 import raw from 'raw-body';
 import {
-  CONTENT_TYPE_JSON,
+  CONTENT_TYPE_JSON, PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
   PARAM_TYPE_OBJECT,
@@ -41,6 +41,10 @@ export const getParamType = (paramTypes: Array<any>, index: number): string | ob
         ret = PARAM_TYPE_BOOLEAN;
         break;
 
+      case 'Array':
+        ret = PARAM_TYPE_ARRAY;
+        break;
+
       case 'Object':
         /**
          * No type was specified for this body parameter
@@ -62,10 +66,11 @@ export const getParamType = (paramTypes: Array<any>, index: number): string | ob
 };
 
 
-function applySingleAnnotation(target,
-                               propertyKey,
-                               parameterIndex,
+function applySingleAnnotation(target: Target,
+                               propertyKey: string,
+                               parameterIndex: number,
                                required: boolean = false,
+                               methodParamType?: PathDetailsType,
                                paramFactory?: ParamExtractorFactory,
 ) {
 
@@ -105,9 +110,11 @@ function applySingleAnnotation(target,
        * add other values from passed methodArgumentDetails
        */
       metaDetails[parameterIndex].f = paramFactory;
+      metaDetails[parameterIndex].argumentType = methodParamType;
+      metaDetails[parameterIndex].paramType = getParamType(paramTypes, parameterIndex);
+      metaDetails[parameterIndex].paramName = getMethodParamName(target, propertyKey, parameterIndex);
     }
   } else {
-
 
     /**
      * @todo check that position of last element is == parameterIndex-1
@@ -130,6 +137,7 @@ function applySingleAnnotation(target,
     metaDetails[parameterIndex] = {
       f: paramFactory,
       isRequired: required,
+      argumentType: methodParamType,
       paramType: getParamType(paramTypes, parameterIndex),
       paramName: getMethodParamName(target, propertyKey, parameterIndex),
     };
@@ -155,7 +163,12 @@ export function QueryString(target: Target,
     return Promise.resolve(context.querystring);
   };
 
-  return applySingleAnnotation(target, propertyKey, parameterIndex, false, paramFactory);
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.QueryString,
+    paramFactory);
 }
 
 export function ParsedQuery(target: Target,
@@ -166,7 +179,12 @@ export function ParsedQuery(target: Target,
     return Promise.resolve(context.parsedUrlQuery);
   };
 
-  return applySingleAnnotation(target, propertyKey, parameterIndex, false, paramFactory);
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.Query,
+    paramFactory);
 }
 
 
@@ -178,7 +196,12 @@ export function Headers(target: Target,
     return Promise.resolve(context.req.headers);
   };
 
-  return applySingleAnnotation(target, propertyKey, parameterIndex, false, paramFactory);
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.Headers,
+    paramFactory);
 }
 
 
@@ -190,7 +213,14 @@ export function RequestMethod(target: Target,
     return Promise.resolve(context.req.method);
   };
 
-  return applySingleAnnotation(target, propertyKey, parameterIndex, false, paramFactory);
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.RequestMethod,
+    paramFactory
+  );
 }
 
 
@@ -288,6 +318,12 @@ export function Body(target: Target,
 
   };
 
-  return applySingleAnnotation(target, propertyKey, parameterIndex, false, paramFactory);
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.RequestBody,
+    paramFactory);
 }
 

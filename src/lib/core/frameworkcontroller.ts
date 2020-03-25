@@ -1,6 +1,6 @@
 import { IControllerContainer } from 'holiday-router';
 import { IController } from '../interfaces';
-import Context from './context';
+import Context from '../../components/context';
 
 const defaultMatcher = (ctx: Context) => true;
 

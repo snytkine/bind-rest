@@ -6,7 +6,7 @@ export interface IControllerParamMeta {
   f: ParamExtractorFactory
   isRequired: boolean
   paramName: string
-  argumentType: PathDetailsType
+  paramDecoratorType: PathDetailsType
   paramType?: any
   validator?: (input: any) => Maybe<Error>
 }

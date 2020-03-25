@@ -5,7 +5,7 @@ import {
   IScopedComponentStorage,
   IfIocContainer,
 } from 'bind';
-import Context from '../context';
+import Context from '../../../components/context';
 
 const contextComponentDetails: IfIocComponent = {
   identity: Identity(Context),

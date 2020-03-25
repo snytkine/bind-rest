@@ -1,4 +1,4 @@
-import { IfIocContainer, IfIocComponent, COMPONENT_META_DATA } from 'bind';
+import { IfIocContainer, IfIocComponent, } from 'bind';
 import { IS_CONTROLLER } from '../../decorators';
 
 /**

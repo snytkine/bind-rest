@@ -1,30 +1,33 @@
 import * as url from 'url';
+import { UrlWithStringQuery } from 'url';
 import * as http from 'http';
 import * as QueryString from 'querystring';
-import * as cookie from 'cookie';
-import { IAppResponse } from '../interfaces/appresponse';
-import { UrlWithStringQuery } from 'url';
 import { ParsedUrlQuery } from 'querystring';
+import * as cookie from 'cookie';
+import { IAppResponse } from '../lib/interfaces/appresponse';
 import {
-  IScopedComponentStorage,
-  IfComponentIdentity,
+  Component,
   ComponentScope,
-  StringOrSymbol,
   Identity,
+  IScopedComponentStorage,
   isSameIdentity,
+  Scope,
+  StringOrSymbol,
+  ComponentIdentity
 } from 'bind';
-import { SERVER_REQUEST, SERVER_RESPONSE } from '../consts';
 import { IUriParams } from 'holiday-router';
 
 const debug = require('debug')('promiseoft:context');
 const TAG = 'ContextClass';
 
+@Component
+@Scope(ComponentScope.REQUEST)
 export default class Context implements IScopedComponentStorage {
 
-  private readonly id: IfComponentIdentity;
-  public readonly req: http.IncomingMessage;
-  public readonly res: http.ServerResponse;
-  private readonly reqUrl: string;
+  static readonly id: ComponentIdentity = Identity(Context);
+  public req: http.IncomingMessage;
+  public res: http.ServerResponse;
+  private reqUrl: string;
   private uriInfo: UrlWithStringQuery;
   private cookies;
   private myControllerName = '';
@@ -39,11 +42,11 @@ export default class Context implements IScopedComponentStorage {
    */
   params: { [key: string]: string };
 
-  readonly startTime: number;
+  private requestStartTime: number = 0;
 
   appResponse: IAppResponse;
 
-  private scopedComponents: Array<[IfComponentIdentity, any]>;
+  private scopedComponents: Array<[ComponentIdentity, any]> = [];
 
   /**
    * Storage container for anything
@@ -52,45 +55,40 @@ export default class Context implements IScopedComponentStorage {
 
   readonly scope = ComponentScope.REQUEST;
 
-  constructor(req: http.IncomingMessage, res: http.ServerResponse) {
+  initContext(req: http.IncomingMessage, res: http.ServerResponse) {
     this.req = req;
     this.res = res;
     this.reqUrl = req.url;
-    this.startTime = Date.now();
-    this.id = Identity(Context);
+    this.requestStartTime = Date.now();
   }
 
-  getComponent(id: IfComponentIdentity) {
+  get startTime(){
+    return this.requestStartTime;
+  }
+
+  getComponent(id: ComponentIdentity) {
 
     /**
      * Special case if looking for instance of Context (this object)
      * then just return this
      * otherwise look in scopedComponents map
      */
-    if (isSameIdentity(id, this.id)) {
+    if (isSameIdentity(id, Context.id)) {
       debug('%s getComponent Returning instance of self', TAG);
 
       return this;
-    } else if (id.componentName===SERVER_REQUEST) {
-      debug('%s getComponent returning .req', TAG);
-
-      return this.req;
-    } else if (id.componentName===SERVER_RESPONSE) {
-      debug('%s getComponent returning .res', TAG);
-
-      return this.res;
     }
 
     return this.scopedComponents.find(component => isSameIdentity(component[0], id));
   }
 
-  setComponent(id: IfComponentIdentity, component: any): void {
+  setComponent(id: ComponentIdentity, component: any): void {
 
     /**
      * Special case do not set Context instance (instance of this class)
      * into storage
      */
-    if (!isSameIdentity(id, this.id)) {
+    if (!isSameIdentity(id, Context.id)) {
       /**
        * Not testing if component with same identity
        * already exists before adding it. The consumer of this method

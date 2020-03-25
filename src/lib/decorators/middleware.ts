@@ -20,7 +20,7 @@ const validatePriority = (i: any): boolean => {
 
   let res = Number(i);
 
-  return !isNaN(res) && res > 0 && res <= 1000;
+  return !isNaN(res) && res >= 0 && res <= 1000;
 };
 
 /**

@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import {MiddlewareFunc} from "../types";
 import {contextToParam} from "../types/controllers";
-import Context from '../core/context';
+import Context from '../../components/context';
 const debug = require('debug')('promiseoft:middleware');
 const TAG = "CONTROLLER-ARGUMENTS-FACTORY";
 export function controllerArgumentsFactory(paramsMap: Array<contextToParam>): MiddlewareFunc {

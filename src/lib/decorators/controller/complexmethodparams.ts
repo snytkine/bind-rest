@@ -68,7 +68,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
       methodArgumentDetail.name,
     );
     metaDetails[index].paramName = methodArgumentDetail.name;
-    metaDetails[index].argumentType = methodArgumentDetail.type;
+    metaDetails[index].paramDecoratorType = methodArgumentDetail.type;
     metaDetails[index].paramType = getParamType(paramTypes, index);
 
   } else {
@@ -97,7 +97,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
         methodArgumentDetail.type,
         methodArgumentDetail.name,
       ),
-      argumentType: methodArgumentDetail.type,
+      paramDecoratorType: methodArgumentDetail.type,
       isRequired: false,
       paramName: methodArgumentDetail.name,
       paramType: getParamType(paramTypes, index),

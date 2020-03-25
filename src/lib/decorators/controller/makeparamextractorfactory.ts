@@ -1,7 +1,7 @@
 import { PathDetailsType } from '../../enums';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { IfIocContainer } from 'bind';
-import Context from '../../core/context';
+import Context from '../../../components/context';
 import { SystemError } from '../../core';
 
 const debug = require('debug')('promiseoft:decorators');

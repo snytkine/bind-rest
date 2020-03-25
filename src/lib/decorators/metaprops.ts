@@ -20,6 +20,5 @@ export const SYM_JSON_SCHEMA = Symbol.for('document:json:schema');
 export const SYM_CONTROLLER_MIDDLEWARES = Symbol.for('controller:middlelwares');
 //
 export const IS_CONTROLLER = 'IS_CONTROLLER';
-export const IS_MIDDLEWARE = 'IS_MIDDLEWARE';
 export const MIDDLEWARE_PRIORITY = 'MIDDLEWARE_PRIORITY';
 export const IS_ERROR_HANDLER = 'IS_ERROR_HANDLER';

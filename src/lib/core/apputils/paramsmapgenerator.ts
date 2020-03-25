@@ -2,7 +2,7 @@ import {ClassMethod, contextToParam} from "../../types/controllers";
 import {SYM_METHOD_PARAMS} from "../../decorators/metaprops";
 import {PathDetailsParam} from "../../interfaces/pathdetailsparams";
 import {PathDetailsType} from "../../enums/pathdetails";
-import Context from '../context'
+import Context from '../../../components/context'
 const debug = require('debug')('promiseoft:util:paramsgenerator');
 
 /**

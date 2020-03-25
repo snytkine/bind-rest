@@ -22,7 +22,7 @@ import { makeParamsValidator } from '../core/paramsvalidator';
 import { RequestMethod } from '../enums/requestmethods';
 import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
 import { FutureParam, ParamExtractor } from '../types/controllerparamextractor';
-import Context from './context';
+import Context from '../../components/context';
 import { PARAM_TYPE_STRING } from '../consts';
 
 

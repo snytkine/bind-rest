@@ -1,4 +1,4 @@
-import Context from '../lib/core/context';
+import Context from './context';
 import { Middleware } from '../lib/decorators/middleware';
 import Router from './router';
 import { Inject, Singleton } from 'bind';

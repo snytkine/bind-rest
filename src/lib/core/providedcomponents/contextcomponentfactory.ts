@@ -6,7 +6,7 @@ import {
   IocComponentGetter,
   Identity,
 } from 'bind';
-import Context from '../context';
+import Context from '../../../components/context';
 import { SERVER_REQUEST } from '../../consts';
 
 function contextGetter(scopedStorages?: Array<IScopedComponentStorage>): Context | undefined {

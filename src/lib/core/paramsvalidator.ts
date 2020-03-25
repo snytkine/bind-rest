@@ -7,6 +7,7 @@ import {
 } from '../consts';
 import { HttpError } from '../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
+import { PathDetailsType } from '../enums/controllerparamtype';
 
 const debug = require('debug')('promiseoft:runtime:validation');
 const TAG = 'ParamsValidator';
@@ -132,7 +133,11 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
     if (param instanceof Error) return param;
 
     if (o.meta[i] && o.meta[i].isRequired && isNullOrUndefined(param)) {
-      return new Error(`Null value for required parameter "${o.meta[i].paramName}" (arg ${i + 1})`);
+      return new Error(`
+      Required parameter not passed from request
+      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
+      parameterName="${o.meta[i].paramName}" 
+      position="${i + 1}"`);
     }
 
     return param;
@@ -149,7 +154,15 @@ export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
 
     if (o.meta[i] && o.meta[i].validator) {
       const res = o.meta[i].validator(param);
-      return res || param;
+      if(!res){
+        return param;
+      }
+
+      return new Error(`Validation failed for parameter 
+      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
+      parameterName="${o.meta[i].paramName}" 
+      position="${i + 1}"
+      ValidationError=${res.message}`);
     }
 
     return param;
@@ -189,8 +202,12 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
     }
 
     if (ret instanceof TypeError) {
-      return new Error(`Parameter "${o.meta[i].paramName}" (arg ${i + 1}) 
-      cannot be converted to ${o.meta[i].paramType}`);
+      return new Error(`
+      Request Parameter cannot be converted to ${o.meta[i].paramType}
+      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
+      parameterName="${o.meta[i].paramName}" 
+      position="${i + 1}" 
+      `);
     }
 
     return ret;

@@ -11,6 +11,7 @@ export {RouterErrorHandler} from './routererrorhandler';
 export * from './allroutes';
 export * from './registercontextcomponent';
 export {default as getControllerComponents} from './getcontrollercomponents';
+export {default as getMiddlewareComponents} from './getmiddlewarecomponents';
 export * from './httpmethodsmap';
 
 

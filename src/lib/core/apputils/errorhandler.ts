@@ -1,5 +1,5 @@
 import HttpStatusCode from 'http-status-enum';
-import Context from '../context';
+import Context from '../../../components/context';
 
 const debug = require('debug')('promiseoft:runtime:errorhandler');
 const TAG = "DEFAULT-ERROR-HANDLER";

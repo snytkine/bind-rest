@@ -6,10 +6,10 @@ import {
   Target,
   COMPONENT_IDENTITY,
   EXTRA_DEPENDENCIES,
-  IfComponentIdentity,
   IfIocContainer,
+  ComponentIdentity
 } from 'bind';
-import Context from '../core/context';
+import Context from '../../components/context';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = '@Middlewares';
@@ -17,7 +17,7 @@ const TAG = '@Middlewares';
 export const toMWFactory = (middleware: Constructor<IMiddleware>): MiddlewareFuncFactory => {
 
   return (container: IfIocContainer) => {
-    const mwID = <IfComponentIdentity>Reflect.getMetadata(COMPONENT_IDENTITY, middleware);
+    const mwID = <ComponentIdentity>Reflect.getMetadata(COMPONENT_IDENTITY, middleware);
 
     return (context: Context) => {
       const oMW = <IMiddleware>container.getComponent(mwID, [context]);
@@ -79,7 +79,7 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
     /**
      * Need to get array if Identities from array of IMiddleware constructors
      */
-    const extraDependencies: Array<IfComponentIdentity> = middlewares.map(dep => {
+    const extraDependencies: Array<ComponentIdentity> = middlewares.map(dep => {
       const ret = Reflect.getMetadata(COMPONENT_IDENTITY, dep);
       if (!ret) {
         throw new Error(`${TAG} decorator. Could not determine identity of middleware ${dep.name}`);

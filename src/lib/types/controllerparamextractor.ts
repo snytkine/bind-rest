@@ -1,4 +1,4 @@
-import Context from '../core/context';
+import Context from '../../components/context';
 import {IfIocContainer} from 'bind';
 
 export type FutureParam = (context: Context) => Promise<any>;

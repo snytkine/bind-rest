@@ -1,5 +1,5 @@
 import * as http from 'http';
-import Context from './context';
+import Context from '../../components/context';
 import {
   IContext,
   IAppResponse,
@@ -28,6 +28,12 @@ import {
 } from './apputils'
 
 import {
+  IfIocContainer,
+  Container,
+  load,
+} from 'bind';
+
+import {
   IRouter,
   IRouterConstructor
 } from '../interfaces/irouter';
@@ -35,6 +41,7 @@ import {
   AllRoutes,
   SYM_ALL_ROUTES
 } from './apputils/allroutes'
+import * as path from "path";
 
 const debug = require('debug')('promiseoft:runtime:application');
 
@@ -50,9 +57,11 @@ export class Application {
 
   private customErrorHandler: AppErrorHandlerFunc;
 
-  private router: IRouter<IContext, Promise<IAppResponse>>;
+  private container: IfIocContainer;
 
-  private aControllerDetails: Array<ControllerDetails>;
+  //private router: IRouter<IContext, Promise<IAppResponse>>;
+
+  //private aControllerDetails: Array<ControllerDetails>;
 
   /**
    * parse routes
@@ -66,7 +75,7 @@ export class Application {
 
     this.errorHandler = errorHandler;
     const extras = options.extraComponents || [];
-    extras.push(AllRoutes);
+    //extras.push(AllRoutes);
 
     /**
      * Make sure timeout is integer number
@@ -85,17 +94,37 @@ export class Application {
       }
     }
 
+    this.container = new Container();
+    const frameworkComponentsDir = path.resolve(__dirname, '../../components');
+    load(this.container, [...options.componentDirs, frameworkComponentsDir]);
+    /**
+     * @todo add extra components here, before parsing controllers because
+     * extra components may container controllers and middlewares
+     *
+     */
 
-    debug(`${TAG} starting application with baseDir: ${options.baseDir} with timeout ${this.timeout} milliseconds`);
+    /**
+     * All components are loaded into container
+     * Now parse all controllers and add routes to router
+     */
 
-    let RouterClass: IRouterConstructor<IContext, Promise<IAppResponse>> = getRouter<IContext, Promise<IAppResponse>>();
 
-    const routerOptions = {
-      prefix:          options.baseUrl,
-      errorController: RouterErrorHandler
-    };
+    /**
+     * Get all Middleware, sort then by order (lower order first)
+     * and create array of middleware functions.
+     */
 
-    this.router = new RouterClass(routerOptions);
+
+    //debug(`${TAG} starting application with baseDir: ${options.baseDir} with timeout ${this.timeout} milliseconds`);
+
+    //let RouterClass: IRouterConstructor<IContext, Promise<IAppResponse>> = getRouter<IContext, Promise<IAppResponse>>();
+
+    //const routerOptions = {
+    //  prefix:          options.baseUrl,
+    //  errorController: RouterErrorHandler
+    //};
+
+    //this.router = new RouterClass(routerOptions);
 
     //const extraComponents = loadExtraComponents(extras);
     //debug(`LOADED EXTRA COMPONENTS **** ${extraComponents.length}   ${JSON.stringify(extraComponents)}`);
@@ -159,9 +188,9 @@ export class Application {
   onExit(): Promise<number> {
     let that = this;
     return new Promise((resolve, reject) => {
-      let cleared = that.router.reset();
-      console.log(`Cleared ${cleared} router nodes`);
-      resolve(cleared);
+      //let cleared = that.router.reset();
+      //console.log(`Cleared ${cleared} router nodes`);
+      resolve(1);
     })
   }
 /*

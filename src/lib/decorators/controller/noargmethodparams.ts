@@ -1,6 +1,6 @@
 import { PathDetailsType } from '../../enums';
 import { Target, IfIocContainer, getMethodParamName } from 'bind';
-import Context from '../../core/context';
+import Context from '../../../components/context';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import inflate from 'inflation';
 import raw from 'raw-body';
@@ -110,7 +110,7 @@ function applySingleAnnotation(target: Target,
        * add other values from passed methodArgumentDetails
        */
       metaDetails[parameterIndex].f = paramFactory;
-      metaDetails[parameterIndex].argumentType = methodParamType;
+      metaDetails[parameterIndex].paramDecoratorType = methodParamType;
       metaDetails[parameterIndex].paramType = getParamType(paramTypes, parameterIndex);
       metaDetails[parameterIndex].paramName = getMethodParamName(target, propertyKey, parameterIndex);
     }
@@ -137,7 +137,7 @@ function applySingleAnnotation(target: Target,
     metaDetails[parameterIndex] = {
       f: paramFactory,
       isRequired: required,
-      argumentType: methodParamType,
+      paramDecoratorType: methodParamType,
       paramType: getParamType(paramTypes, parameterIndex),
       paramName: getMethodParamName(target, propertyKey, parameterIndex),
     };

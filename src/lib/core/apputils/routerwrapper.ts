@@ -5,7 +5,7 @@ import {ErrorResponse} from "../appresponse";
 import HttpStatusCode from 'http-status-enum';
 import {SYM_MIDDLEWARE_NAME, SYM_MIDDLEWARE_PRIORITY} from "../../decorators/metaprops";
 import {IRouter} from "../../interfaces/irouter";
-import { Context } from '../context';
+import { Context } from '../../../components/context';
 const debug = require('debug')('promiseoft:runtime:router');
 const TAG = "ROUTER-WRAPPER";
 /*

@@ -19,11 +19,10 @@ import {
   SYM_REQUEST_PATH,
 } from '../decorators';
 import { makeParamsValidator } from '../core/paramsvalidator';
-import { RequestMethod } from '../enums/requestmethods';
 import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
-import { FutureParam, ParamExtractor } from '../types/controllerparamextractor';
+import { ParamExtractor } from '../types/controllerparamextractor';
 import Context from '../../components/context';
-import { PARAM_TYPE_STRING } from '../consts';
+import HTTPMethod from 'http-method-enum';
 
 
 const debug = require('debug')('promiseoft:runtime:controller');
@@ -57,9 +56,9 @@ export function parseController(container: IfIocContainer) {
     return props.map(p => {
       let ctrl: ControllerFunc;
       let ctrlWithMiddleware: ControllerFunc;
-      let methods: Array<RequestMethod>;
+      let methods: Array<HTTPMethod>;
       let middleware: MiddlewareFunc;
-      let metaMethods: Maybe<Set<RequestMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
+      let metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
       let paramsMeta: Array<IControllerParamMeta> = Reflect.getMetadata(SYM_METHOD_PARAMS, o, p) || [];
       const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
       const controllerName = `${component.identity.clazz.name}.${p}`;

@@ -1,24 +1,22 @@
-import { PARAM_TYPES, RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
-import { RequestMethod } from '../../enums/requestmethods';
+import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
 import { ControllerFunc } from '../../interfaces/controller';
 import { Path } from '../controller/pathdecorator';
-import { Target, Maybe, isDefined } from 'bind';
+import { Target, Maybe, getOrElse } from 'bind';
+import HTTPMethod from 'http-method-enum';
 
 const debug = require('debug')('promiseoft:decorators');
+const TAG = 'ADD_METHOD_ANNOTATION';
 
-function addMethodAnnotation(target: any, propertyKey: string, method: RequestMethod): undefined {
+function addMethodAnnotation(target: any, propertyKey: string, method: HTTPMethod): undefined {
 
-  let p: Maybe<Set<RequestMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, target, propertyKey);
+  let p: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, target, propertyKey);
   let rt = Reflect.getMetadata(RETURN_TYPE, target, propertyKey);
-  debug(`Adding Method annotation ${RequestMethod[method]} to ${target.constructor.name}.${propertyKey} returnType: ${rt}`);
+  debug(`Adding Method annotation ${method} to ${target.constructor.name}.${propertyKey} returnType: ${rt}`);
 
-  //let paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
-  //debug(`paramTypes for ${target.constructor.name}.${propertyKey} is ${JSON.stringify(paramTypes)}`);
-
-  p = p || new Set<RequestMethod>();
+  p = getOrElse(p, new Set<HTTPMethod>());
   p.add(method);
 
-  debug(`Annotated methods ${JSON.stringify(p)}`);
+  debug('%s Annotated methods %o', TAG, p);
 
   Reflect.defineMetadata(SYM_REQUEST_METHOD, p, target, propertyKey);
 
@@ -30,7 +28,7 @@ export type IMethodDecorator = (target: Target, propertyKey: string, descriptor:
 
 export const decorate = (pathOrTarget: string | Target,
                          propertyKey: string,
-                         method: RequestMethod): IMethodDecorator => {
+                         method: HTTPMethod): IMethodDecorator => {
 
   if (typeof pathOrTarget==='string') {
     /**
@@ -62,28 +60,28 @@ export function GET(target: string | Target,
                     propertyKey?: string,
                     descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
 
-  return decorate(target, propertyKey, RequestMethod.GET);
+  return decorate(target, propertyKey, HTTPMethod.GET);
 }
 
 
 export function PUT(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-  addMethodAnnotation(target, propertyKey, RequestMethod.PUT);
+  addMethodAnnotation(target, propertyKey, HTTPMethod.PUT);
 }
 
 
 export function POST(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-  addMethodAnnotation(target, propertyKey, RequestMethod.POST);
+  addMethodAnnotation(target, propertyKey, HTTPMethod.POST);
 }
 
 
 export function DELETE(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  addMethodAnnotation(target, propertyKey, RequestMethod.DELETE);
+  addMethodAnnotation(target, propertyKey, HTTPMethod.DELETE);
 }
 
-
+/*
 export function ALL(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
   addMethodAnnotation(target, propertyKey, RequestMethod.ALL);
-}
+}*/
 
 
 

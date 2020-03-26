@@ -2,14 +2,19 @@ import {SYM_MIDDLEWARE_PRIORITY, SYM_MIDDLEWARE_NAME} from "../../decorators/met
 import {IContext} from "../../interfaces/context";
 
 const debug = require('debug')('promiseoft:runtime:responsewriter');
-const TAG = 'DEFAULT RESPONSE WRITER';
-
+const TAG = 'DEFAULT-RESPONSE-WRITER';
+/**
+ * @todo deprecate this file. Now there is a ResponseWriter middleware
+ * in components directory
+ *
+ * @param ctx
+ */
 const responseWriter = function (ctx: IContext): Promise<IContext> {
 
   debug("%s Entered defaultResponseWriter", TAG);
   let ret: Promise<IContext>;
 
-  if (!ctx.res.finished) {
+  if (!ctx.res.writableFinished) {
 
     ret = new Promise((resolve, reject) => {
 

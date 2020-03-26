@@ -1,22 +1,15 @@
 import * as http from 'http';
 import Context from '../../components/context';
 import {
-  IContext,
-  IAppResponse,
   ApplicationOptions,
-  ControllerDetails,
   AppErrorHandlerFunc,
-  AppErrorHandler,
 } from '../interfaces';
 import { MiddlewareFunc } from '../types';
 
-
 import {
   errorHandler,
-  responseWriter,
   rejectLater,
   registerProcessEventListeners,
-  RouterErrorHandler,
 } from './apputils';
 
 import {
@@ -25,16 +18,9 @@ import {
   load,
 } from 'bind';
 
-import {
-  IRouter,
-  IRouterConstructor,
-} from '../interfaces/irouter';
-import {
-  AllRoutes,
-  SYM_ALL_ROUTES,
-} from './apputils/allroutes';
 import * as path from 'path';
 import setupRoutes from './apputils/setuproutes';
+import getMiddlewares from './apputils/getmiddlewares';
 
 const debug = require('debug')('promiseoft:runtime:application');
 
@@ -51,10 +37,6 @@ export class Application {
   private customErrorHandler: AppErrorHandlerFunc;
 
   private container: IfIocContainer;
-
-  //private router: IRouter<IContext, Promise<IAppResponse>>;
-
-  //private aControllerDetails: Array<ControllerDetails>;
 
   /**
    * parse routes
@@ -106,65 +88,10 @@ export class Application {
      * Get all Middleware, sort then by order (lower order first)
      * and create array of middleware functions.
      */
-    //const aMW: Array <MiddlewareFunc> = setupMiddlewares(this.container);
+    this.handlerStack = getMiddlewares(this.container);
+    debug('%s got %d middleware functions', TAG, this.handlerStack.length);
 
-    //debug(`${TAG} starting application with baseDir: ${options.baseDir} with timeout ${this.timeout} milliseconds`);
-
-    //let RouterClass: IRouterConstructor<IContext, Promise<IAppResponse>> = getRouter<IContext, Promise<IAppResponse>>();
-
-    //const routerOptions = {
-    //  prefix:          options.baseUrl,
-    //  errorController: RouterErrorHandler
-    //};
-
-    //this.router = new RouterClass(routerOptions);
-
-    //const extraComponents = loadExtraComponents(extras);
-    //debug(`LOADED EXTRA COMPONENTS **** ${extraComponents.length}   ${JSON.stringify(extraComponents)}`);
-
-    //const loadedComponents = loadComponents(options.baseDir);
-    //debug(`LOADED FILES **** ${loadedComponents.length}   ${JSON.stringify(loadedComponents)}`);
-    // debug(`Registered Components: \n${Container.componentsList}`);
-
-    //const allComponents = loadedComponents.concat(extraComponents);
-
-    /*
-
-     const aMW: Array<MiddlewareFunc> = allComponents
-     .filter(_ => _.type === ComponentType.MIDDLEWARE)
-     .map(_ => <MiddlewareFunc>_.payload)
-     .reduce((prev, curr) => prev.concat(curr), []);
-
-     this.aControllerDetails = allComponents
-     .filter(_ => _.type === ComponentType.CONTROLLER)
-     .map(_ => <ControllerDetails>_.payload)
-     .reduce((prev, curr) => prev.concat(curr), []);
-
-
-     debug('%s aContollerDetails: %o', TAG, this.aControllerDetails);
-
-     this.aControllerDetails.map(r => {
-     r.requestMethods.map(rm => {
-     let httpMethod = RequestMethod[rm].toLowerCase();
-     debug(`Adding route ${r.name} for ${httpMethod} path: ${r.routePath}`);
-     this.router.addRoute(r.routePath, RequestMethod[rm], r.ctrl, r.name);
-     debug('added route ', r.routePath, RequestMethod[rm], r.name);
-     });
-
-     });
-
-     aMW.push(routerWrapper(this.router));
-     aMW.push(responseWriter);
-
-     this.handlerStack = aMW.sort((a, b) => {
-     return a[SYM_MIDDLEWARE_PRIORITY] - b[SYM_MIDDLEWARE_PRIORITY];
-     });
-
-     this.handlerStack.map(_ => debug(`${_[SYM_MIDDLEWARE_NAME]} = ${_[SYM_MIDDLEWARE_PRIORITY]}`));
-
-     registerProcessEventListeners(Container);
-     registerProcessEventListeners(this);
-     */
+    registerProcessEventListeners(this);
 
   }
 
@@ -179,10 +106,8 @@ export class Application {
 
 
   onExit(): Promise<number> {
-    let that = this;
+
     return new Promise((resolve, reject) => {
-      //let cleared = that.router.reset();
-      //console.log(`Cleared ${cleared} router nodes`);
       resolve(1);
     });
   }
@@ -208,20 +133,21 @@ export class Application {
    * @param req Node.js request http.IncomingMessage
    * @param res Node.js response http.ServerResponse
    */
-  /*public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
+  public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
 
-   const ctx = new Context(req, res);
-   const handlerPromise = this.handlerStack.reduce((prev, next) => prev.then(next), Promise.resolve(<IContext>ctx));
-   const runners: Array<Promise<IContext>> = [handlerPromise];
-   if (this.timeout > 0) {
-   runners.push(rejectLater(this.timeout));
-   }
+    const ctx = new Context();
+    ctx.initContext(req, res);
+    const handlerPromise = this.handlerStack.reduce((prev, next) => prev.then(next), Promise.resolve(ctx));
+    const runners: Array<Promise<Context>> = [handlerPromise];
+    if (this.timeout > 0) {
+      runners.push(rejectLater(this.timeout));
+    }
 
-   Promise.race(runners)
-   .catch(this.customErrorHandler(ctx))
-   .catch(this.errorHandler(ctx));
-   debug('handleRequest method called');
-   }*/
+    Promise.race(runners)
+      .catch(this.customErrorHandler(ctx))
+      .catch(this.errorHandler(ctx));
+    debug('handleRequest method called');
+  }
 
   /**
    * Important - handleRequest method must be defined before this method otherwise

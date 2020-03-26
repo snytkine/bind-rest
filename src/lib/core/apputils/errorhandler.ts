@@ -1,38 +1,59 @@
-import HttpStatusCode from 'http-status-enum';
+import HTTP_STATUS_CODES from 'http-status-enum';
 import Context from '../../../components/context';
+import { AppErrorHandlerFunc } from '../../interfaces';
+import { isDefined, Maybe } from 'bind';
+import { HttpError } from 'http-errors';
 
 const debug = require('debug')('promiseoft:runtime:errorhandler');
-const TAG = "DEFAULT-ERROR-HANDLER";
+const TAG = 'DEFAULT-ERROR-HANDLER';
 
-export function errorHandler(ctx: Context) {
-    let responseTime: number = 0;
-    let end;
-    return e => {
-        let errorMessage: string = "Internal Server Error";
-        /**
-         * @todo if instance of ApplicationError then use appropriate
-         * response codes and messages
-         */
-        if (e instanceof Error) {
-            errorMessage = e.message;
-        } else if (typeof e === 'string') {
-            errorMessage = e;
-        }
+const errorHandler: AppErrorHandlerFunc = (ctx: Context) => {
+  let responseTime: number = 0;
+  let end: number;
+  let httpCode: HTTP_STATUS_CODES = HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR;
+  return function defaultErrorHandler(e: Maybe<Error>) {
 
-        end = Date.now();
-        responseTime = (end - ctx.startTime);
+    let errorMessage: string = 'Internal Server Error';
 
-        if (!ctx.res.writableEnded) {
-            ctx.res.statusCode = HttpStatusCode.INTERNAL_SERVER_ERROR;
-            ctx.res.end(errorMessage);
-            console.error(`${TAG} originalUrl=${ctx.requestUrl} requestMethod=${ctx.req.method} statusCode=${HttpStatusCode.INTERNAL_SERVER_ERROR} elapsedTime=${responseTime} errorMessage=${errorMessage}`);
-        } else {
-            debug('%s Response was already sent - %o', TAG, e);
-        }
+    if (isDefined(e)) {
 
-        debug('%s %s Request url %s request method: %s Trace: %s Response Took %d milliseconds', TAG, errorMessage, ctx.requestUrl, ctx.req.method, e.trace, responseTime)
+      errorMessage = e.message;
+      if (e instanceof HttpError) {
+        httpCode = e.statusCode;
+      }
+
+      end = Date.now();
+      responseTime = (end - ctx.startTime);
+
+      debug('%s errorMessage="%s" requestUrl="%s" requestMethod="%s" stack="%s" responseTime="%d"',
+        TAG,
+        errorMessage,
+        ctx.requestUrl,
+        ctx.req.method,
+        e.stack,
+        responseTime);
+
+
+      if (!ctx.res.writableEnded) {
+        ctx.res.statusCode = httpCode;
+        ctx.res.end(errorMessage);
+        debug('%s error sent', TAG);
+      } else {
+        debug('%s Response was already sent for url="%s" method="%s" error=%o',
+          TAG,
+          ctx.requestUrl,
+          ctx.req.method,
+          e);
+      }
+    } else {
+      debug('%s Not and error. Most likely was already handled by another error handler', TAG);
     }
-}
+
+    return undefined;
+  };
+};
+
+export default errorHandler;
 
 
 

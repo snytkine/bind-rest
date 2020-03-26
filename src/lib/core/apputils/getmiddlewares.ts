@@ -1,5 +1,5 @@
 import { MiddlewareFunc } from '../../types';
-import { IfIocContainer, Maybe, IfIocComponent } from 'bind';
+import { IfIocContainer, Maybe, isDefined, IfIocComponent } from 'bind';
 import { MIDDLEWARE_PRIORITY } from '../../decorators';
 import { IMiddleware } from '../../interfaces';
 import Context from '../../../components/context';
@@ -11,7 +11,7 @@ export default function getMiddlewares(ctr: IfIocContainer): Array<MiddlewareFun
     return c.componentMetaData?.[MIDDLEWARE_PRIORITY]!==undefined;
   });
 
-  if (!ret) {
+  if (!isDefined(ret)) {
     throw new ApplicationError(`No Middleware components found in container.
     Container should have at least the RouterMiddleware which is part of this framework.
     Looks like RouterMiddleware was not loaded`);

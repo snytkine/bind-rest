@@ -30,8 +30,9 @@ export default class RouterMiddleware {
 
     const httpMethod: HTTPMethod = toHTTPMethod(context.req.method);
     debug('%s httpMethod="%s"', TAG, httpMethod);
-
-    const routeMatch = this.router.getRouteMatch(httpMethod, context.requestUrl);
+    const parsedUrl = context.parsedUrl;
+    debug('%s parsedUrl="%o"', TAG, parsedUrl);
+    const routeMatch = this.router.getRouteMatch(httpMethod, parsedUrl.pathname);
     if (!routeMatch) {
       debug('%s NO patch for method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
 
@@ -54,7 +55,7 @@ export default class RouterMiddleware {
           '%s No matching ControllerContainer found for method="%s" url="%s"',
           TAG,
           requestMethod,
-          context.requestUrl
+          context.requestUrl,
         );
 
         throw new NotFoundError(`Controller not found for this request`);

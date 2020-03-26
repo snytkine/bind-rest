@@ -1,7 +1,6 @@
-export {errorHandler} from './errorhandler'
+export {default as errorHandler} from './errorhandler'
 export {exceptionHandler} from './exceptionhandler'
 export {responseWriter} from './responsewriter'
-//export {routerWrapper} from './routerwrapper'
 export {rejectLater} from './rejectlater';
 export {noop} from './noop';
 export {registerProcessEventListeners} from './processexithelper';
@@ -12,6 +11,7 @@ export * from './allroutes';
 export * from './registercontextcomponent';
 export {default as getControllerComponents} from './getcontrollercomponents';
 export {default as getMiddlewareComponents} from './getmiddlewarecomponents';
+export {default as getErrorHandlers} from './geterrorhandlers';
 export * from './httpmethodsmap';
 
 

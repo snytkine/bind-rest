@@ -1,4 +1,5 @@
-import {IExitHandler} from '../../interfaces/exithandler';
+import { IExitHandler } from '../../interfaces/exithandler';
+
 const debug = require('debug')('promiseoft:core');
 const TAG = 'PROCESS-EVENTS-HANDLER';
 
@@ -7,39 +8,42 @@ export function registerProcessEventListeners(o: IExitHandler) {
 
   process.on('SIGINT', () => {
     console.error(`${TAG} SIGINT event received`);
-    o.onExit().then(_ => {
-      debug(`${TAG} SIGINT onExit finished`)
-    }).then(_ => {
-      process.exit(2);
-    })
+    o.onExit(2).then(code => {
+      debug(`${TAG} SIGINT onExit finished`);
+      return code;
+    }).then(code => {
+      process.exit(code);
+    });
   });
 
 
-  process.on('SIGTERM', () => {
+  process.on('SIGTERM', (code) => {
     console.error(`${TAG} SIGTERM event received`);
-    o.onExit().then(_ => {
-      debug(`${TAG} SIGTERM onExit finished`)
-    }).then(_ => {
-      process.exit(3);
-    })
+    o.onExit(0).then(code => {
+      debug(`${TAG} SIGTERM onExit finished`);
+      return code;
+    }).then(code => {
+      process.exit(code);
+    });
   });
 
-  process.on('SIGHUP', () => {
+  process.on('SIGHUP', (code) => {
     console.error(`${TAG} SIGHUP event received`);
-    o.onExit().then(_ => {
-      debug(`${TAG} SIGHUP onExit finished`)
-    }).then(_ => {
-      process.exit(4);
-    })
+    o.onExit(9).then(code => {
+      debug(`${TAG} SIGHUP onExit finished`);
+      return code;
+    }).then(code => {
+      process.exit(code);
+    });
   });
 
   process.on('uncaughtException', (err) => {
     console.error(`${TAG} uncaughtException event received: ${err}`);
-    o.onExit().then(_ => {
-      debug(`${TAG} uncaughtException onExit finished`)
-    }).then(_ => {
+    o.onExit(5).then(() => {
+      debug(`${TAG} uncaughtException onExit finished`);
+    }).then(() => {
       process.exit(5);
-    })
+    });
 
   });
 

@@ -1,3 +1,3 @@
 export interface IExitHandler {
-  onExit: () => Promise<any>
+  onExit: (exitCode: number) => Promise<number>
 }

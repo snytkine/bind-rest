@@ -3,11 +3,12 @@ import {
   PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
+  PARAM_TYPE_OBJECT,
   PARAM_TYPE_STRING,
 } from '../consts';
 import { HttpError } from '../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
-import { PathDetailsType } from '../enums/controllerparamtype';
+import { PathDetailsType } from '../enums';
 
 const debug = require('debug')('promiseoft:runtime:validation');
 const TAG = 'ParamsValidator';
@@ -18,7 +19,7 @@ export const printErrors = (errors: Array<Error>): string => {
 
 type IParamsValidator = (params: ParamsWithMeta) => ParamsWithMeta;
 
-const isNullOrUndefined = (val: any): boolean => val===undefined || val===null;
+export const isNullOrUndefined = (val: any): boolean => val===undefined || val===null;
 
 /**
  * Validates that input is a number
@@ -120,6 +121,27 @@ export const toString = (s: any): string | TypeError => {
   return new TypeError();
 };
 
+
+export const paramTypeToString = (paramType: any):string => {
+  let ret = toString(paramType);
+  if(paramType === null){
+    return 'Null';
+  } else if(paramType === undefined){
+    return 'undefined';
+  } else if(typeof ret === 'string'){
+    return ret;
+  } else if (paramType.name){
+    return paramType.name;
+  } else {
+    try {
+      ret = ''+ paramType;
+      return ret;
+    } catch(e){
+      return 'UNKNOWN_TYPE';
+    }
+  }
+};
+
 interface ParamsWithMeta {
   params: Array<any>
   meta: Array<IControllerParamMeta>
@@ -181,6 +203,13 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
     let ret: any;
     if (!o.meta[i]) {
       ret = param;
+    } else if(o.meta[i].paramDecoratorType === PathDetailsType.RequestBody){
+      /**
+       * Skip this step because setting of param type for body
+       * takes place in body param extractor.
+       */
+      debug('%s Skipping setParamType for @Body param');
+      ret = param;
     } else {
       switch (o.meta[i].paramType) {
         case PARAM_TYPE_STRING:
@@ -198,12 +227,27 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
         case PARAM_TYPE_ARRAY:
           ret = toArray(param);
           break;
+
+        case PARAM_TYPE_OBJECT:
+          ret = param;
+          break;
+
+        default:
+        /**
+         * @todo should be an error 'type cannot be converted to .paramType.name'
+         * but with exception where Body param was already set to be instance
+         * of custom class.
+         * In such cases check in param instance of o.meta[i].paramType
+         * and o.meta[i].paramDecoratorType is type Body then its' fine
+         * Also for Custom extractor type the type check should be skipped.
+         */
+        ret = new TypeError();
       }
     }
 
     if (ret instanceof TypeError) {
       return new Error(`
-      Request Parameter cannot be converted to ${o.meta[i].paramType}
+      Request parameter cannot be converted to ${paramTypeToString(o.meta[i].paramType)}
       parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
       parameterName="${o.meta[i].paramName}" 
       position="${i + 1}" 

@@ -55,11 +55,13 @@ export default class Context implements IScopedComponentStorage {
 
   readonly scope = ComponentScope.REQUEST;
 
-  initContext(req: http.IncomingMessage, res: http.ServerResponse) {
+  init(req: http.IncomingMessage, res: http.ServerResponse): Context {
     this.req = req;
     this.res = res;
     this.reqUrl = req.url;
     this.requestStartTime = Date.now();
+
+    return this;
   }
 
   get startTime(){

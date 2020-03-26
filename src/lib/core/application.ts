@@ -10,12 +10,15 @@ import {
   errorHandler,
   rejectLater,
   registerProcessEventListeners,
+  getErrorHandlers,
 } from './apputils';
 
 import {
   IfIocContainer,
   Container,
   load,
+  Maybe,
+  notEmpty
 } from 'bind';
 
 import * as path from 'path';
@@ -23,20 +26,31 @@ import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
 
 const debug = require('debug')('promiseoft:runtime:application');
-
 const TAG = 'APPLICATION';
+
+export const validateOptions = (options: ApplicationOptions): void => {
+  if (options.baseUrl) {
+    if (!options.baseUrl.startsWith('/')) {
+      throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl must start with a "/"`);
+    }
+
+    if (options.baseUrl.endsWith('/')) {
+      throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl cannot end with a "/"`);
+    }
+  }
+};
 
 export class Application {
 
-  private handlerStack: Array<MiddlewareFunc> = [];
+  private middlewares: Array<MiddlewareFunc> = [];
 
-  private errorHandler: AppErrorHandlerFunc;
-
-  private timeout: number;
-
-  private customErrorHandler: AppErrorHandlerFunc;
+  private errHandlers: Array<AppErrorHandlerFunc> = [errorHandler];
 
   private container: IfIocContainer;
+
+  private initialHandler: MiddlewareFunc;
+
+  private configOptions: ApplicationOptions;
 
   /**
    * parse routes
@@ -44,30 +58,14 @@ export class Application {
    *
    * parse middlewares
    *
-   * generate handlerStack from sorted preProcessors, routerHandler, sorted postProcessors
+   * generate middlewares from sorted preProcessors, routerHandler, sorted postProcessors
    */
   constructor(options: ApplicationOptions) {
-
-    this.errorHandler = errorHandler;
+    validateOptions(options);
+    this.configOptions = options;
     const extras = options.extraComponents || [];
     //extras.push(AllRoutes);
 
-    /**
-     * Make sure timeout is integer number
-     * will default to 0
-     * @type {number}
-     */
-    this.timeout = ~~options.timeout;
-
-    if (options.baseUrl) {
-      if (!options.baseUrl.startsWith('/')) {
-        throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl must start with a "/"`);
-      }
-
-      if (options.baseUrl.endsWith('/')) {
-        throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl cannot end with a "/"`);
-      }
-    }
 
     this.container = new Container();
     const frameworkComponentsDir = path.resolve(__dirname, '../../components');
@@ -88,11 +86,14 @@ export class Application {
      * Get all Middleware, sort then by order (lower order first)
      * and create array of middleware functions.
      */
-    this.handlerStack = getMiddlewares(this.container);
-    debug('%s got %d middleware functions', TAG, this.handlerStack.length);
+    this.middlewares = getMiddlewares(this.container);
+    this.initialHandler = this.middlewares.shift();
+    debug('%s got %d middleware functions', TAG, this.middlewares.length);
+
+    this.errHandlers = this.errHandlers.concat(getErrorHandlers(this.container)).filter(notEmpty);
+    debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
     registerProcessEventListeners(this);
-
   }
 
   /*
@@ -105,25 +106,13 @@ export class Application {
    }*/
 
 
-  onExit(): Promise<number> {
+  onExit(exitCode: number): Promise<number> {
 
-    return new Promise((resolve, reject) => {
-      resolve(1);
+    return new Promise((resolve) => {
+      debug('%s onExit called with code=%d', TAG, exitCode);
+      resolve(exitCode);
     });
   }
-
-  /*
-   private setCustomErrorHandler(c: IContainer) {
-   debug(`${TAG} Entered setCustomErrorHandler()`);
-   if (c.hasComponent(SYM_ERROR_HANDLER)) {
-   const eh = <AppErrorHandler>c.getComponent(SYM_ERROR_HANDLER);
-   debug(`${TAG} setting customErrorHandler ${eh.constructor.name}`);
-   this.customErrorHandler = ctx => Reflect.apply(eh.handleError, eh, [ctx]);
-   } else {
-   debug(`${TAG} Custom Error Handler Not Found in Container`);
-   this.customErrorHandler = this.errorHandler;
-   }
-   }*/
 
 
   /**
@@ -133,21 +122,27 @@ export class Application {
    * @param req Node.js request http.IncomingMessage
    * @param res Node.js response http.ServerResponse
    */
-  public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
 
-    const ctx = new Context();
-    ctx.initContext(req, res);
-    const handlerPromise = this.handlerStack.reduce((prev, next) => prev.then(next), Promise.resolve(ctx));
-    const runners: Array<Promise<Context>> = [handlerPromise];
-    if (this.timeout > 0) {
-      runners.push(rejectLater(this.timeout));
-    }
+  /*public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
 
-    Promise.race(runners)
-      .catch(this.customErrorHandler(ctx))
-      .catch(this.errorHandler(ctx));
-    debug('handleRequest method called');
-  }
+   const ctx = (new Context()).init(req, res);
+
+   const handlerPromise = this.middlewares.reduce((prev, next) => {
+   return prev.then(next);
+   }, this.initialHandler(ctx));
+
+   const runners: Array<Promise<Context>> = [handlerPromise];
+   if (this.configOptions?.timeout > 0) {
+   runners.push(rejectLater(~~this.configOptions.timeout));
+   }
+
+   Promise.race(runners)
+   .catch(e => this.errHandlers
+   .map(eh => eh(ctx))
+   .reduce((acc: Maybe<Error>, next) => {
+   return next(acc);
+   }, e));
+   }*/
 
   /**
    * Important - handleRequest method must be defined before this method otherwise
@@ -155,18 +150,30 @@ export class Application {
    * @returns {Promise<(req:http.IncomingMessage, res:http.ServerResponse)=>undefined>}
    */
 
-  /*init() {
-   return Container.init()
-   //.then(_ => this.initAllRoutesComponent(_))
-   .then(_ => {
-   this.setCustomErrorHandler(_)
-   })
-   .then(_ => {
-   return (req: http.IncomingMessage, res: http.ServerResponse) => {
-   this.handleRequest(req, res);
-   }
-   });
-   }*/
+  init(): Promise<http.RequestListener> {
+    return this.container.initialize()
+      .then(() => (req: http.IncomingMessage, res: http.ServerResponse) => {
+
+        const ctx = (new Context()).init(req, res);
+
+        const handlerPromise = this.middlewares.reduce((prev, next) => {
+          return prev.then(next);
+        }, this.initialHandler(ctx));
+
+        const runners: Array<Promise<Context>> = [handlerPromise];
+        if (this.configOptions?.timeout > 0) {
+          runners.push(rejectLater(~~this.configOptions.timeout));
+        }
+
+        Promise.race(runners)
+          .catch(e => this.errHandlers
+            .map(eh => eh(ctx))
+            .reduceRight((acc: Maybe<Error>, next) => {
+              return next(acc);
+            }, e));
+
+      });
+  }
 
   toString() {
     return 'Application Instance';

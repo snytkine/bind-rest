@@ -3,6 +3,12 @@ import {IAppResponse} from '../../interfaces/appresponse'
 import {ErrorResponse} from "../appresponse";
 import HttpStatusCode from 'http-status-enum';
 
+/**
+ * @todo deprecate this.
+ * @param ctx
+ * @param e
+ * @constructor
+ */
 export function RouterErrorHandler(ctx: IContext, e: any): Promise<IAppResponse> {
 
   let err = `Resource Not Found for path: ${ctx.path} Request Method: ${ctx.method}`;

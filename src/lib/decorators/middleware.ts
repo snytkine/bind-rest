@@ -46,7 +46,7 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
 
     let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
 
-    metaData[MIDDLEWARE_PRIORITY] = ~~priority;
+    metaData[MIDDLEWARE_PRIORITY] = priority;
 
     defineMetadata(COMPONENT_META_DATA, metaData, target)();
   }

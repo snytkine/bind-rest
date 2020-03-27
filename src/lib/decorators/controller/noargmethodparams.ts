@@ -14,8 +14,6 @@ import {
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { IControllerParamMeta } from '../../interfaces';
 import { Target, IfIocContainer, getMethodParamName, Identity } from 'bind';
-import { UrlWithStringQuery } from 'url';
-import {default as RouterComponent} from '../../../components/router';
 import { HttpRouter } from 'holiday-router';
 import FrameworkController from '../../core/frameworkcontroller';
 
@@ -210,7 +208,7 @@ export function Router(target: Target,
 
   const paramFactory = (c: IfIocContainer) => {
     return (context: ContextComponent): Promise<HttpRouter<FrameworkController>> => {
-      return c.getComponent(Identity(RouterComponent), [context]);
+      return c.getComponent(Identity(HttpRouter), [context]);
     };
   };
 

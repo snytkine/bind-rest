@@ -26,7 +26,9 @@ export enum PathDetailsType {
   RequestBody,
   SubmittedForm,
   FormParam,
-  Query
+  Query,
+  HttpRouter,
+  CustomParamDecorator
 }
 
 

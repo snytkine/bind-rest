@@ -1,7 +1,5 @@
 export {default as errorHandler} from './errorhandler'
-export {exceptionHandler} from './exceptionhandler'
 export {rejectLater} from './rejectlater';
-export {noop} from './noop';
 export {registerProcessEventListeners} from './processexithelper';
 export {copyHeaders} from './copyheaders'
 export * from './allroutes';

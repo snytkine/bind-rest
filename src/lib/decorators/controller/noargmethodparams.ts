@@ -1,6 +1,5 @@
 import { PathDetailsType } from '../../enums';
-import { Target, IfIocContainer, getMethodParamName } from 'bind';
-import Context from '../../../components/context';
+import { default as ContextComponent } from '../../../components/context';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import inflate from 'inflation';
 import raw from 'raw-body';
@@ -14,8 +13,14 @@ import {
 } from '../../consts/controllermethodparams';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { IControllerParamMeta } from '../../interfaces';
+import { Target, IfIocContainer, getMethodParamName, Identity } from 'bind';
+import { UrlWithStringQuery } from 'url';
+import {default as RouterComponent} from '../../../components/router';
+import { HttpRouter } from 'holiday-router';
+import FrameworkController from '../../core/frameworkcontroller';
 
 const debug = require('debug')('promiseoft:decorators');
+const TAG = 'NO_ARG_METHOD_DECORATOR';
 
 export interface IBodyParserOptions {
   length?: number
@@ -66,7 +71,7 @@ export const getParamType = (paramTypes: Array<any>, index: number): string | ob
 };
 
 
-function applySingleAnnotation(target: Target,
+export function applySingleAnnotation(target: Target,
                                propertyKey: string,
                                parameterIndex: number,
                                required: boolean = false,
@@ -159,32 +164,28 @@ export function QueryString(target: Target,
                             propertyKey: string,
                             parameterIndex: number) {
 
-  const paramFactory = (c: IfIocContainer) => (context: Context) => {
-    return Promise.resolve(context.querystring);
-  };
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.querystring;
 
   return applySingleAnnotation(target,
     propertyKey,
     parameterIndex,
     false,
     PathDetailsType.QueryString,
-    paramFactory);
+    factory);
 }
 
 export function ParsedQuery(target: Target,
                             propertyKey: string,
                             parameterIndex: number) {
 
-  const paramFactory = (c: IfIocContainer) => (context: Context) => {
-    return Promise.resolve(context.parsedUrlQuery);
-  };
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.parsedUrlQuery;
 
   return applySingleAnnotation(target,
     propertyKey,
     parameterIndex,
     false,
     PathDetailsType.Query,
-    paramFactory);
+    factory);
 }
 
 
@@ -192,16 +193,110 @@ export function Headers(target: Target,
                         propertyKey: string,
                         parameterIndex: number) {
 
-  const paramFactory = (c: IfIocContainer) => (context: Context) => {
-    return Promise.resolve(context.req.headers);
-  };
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req.headers;
 
   return applySingleAnnotation(target,
     propertyKey,
     parameterIndex,
     false,
     PathDetailsType.Headers,
+    factory);
+}
+
+
+export function Router(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
+
+  const paramFactory = (c: IfIocContainer) => {
+    return (context: ContextComponent): Promise<HttpRouter<FrameworkController>> => {
+      return c.getComponent(Identity(RouterComponent), [context]);
+    };
+  };
+
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.HttpRouter,
     paramFactory);
+}
+
+export function UriInfo(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
+
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.parsedUrl;
+
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.UriInfo,
+    factory);
+}
+
+export function Request(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req
+
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.Request,
+    factory,
+  );
+}
+
+
+export function Response(target: Target,
+                         propertyKey: string,
+                         parameterIndex: number) {
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.res
+
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.Response,
+    factory,
+  );
+}
+
+
+export function Context(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context
+
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.Context,
+    factory,
+  );
+}
+
+
+export function ContextStore(target: Target,
+                             propertyKey: string,
+                             parameterIndex: number) {
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.storage;
+
+  return applySingleAnnotation(
+    target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.ContextScope,
+    factory,
+  );
 }
 
 
@@ -209,9 +304,7 @@ export function RequestMethod(target: Target,
                               propertyKey: string,
                               parameterIndex: number) {
 
-  const paramFactory = (c: IfIocContainer) => (context: Context) => {
-    return Promise.resolve(context.req.method);
-  };
+  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req.method;
 
   return applySingleAnnotation(
     target,
@@ -219,7 +312,7 @@ export function RequestMethod(target: Target,
     parameterIndex,
     false,
     PathDetailsType.RequestMethod,
-    paramFactory
+    factory,
   );
 }
 
@@ -260,7 +353,7 @@ export function Body(target: Target,
   }
 
 
-  const paramFactory = (c: IfIocContainer) => (context: Context) => {
+  const paramFactory = (c: IfIocContainer) => (context: ContextComponent) => {
 
     const options: IBodyParserOptions = { encoding: 'utf-8' };
     let contentType;

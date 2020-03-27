@@ -4,7 +4,12 @@
 import HttpStatusCode from 'http-status-enum';
 import * as http from 'http';
 
-
+/**
+ * @todo deprecate this. Looks like this was never used
+ * @param e
+ * @param req
+ * @param res
+ */
 export function exceptionHandler(e: Error, req: http.IncomingMessage, res: http.ServerResponse) {
   /**
    * @todo log stacktrace

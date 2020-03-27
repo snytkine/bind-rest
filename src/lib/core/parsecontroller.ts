@@ -95,6 +95,9 @@ export function parseController(container: IfIocContainer) {
         if (paramExtractors.length > 0) {
           futureParams = Promise.all(paramExtractors.map(f => f(context)));
         } else {
+          /**
+           * For No-Arg controller it is necessary to have this.
+           */
           futureParams = Promise.resolve([]);
         }
 

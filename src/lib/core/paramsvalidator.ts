@@ -233,15 +233,17 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
           break;
 
         default:
-        /**
-         * @todo should be an error 'type cannot be converted to .paramType.name'
-         * but with exception where Body param was already set to be instance
-         * of custom class.
-         * In such cases check in param instance of o.meta[i].paramType
-         * and o.meta[i].paramDecoratorType is type Body then its' fine
-         * Also for Custom extractor type the type check should be skipped.
+        /**ne
+         * Also for Custom extractor type the type check
+         * check that type of param is actually instance of paramType
          */
-        ret = new TypeError();
+        if(o.meta[i].paramDecoratorType === PathDetailsType.CustomParamDecorator &&
+          param instanceof o.meta[i].paramType){
+          ret = param;
+        } else {
+          ret = new TypeError();
+        }
+
       }
     }
 

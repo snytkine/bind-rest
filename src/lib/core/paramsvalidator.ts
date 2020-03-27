@@ -233,12 +233,15 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
           break;
 
         default:
-        /**ne
-         * Also for Custom extractor type the type check
-         * check that type of param is actually instance of paramType
+        /**
+         * Here the paramType is some type of custom class
+         * check that type of param is actually instance of that class
+         * this will be the case with CustomDecorator
+         * and also the case with @Router decorator where the type
+         * is framework's Router component
          */
-        if(o.meta[i].paramDecoratorType === PathDetailsType.CustomParamDecorator &&
-          param instanceof o.meta[i].paramType){
+        if(param instanceof o.meta[i].paramType
+          ){
           ret = param;
         } else {
           ret = new TypeError();

@@ -3,8 +3,8 @@ import getControllerComponents from './getcontrollercomponents';
 import { parseController } from '../parsecontroller';
 import { ControllerDetails } from '../../interfaces';
 import { ApplicationError } from '../apperrors';
-import Router from '../../../components/router';
 import { FrameworkController } from '../index';
+import {HttpRouter} from 'holiday-router';
 
 const debug = require('debug')('promiseoft:context');
 const TAG = 'SetupRoutes';
@@ -23,7 +23,7 @@ export default function setupRoutes(container: IfIocContainer) {
     throw new ApplicationError('No Controller components found');
   }
 
-  const router: Router = container.getComponent(Identity(Router));
+  const router: HttpRouter<FrameworkController> = container.getComponent(Identity(HttpRouter));
   parsedControllers.forEach(controllerDetails => {
 
     controllerDetails.requestMethods.forEach(method => {

@@ -1,33 +1,31 @@
-import {SYM_JSON_SCHEMA} from "./metaprops";
-const debug = require('debug')('promiseoft:decorators');
+import { SYM_JSON_SCHEMA } from './metaprops';
+import { Constructor } from '../types';
 
+const debug = require('debug')('promiseoft:decorators');
 
 const TAG = '@JsonSchema';
 
-export function JsonSchema(schema: any) {
+export function JsonSchema(schema: Object) {
   /**
    * Make sure that schema is an object and has some properties
+   * @todo validate that schema is actually a valid json schema object
+   * this can probably be done by calling schema validator constructor
+   * and checking that validator created correctly.
    */
-  if(schema === null || typeof schema !== 'object'){
-    throw new TypeError(`${TAG} schema must be an Object (a valid json schema). Check your classes annotated with ${TAG} and make sure the parameter is an object`);
+  if (schema===null || typeof schema!=='object') {
+    throw new Error(`${TAG} schema must be an Object (a valid json schema). Check your classes annotated with ${TAG} and make sure the parameter is an object`);
   }
-  //debugger;
-  return function (target: any, propertyKey?: string) {
-    if (typeof target === "function" && !propertyKey) {
 
+  return function (target: Constructor<any>) {
 
-      debug(`Defining ${TAG} for class ${target.name}`);
-      let type = Reflect.getMetadata(SYM_JSON_SCHEMA, target);
-      if (type) {
-        throw new SyntaxError(`Cannot add ${TAG} decorator to Class '${target.name}' because it is already decorated with '${TAG}'`)
-      }
+    debug('Defining %s for class %s', TAG, target.name);
 
-      Reflect.defineMetadata(SYM_JSON_SCHEMA, schema, target);
-
-    } else {
-      throw new TypeError(`${TAG} decorator can be applied only to a class.`);
+    let type = Reflect.getMetadata(SYM_JSON_SCHEMA, target);
+    if (type) {
+      throw new Error(`Cannot add ${TAG} decorator to Class '${target.name}' because it is already decorated with '${TAG}'`);
     }
 
-  }
+    Reflect.defineMetadata(SYM_JSON_SCHEMA, schema, target);
+  };
 
 }

@@ -44,7 +44,6 @@ export const toNumber = (i: any): Number | TypeError => {
 };
 
 
-
 export const toArray = (i: any): Array<any> | TypeError => {
 
   /**
@@ -54,7 +53,7 @@ export const toArray = (i: any): Array<any> | TypeError => {
    */
   if (isNullOrUndefined(i)) return undefined;
 
-  if(!Array.isArray(i)){
+  if (!Array.isArray(i)) {
     return new TypeError();
   }
 
@@ -122,21 +121,21 @@ export const toString = (s: any): string | TypeError => {
 };
 
 
-export const paramTypeToString = (paramType: any):string => {
+export const paramTypeToString = (paramType: any): string => {
   let ret = toString(paramType);
-  if(paramType === null){
+  if (paramType===null) {
     return 'Null';
-  } else if(paramType === undefined){
+  } else if (paramType===undefined) {
     return 'undefined';
-  } else if(typeof ret === 'string'){
+  } else if (typeof ret==='string') {
     return ret;
-  } else if (paramType.name){
+  } else if (paramType.name) {
     return paramType.name;
   } else {
     try {
-      ret = ''+ paramType;
+      ret = '' + paramType;
       return ret;
-    } catch(e){
+    } catch (e) {
       return 'UNKNOWN_TYPE';
     }
   }
@@ -176,7 +175,7 @@ export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
 
     if (o.meta[i] && o.meta[i].validator) {
       const res = o.meta[i].validator(param);
-      if(!res){
+      if (!res) {
         return param;
       }
 
@@ -201,14 +200,8 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
     if (param instanceof Error) return param;
 
     let ret: any;
-    if (!o.meta[i]) {
-      ret = param;
-    } else if(o.meta[i].paramDecoratorType === PathDetailsType.RequestBody){
-      /**
-       * Skip this step because setting of param type for body
-       * takes place in body param extractor.
-       */
-      debug('%s Skipping setParamType for @Body param');
+    if (!o.meta[i] || !o.meta[i].paramType) {
+      debug('%s No meta or no paramType for param "%s"', TAG, o.meta[i]?.paramName);
       ret = param;
     } else {
       switch (o.meta[i].paramType) {
@@ -233,19 +226,38 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
           break;
 
         default:
-        /**
-         * Here the paramType is some type of custom class
-         * check that type of param is actually instance of that class
-         * this will be the case with CustomDecorator
-         * and also the case with @Router decorator where the type
-         * is framework's Router component
-         */
-        if(param instanceof o.meta[i].paramType
-          ){
-          ret = param;
-        } else {
-          ret = new TypeError();
-        }
+          /**
+           * Here the paramType is some type of custom class
+           * check that type of param is actually instance of that class
+           * this will be the case with CustomDecorator
+           * and also the case with @Router decorator where the type
+           * is framework's Router component
+           *
+           * For a RequestBody set param prototype to custom paramType
+           */
+          if (o.meta[i].paramDecoratorType===PathDetailsType.RequestBody) {
+            /**
+             * Check that param is NOT a string
+             * if request did not have content-type header with application/json
+             * then body would be just parsed into a string and not
+             * converted to JSON
+             * in such case throw exception
+             */
+            if(typeof param === 'string'){
+              debug('%s Cannot set prototype of body param to %s because body is string',
+                TAG, paramTypeToString(o.meta[i].paramType));
+              ret = new TypeError();
+            } else {
+              debug('%s Setting prototype of Body param to "%s"', TAG, o.meta[i].paramType?.name);
+              Reflect.setPrototypeOf(param, o.meta[i].paramType);
+              ret = param;
+            }
+          } else if (param instanceof o.meta[i].paramType
+          ) {
+            ret = param;
+          } else {
+            ret = new TypeError();
+          }
 
       }
     }

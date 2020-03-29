@@ -1,10 +1,11 @@
 import { PathDetailsType } from '../../enums';
-import { default as ContextComponent } from '../../../components/context';
-import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
+import { RequestContext } from '../../../components';
+import { PARAM_TYPES, SYM_JSON_SCHEMA, SYM_METHOD_PARAMS } from '../metaprops';
 import inflate from 'inflation';
 import raw from 'raw-body';
 import {
-  CONTENT_TYPE_JSON, PARAM_TYPE_ARRAY,
+  CONTENT_TYPE_JSON,
+  PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
   PARAM_TYPE_OBJECT,
@@ -13,9 +14,11 @@ import {
 } from '../../consts/controllermethodparams';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { IControllerParamMeta } from '../../interfaces';
-import { Target, IfIocContainer, getMethodParamName, Identity } from 'bind';
+import { getMethodParamName, Identity, IfIocContainer, Target } from 'bind';
 import { HttpRouter } from 'holiday-router';
 import FrameworkController from '../../core/frameworkcontroller';
+import { HttpError } from '../../errors';
+import HTTP_STATUS_CODES from 'http-status-enum';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'NO_ARG_METHOD_DECORATOR';
@@ -70,11 +73,11 @@ export const getParamType = (paramTypes: Array<any>, index: number): string | ob
 
 
 export function applySingleAnnotation(target: Target,
-                               propertyKey: string,
-                               parameterIndex: number,
-                               required: boolean = false,
-                               methodParamType?: PathDetailsType,
-                               paramFactory?: ParamExtractorFactory,
+                                      propertyKey: string,
+                                      parameterIndex: number,
+                                      required: boolean = false,
+                                      methodParamType?: PathDetailsType,
+                                      paramFactory?: ParamExtractorFactory,
 ) {
 
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
@@ -116,6 +119,7 @@ export function applySingleAnnotation(target: Target,
       metaDetails[parameterIndex].paramDecoratorType = methodParamType;
       metaDetails[parameterIndex].paramType = getParamType(paramTypes, parameterIndex);
       metaDetails[parameterIndex].paramName = getMethodParamName(target, propertyKey, parameterIndex);
+
     }
   } else {
 
@@ -158,11 +162,40 @@ export function Required(target: Target,
   return applySingleAnnotation(target, propertyKey, parameterIndex, true);
 }
 
+
+export function Container(target: Target,
+                          propertyKey: string,
+                          parameterIndex: number) {
+
+  const factory = (c: IfIocContainer) => (context: RequestContext) => c;
+
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.QueryString,
+    factory);
+}
+
 export function QueryString(target: Target,
                             propertyKey: string,
                             parameterIndex: number) {
 
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.querystring;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.querystring;
+
+  return applySingleAnnotation(target,
+    propertyKey,
+    parameterIndex,
+    false,
+    PathDetailsType.QueryString,
+    factory);
+}
+
+export function Cookies(target: Target,
+                        propertyKey: string,
+                        parameterIndex: number) {
+
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedCookies;
 
   return applySingleAnnotation(target,
     propertyKey,
@@ -176,7 +209,7 @@ export function ParsedQuery(target: Target,
                             propertyKey: string,
                             parameterIndex: number) {
 
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.parsedUrlQuery;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedUrlQuery;
 
   return applySingleAnnotation(target,
     propertyKey,
@@ -191,7 +224,7 @@ export function Headers(target: Target,
                         propertyKey: string,
                         parameterIndex: number) {
 
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req.headers;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req.headers;
 
   return applySingleAnnotation(target,
     propertyKey,
@@ -203,11 +236,11 @@ export function Headers(target: Target,
 
 
 export function Router(target: Target,
-                        propertyKey: string,
-                        parameterIndex: number) {
+                       propertyKey: string,
+                       parameterIndex: number) {
 
   const paramFactory = (c: IfIocContainer) => {
-    return (context: ContextComponent): Promise<HttpRouter<FrameworkController>> => {
+    return (context: RequestContext): Promise<HttpRouter<FrameworkController>> => {
       return c.getComponent(Identity(HttpRouter), [context]);
     };
   };
@@ -224,7 +257,7 @@ export function UriInfo(target: Target,
                         propertyKey: string,
                         parameterIndex: number) {
 
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.parsedUrl;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedUrl;
 
   return applySingleAnnotation(target,
     propertyKey,
@@ -237,7 +270,7 @@ export function UriInfo(target: Target,
 export function Request(target: Target,
                         propertyKey: string,
                         parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req;
 
   return applySingleAnnotation(
     target,
@@ -253,7 +286,7 @@ export function Request(target: Target,
 export function Response(target: Target,
                          propertyKey: string,
                          parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.res
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.res;
 
   return applySingleAnnotation(
     target,
@@ -269,7 +302,7 @@ export function Response(target: Target,
 export function Context(target: Target,
                         propertyKey: string,
                         parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context;
 
   return applySingleAnnotation(
     target,
@@ -285,7 +318,7 @@ export function Context(target: Target,
 export function ContextStore(target: Target,
                              propertyKey: string,
                              parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.storage;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.storage;
 
   return applySingleAnnotation(
     target,
@@ -302,7 +335,7 @@ export function RequestMethod(target: Target,
                               propertyKey: string,
                               parameterIndex: number) {
 
-  const factory = (c: IfIocContainer) => (context: ContextComponent) => context.req.method;
+  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req.method;
 
   return applySingleAnnotation(
     target,
@@ -320,8 +353,6 @@ export function Body(target: Target,
                      parameterIndex: number) {
 
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
-  let bodyType;
-  let bodyPrototype;
 
   const paramType = getParamType(paramTypes, parameterIndex);
   if (paramType===PARAM_TYPE_PROMISE) {
@@ -330,28 +361,37 @@ export function Body(target: Target,
         @Body param cannot be of type Promise.`);
   }
 
-  switch (paramType) {
-    case PARAM_TYPE_STRING:
-      bodyType = 'string';
-      break;
-
-    case PARAM_TYPE_NUMBER:
-      bodyType = 'number';
-      break;
-
-    case PARAM_TYPE_OBJECT:
-      /**
-       * No type was specified for this body parameter
-       * Typescript defaults to generic Object
-       */
-      break;
-
-    default:
-      bodyPrototype = paramTypes[parameterIndex];
+  /**
+   * If paramType is component decorated with JsonSchema then validate schema.
+   */
+  if (typeof paramType!=='string') {
+    const jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType); //paramType.prototype.constructor
   }
 
+  const paramFactory = (c: IfIocContainer) => (context: RequestContext) => {
 
-  const paramFactory = (c: IfIocContainer) => (context: ContextComponent) => {
+
+    /**
+     * If RequestMethod is NOT PUT or POST throw error here because
+     * cannot have @Body decorator for other methods.
+     */
+    /**
+     * @todo this guard may be unnecessary
+     * basically we are guarding against the case that someone
+     * will put @RequestBody annotation on a controller method that is not for POST or PUT
+     * It's better that we check for this when parsing the controller annotations GET or DELETE
+     * to make sure there are no body parsing in there.
+     *
+     * @type {[string,string]}
+     */
+    let allowedMethods = ['PUT', 'POST'];
+    if (!allowedMethods.includes(context.req.method)) {
+      throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
+        `Error in controller ${target.constructor?.name}.${propertyKey}
+        argument ${parameterIndex}
+  Error: Cannot extract @Body from Request.
+  Reason: request method "${context.req.method}" cannot include request body`);
+    }
 
     const options: IBodyParserOptions = { encoding: 'utf-8' };
     let contentType;
@@ -363,13 +403,9 @@ export function Body(target: Target,
       contentType = context.req.headers['content-type'].toLowerCase();
     }
 
-    if (contentType===CONTENT_TYPE_JSON) {
-      bodyType = CONTENT_TYPE_JSON;
-    }
-
 
     /**
-     * @todo if bodyType is NOT json but have bodyPrototype
+     * @todo if NOT json but have bodyPrototype
      * then throw Error because param has to be an instance of specific class
      * but in order for this to work the body must be sent as json and it's
      * the responsibility of client to set correct content-type header
@@ -389,19 +425,21 @@ export function Body(target: Target,
       .then((rawBody): String => String(rawBody))
       .then(body => body.valueOf());
 
-    if (bodyPrototype===CONTENT_TYPE_JSON || bodyPrototype) {
+    /**
+     * parse as json ONLY if context-type is JSON and
+     * bodyType NOT string/number/boolean
+     *
+     * What if context-type is JSON but in controller method user specifically
+     * set to : string or : number or : boolean ?
+     * in case of boolean, string and number the setParamType() will generate Error
+     * in case of Array will set to Array if parse json is an array.
+     */
+    if (contentType.startsWith(CONTENT_TYPE_JSON)) {
       parsed = parsed.then(body => JSON.parse(body)).catch(e => {
         throw new Error(`Failed to parse request body in controller
-        ${target.constructor?.name}.${propertyKey} for argument ${parameterIndex}`);
+        "${target.constructor?.name}.${propertyKey}" for argument ${parameterIndex}`);
       });
-    }
 
-    if (bodyPrototype) {
-      parsed = parsed.then(body => {
-        Reflect.setPrototypeOf(body, bodyPrototype);
-
-        return body;
-      });
 
     }
 

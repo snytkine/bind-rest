@@ -16,6 +16,18 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
   let ret: ParamExtractorFactory;
 
   switch (t) {
+    case PathDetailsType.CookieParam:
+      ret = (c: IfIocContainer) => (ctx: Context) => {
+        return Promise.resolve(ctx.parsedCookies[paramName]);
+      };
+      break;
+
+    case PathDetailsType.ContextScopeParam:
+      ret = (c: IfIocContainer) => (ctx: Context) => {
+        return Promise.resolve(ctx.storage[paramName]);
+      };
+      break;
+
     case PathDetailsType.QueryParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
         return Promise.resolve(ctx.parsedUrlQuery[paramName]);

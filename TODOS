@@ -7,3 +7,11 @@ be user-defined.
 these 2 enforcements will prevent from doing something like @GET(/'foo') and @POST('/bar')
 on the same method. Also will prevent applying @GET('/bar') and @Path('/something') to the same
 method
+
+Validation - right now validator returns param | Error
+instead return val | Error | Promise<val | Error>
+validator signature will be container => context => param => Maybe<Error> | Promise<Maybe<Error>>
+allow array of validators per param.
+Then run each param validator as Promise.all(validators.map(v => v(param)).then(a => a.find(a instanceof Error))...
+Having option to do async validation will open up possibility to use db calls or any network calls for validation
+

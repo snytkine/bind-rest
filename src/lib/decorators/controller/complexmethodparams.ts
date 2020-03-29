@@ -172,14 +172,14 @@ export function HeaderParam(target: Target | string,
     parameterIndex);
 }
 
-/*export function CookieParam(name: string)
+export function CookieParam(name: string)
 export function CookieParam(target: Target, propertyKey: string, parameterIndex: number)
 export function CookieParam(target: Target | string,
                             propertyKey?: string,
                             parameterIndex?: number) {
   return delegateParamAnnotation(target)(PathDetailsType.CookieParam)(propertyKey,
     parameterIndex);
-}*/
+}
 
 export function ContextParam(name: string)
 export function ContextParam(target: Target, propertyKey: string, parameterIndex: number)

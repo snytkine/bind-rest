@@ -47,10 +47,10 @@ class RouterMiddleware {
     if (!routeMatch) {
       debug('%s NO patch for method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
 
-      throw new NotFoundError(`
+      return Promise.reject(new NotFoundError(`
       Resource not found for method="${requestMethod}" 
       url="${context.requestUrl}"`,
-      );
+      ));
 
     } else {
 
@@ -69,7 +69,7 @@ class RouterMiddleware {
           context.requestUrl,
         );
 
-        throw new NotFoundError(`Controller not found for this request`);
+        return Promise.reject(new NotFoundError(`Controller not found for this request`));
       }
 
       context.routeParams = routeMatch.params;

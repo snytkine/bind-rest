@@ -13,7 +13,7 @@ import {
   isSameIdentity,
   Scope,
   StringOrSymbol,
-  ComponentIdentity
+  ComponentIdentity,
 } from 'bind';
 import { IUriParams } from 'holiday-router';
 
@@ -64,7 +64,7 @@ export default class Context implements IScopedComponentStorage {
     return this;
   }
 
-  get startTime(){
+  get startTime() {
     return this.requestStartTime;
   }
 
@@ -165,13 +165,22 @@ export default class Context implements IScopedComponentStorage {
   }
 
   get parsedCookies() {
+
     if (this.cookies) return this.cookies;
 
-    this.cookies = cookie.parse(this.req.headers.cookie);
+    if (this.req.headers?.cookie) {
+      try {
+        this.cookies = cookie.parse(this.req.headers.cookie);
+      } catch (e) {
+        debug('% Failed to parse cooke header %s', TAG, e.mesage);
+        this.cookies = {};
+      }
+    } else {
+      debug('%s NO cookie header in request');
+      this.cookies = {};
+    }
 
     return this.cookies;
-
-    //throw new Error('cookies() getter not implemented in context');
   }
 
   controllerArguments: Array<any> = [];

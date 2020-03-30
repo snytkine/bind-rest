@@ -22,7 +22,14 @@ import { HttpError } from '../../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import { Application } from '../../core';
 import JsonSchemaValidator from '../../../components/jsonschemavalidator';
-import { getMethodParamName, Identity, IfIocContainer, Target, isDefined } from 'bind';
+import {
+  getMethodParamName,
+  Identity,
+  IfIocContainer,
+  Target,
+  ClassPrototype,
+  isDefined,
+} from 'bind';
 
 
 const debug = require('debug')('promiseoft:decorators');
@@ -101,7 +108,7 @@ export function applySingleAnnotation(target: Target,
      */
     if (metaDetails[parameterIndex].f && paramFactory) {
       throw new Error(`Method parameter ${parameterIndex} already defined 
-      on method ${target.constructor.name}.${String(propertyKey)}`);
+      on method ${target.constructor?.name}.${propertyKey}`);
     }
 
     /**
@@ -155,7 +162,7 @@ export function applySingleAnnotation(target: Target,
   Reflect.defineMetadata(SYM_METHOD_PARAMS, metaDetails, target, propertyKey);
 }
 
-export function Required(target: Target,
+export function Required(target: ClassPrototype,
                          propertyKey: string,
                          parameterIndex: number) {
 
@@ -163,7 +170,7 @@ export function Required(target: Target,
 }
 
 
-export function Container(target: Target,
+export function Container(target: ClassPrototype,
                           propertyKey: string,
                           parameterIndex: number) {
 
@@ -177,7 +184,7 @@ export function Container(target: Target,
     factory);
 }
 
-export function QueryString(target: Target,
+export function QueryString(target: ClassPrototype,
                             propertyKey: string,
                             parameterIndex: number) {
 
@@ -191,7 +198,7 @@ export function QueryString(target: Target,
     factory);
 }
 
-export function Cookies(target: Target,
+export function Cookies(target: ClassPrototype,
                         propertyKey: string,
                         parameterIndex: number) {
 
@@ -205,7 +212,7 @@ export function Cookies(target: Target,
     factory);
 }
 
-export function ParsedQuery(target: Target,
+export function ParsedQuery(target: ClassPrototype,
                             propertyKey: string,
                             parameterIndex: number) {
 
@@ -220,7 +227,7 @@ export function ParsedQuery(target: Target,
 }
 
 
-export function Headers(target: Target,
+export function Headers(target: ClassPrototype,
                         propertyKey: string,
                         parameterIndex: number) {
 
@@ -235,7 +242,7 @@ export function Headers(target: Target,
 }
 
 
-export function Router(target: Target,
+export function Router(target: ClassPrototype,
                        propertyKey: string,
                        parameterIndex: number) {
 
@@ -253,7 +260,7 @@ export function Router(target: Target,
     paramFactory);
 }
 
-export function UriInfo(target: Target,
+export function UriInfo(target: ClassPrototype,
                         propertyKey: string,
                         parameterIndex: number) {
 
@@ -267,7 +274,7 @@ export function UriInfo(target: Target,
     factory);
 }
 
-export function Request(target: Target,
+export function Request(target: ClassPrototype,
                         propertyKey: string,
                         parameterIndex: number) {
   const factory = (c: IfIocContainer) => (context: RequestContext) => context.req;
@@ -283,7 +290,7 @@ export function Request(target: Target,
 }
 
 
-export function Response(target: Target,
+export function Response(target: ClassPrototype,
                          propertyKey: string,
                          parameterIndex: number) {
   const factory = (c: IfIocContainer) => (context: RequestContext) => context.res;
@@ -299,7 +306,7 @@ export function Response(target: Target,
 }
 
 
-export function Context(target: Target,
+export function Context(target: ClassPrototype,
                         propertyKey: string,
                         parameterIndex: number) {
   const factory = (c: IfIocContainer) => (context: RequestContext) => context;
@@ -315,7 +322,7 @@ export function Context(target: Target,
 }
 
 
-export function ContextStore(target: Target,
+export function ContextStore(target: ClassPrototype,
                              propertyKey: string,
                              parameterIndex: number) {
   const factory = (c: IfIocContainer) => (context: RequestContext) => context.storage;
@@ -331,7 +338,7 @@ export function ContextStore(target: Target,
 }
 
 
-export function RequestMethod(target: Target,
+export function RequestMethod(target: ClassPrototype,
                               propertyKey: string,
                               parameterIndex: number) {
 
@@ -348,12 +355,12 @@ export function RequestMethod(target: Target,
 }
 
 
-export function Body(target: Target,
+export function Body(target: ClassPrototype,
                      propertyKey: string,
                      parameterIndex: number) {
 
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
-  const controllerName = `${target.constructor?.name}.${propertyKey}`;
+  const controllerName = `${target.constructor.name}.${propertyKey}`;
 
   const paramType = getParamType(paramTypes, parameterIndex);
   if (paramType===PARAM_TYPE_PROMISE) {
@@ -372,7 +379,7 @@ export function Body(target: Target,
      * If paramType is component decorated with JsonSchema then validate schema.
      */
     if (typeof paramType!=='string') {
-      jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType); //paramType.prototype.constructor
+      jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
       debug('%s jsonSchema=%o', TAG, jsonSchema);
     }
 

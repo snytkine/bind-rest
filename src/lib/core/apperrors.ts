@@ -20,14 +20,14 @@ export class BindRestError extends Error {
 
   constructor(public message: string,
               public readonly type: ErrorType,
-              public readonly category: ErrorCategory){
+              public readonly category: ErrorCategory) {
     super(message);
   }
 }
 
 export class ApplicationError extends BindRestError {
 
-  constructor(message:string, type:ErrorType = ErrorType.AppError) {
+  constructor(message: string, type: ErrorType = ErrorType.AppError) {
     super(message, type, ErrorCategory.AppError);
   };
 }
@@ -38,7 +38,7 @@ export class SystemError extends Error {
   readonly type: ErrorType;
   readonly category: ErrorCategory;
 
-  constructor(message:string, type:ErrorType = ErrorType.AppError) {
+  constructor(message: string, type: ErrorType = ErrorType.AppError) {
     super(message);
 
     this.type = type;
@@ -46,16 +46,21 @@ export class SystemError extends Error {
   };
 }
 
+export class ValidationError extends ApplicationError {
+  constructor(message: string) {
+    super(message, ErrorType.InputValidation);
+  }
+}
 
-export class TypeValidationError extends ApplicationError {
-  constructor(message:string){
-    super(message, ErrorType.InputValidation)
+export class TypeValidationError extends ValidationError {
+  constructor(message: string) {
+    super(message);
   }
 }
 
 
-export class SchemaValidationError extends ApplicationError {
-  constructor(message:string){
-    super(message, ErrorType.SchemaValidation)
+export class SchemaValidationError extends ValidationError {
+  constructor(message: string) {
+    super(message);
   }
 }

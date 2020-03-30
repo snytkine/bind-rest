@@ -167,6 +167,7 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
   return { params, meta: o.meta };
 }
 
+/*
 
 export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
 
@@ -191,6 +192,7 @@ export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
 
   return { params, meta: o.meta };
 }
+*/
 
 
 export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
@@ -285,7 +287,6 @@ export function makeParamsValidator(meta: Array<IControllerParamMeta>, controlle
 
     const res = [
       validateRequired,
-      customValidate,
       setParamType,
     ].reduce((acc, next) => {
       return next(acc);

@@ -264,7 +264,8 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
 
     if (ret instanceof TypeError) {
       return new Error(`
-      Request parameter cannot be converted to ${paramTypeToString(o.meta[i].paramType)}
+      Request parameter of type "${typeof param}" 
+      cannot be converted to "${paramTypeToString(o.meta[i].paramType)}"
       parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
       parameterName="${o.meta[i].paramName}" 
       position="${i + 1}" 

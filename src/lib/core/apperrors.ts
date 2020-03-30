@@ -52,3 +52,10 @@ export class TypeValidationError extends ApplicationError {
     super(message, ErrorType.InputValidation)
   }
 }
+
+
+export class SchemaValidationError extends ApplicationError {
+  constructor(message:string){
+    super(message, ErrorType.SchemaValidation)
+  }
+}

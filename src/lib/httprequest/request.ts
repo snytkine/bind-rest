@@ -1,5 +1,5 @@
-import * as http from 'http';
-import * as https from 'https';
+import http from 'http';
+import https from 'https';
 import {
   getHTTPSOverHTTPTunnel,
   getHTTPOverHTTPTunnel
@@ -11,12 +11,12 @@ import {
 } from './response';
 import { clearTimeout } from 'timers';
 import { ILogger } from '../interfaces'
-import * as util from 'util';
-import * as uuid from 'uuid/v4';
+import util from 'util';
+import uuid from 'uuid/v4';
 import HttpStatusCode from 'http-status-enum';
-import * as stream from 'stream';
-import * as querystring from 'querystring';
-import * as isStream from 'is-stream';
+import stream from 'stream';
+import querystring from 'querystring';
+import isStream from 'is-stream';
 
 const debug = require('debug')('promiseoft:request');
 

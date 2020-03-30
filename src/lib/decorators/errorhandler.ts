@@ -7,7 +7,7 @@ import {
   ComponentScope,
   defineMetadata
 } from 'bind';
-import { Constructor } from '../types';
+import { Constructor } from 'bind';
 
 const debug = require('debug')('promiseoft:decorators');
 

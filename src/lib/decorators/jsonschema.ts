@@ -1,16 +1,13 @@
 import { SYM_JSON_SCHEMA } from './metaprops';
-import { Constructor } from '../types';
+import { Constructor } from 'bind';
 
 const debug = require('debug')('promiseoft:decorators');
 
 const TAG = '@JsonSchema';
-const x = require;
-const y = module;
 
 export function JsonSchema(schema: Object) {
 
-  debug(x.name);
-  debug(y.filename);
+
   /**
    * Make sure that schema is an object and has some properties
    * @todo validate that schema is actually a valid json schema object
@@ -22,6 +19,14 @@ export function JsonSchema(schema: Object) {
   }
 
   return function (target: Constructor<any>) {
+
+    /**
+     * @todo remove these 4 lines
+     */
+    const x = require;
+    const y = module;
+    debug(x.name);
+    debug(y.filename);
 
     debug('Defining %s for class %s', TAG, target.name);
 

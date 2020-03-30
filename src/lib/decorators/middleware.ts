@@ -8,7 +8,7 @@ import {
   DEFAULT_SCOPE,
   ComponentScope,
 } from 'bind';
-import { Constructor } from '../types';
+import { Constructor } from 'bind';
 
 const debug = require('debug')('promiseoft:decorators');
 

@@ -4,8 +4,13 @@ import { Constructor } from '../types';
 const debug = require('debug')('promiseoft:decorators');
 
 const TAG = '@JsonSchema';
+const x = require;
+const y = module;
 
 export function JsonSchema(schema: Object) {
+
+  debug(x.name);
+  debug(y.filename);
   /**
    * Make sure that schema is an object and has some properties
    * @todo validate that schema is actually a valid json schema object

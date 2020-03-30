@@ -15,6 +15,7 @@
     "outDir": "build",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
     "skipLibCheck": true
   },
   "exclude": [

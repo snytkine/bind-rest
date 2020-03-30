@@ -29,6 +29,12 @@ export default class ResponseWriter {
             ctx.res.setHeader(h, ctx.appResponse.headers[h]);
           }
 
+          /**
+           * @todo when appResponse has support for cookies
+           * also check if ctx.appResponse.cookies, then use cookie module
+           * to generate cookie string and send it as cookie header
+           */
+
           let rs = ctx.appResponse.getReadStream();
           debug('%s about to start writing response', TAG);
 

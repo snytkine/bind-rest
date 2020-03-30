@@ -1,5 +1,6 @@
 import { PathDetailsType } from '../../enums';
 import { RequestContext } from '../../../components';
+import { JSON_VALIDATOR } from '../../consts';
 import { PARAM_TYPES, SYM_JSON_SCHEMA, SYM_METHOD_PARAMS } from '../metaprops';
 import inflate from 'inflation';
 import raw from 'raw-body';
@@ -11,23 +12,22 @@ import {
   PARAM_TYPE_OBJECT,
   PARAM_TYPE_PROMISE,
   PARAM_TYPE_STRING,
-} from '../../consts/controllermethodparams';
+  APPLICATION_COMPONENT,
+} from '../../consts';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { IControllerParamMeta } from '../../interfaces';
-import { getMethodParamName, Identity, IfIocContainer, Target } from 'bind';
 import { HttpRouter } from 'holiday-router';
 import FrameworkController from '../../core/frameworkcontroller';
 import { HttpError } from '../../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
+import { Application } from '../../core';
+import JsonSchemaValidator from '../../../components/jsonschemavalidator';
+import { getMethodParamName, Identity, IfIocContainer, Target, isDefined } from 'bind';
+
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'NO_ARG_METHOD_DECORATOR';
 
-export interface IBodyParserOptions {
-  length?: number
-  limit?: number
-  encoding: string
-}
 
 export const getParamType = (paramTypes: Array<any>, index: number): string | object | undefined => {
   let ret = undefined;
@@ -353,23 +353,28 @@ export function Body(target: Target,
                      parameterIndex: number) {
 
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
+  const controllerName = `${target.constructor?.name}.${propertyKey}`;
 
   const paramType = getParamType(paramTypes, parameterIndex);
   if (paramType===PARAM_TYPE_PROMISE) {
-    throw new Error(`Invalid argument type ${target.constructor?.name}.${propertyKey}
+    throw new Error(`Invalid argument type ${controllerName}
         for argument ${parameterIndex}
         @Body param cannot be of type Promise.`);
   }
 
-  /**
-   * If paramType is component decorated with JsonSchema then validate schema.
-   */
-  if (typeof paramType!=='string') {
-    const jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType); //paramType.prototype.constructor
-  }
 
   const paramFactory = (c: IfIocContainer) => (context: RequestContext) => {
 
+    let jsonSchema;
+    const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
+    const enableSchemaValidation = application?.settings?.validation?.jsonSchema;
+    /**
+     * If paramType is component decorated with JsonSchema then validate schema.
+     */
+    if (typeof paramType!=='string') {
+      jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType); //paramType.prototype.constructor
+      debug('%s jsonSchema=%o', TAG, jsonSchema);
+    }
 
     /**
      * If RequestMethod is NOT PUT or POST throw error here because
@@ -387,13 +392,19 @@ export function Body(target: Target,
     let allowedMethods = ['PUT', 'POST'];
     if (!allowedMethods.includes(context.req.method)) {
       throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
-        `Error in controller ${target.constructor?.name}.${propertyKey}
+        `Error in controller ${controllerName}
         argument ${parameterIndex}
   Error: Cannot extract @Body from Request.
   Reason: request method "${context.req.method}" cannot include request body`);
     }
 
-    const options: IBodyParserOptions = { encoding: 'utf-8' };
+    /**
+     * @todo get value of options from
+     * 1. Look in the request, extract encoding part
+     * 2. Get instance of Application.config and look for body.encoding
+     * 3. default to utf-8
+     */
+      //const options: IBodyParserOptions = { encoding: 'utf-8' };
     let contentType;
     /**
      * Use content-type header
@@ -410,41 +421,56 @@ export function Body(target: Target,
      * but in order for this to work the body must be sent as json and it's
      * the responsibility of client to set correct content-type header
      */
-    let len = context.req.headers['content-length'];
-    let encoding = context.req.headers['content-encoding'] || 'identity';
-    if (len && encoding==='identity') {
-      options.length = ~~len;
-    }
 
-    options.encoding = this.options.encoding || 'utf-8';
     /**
-     * @todo set options.limit from process.env.MAX_REQUEST_BODY
-     * formatBytes('4mb') where '4mb' can be set from env
+     * @todo set options from application settings
+     * as settings.zlib
+     * @todo also have option to disable support for zlib compression
+     * and check for the flag here before attempting to decompress.
      */
-    let parsed = raw(inflate(context.req), options)
+
+    let parsed: Promise<any> = raw(inflate(context.req))
       .then((rawBody): String => String(rawBody))
       .then(body => body.valueOf());
 
     /**
-     * parse as json ONLY if context-type is JSON and
-     * bodyType NOT string/number/boolean
+     * parse as json ONLY if context-type is JSON or
+     * the type is set to custom class that has JsonSchema
      *
      * What if context-type is JSON but in controller method user specifically
      * set to : string or : number or : boolean ?
      * in case of boolean, string and number the setParamType() will generate Error
      * in case of Array will set to Array if parse json is an array.
      */
-    if (contentType.startsWith(CONTENT_TYPE_JSON)) {
+    if (contentType.startsWith(CONTENT_TYPE_JSON) || jsonSchema) {
       parsed = parsed.then(body => JSON.parse(body)).catch(e => {
-        throw new Error(`Failed to parse request body in controller
-        "${target.constructor?.name}.${propertyKey}" for argument ${parameterIndex}`);
+        throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
+          `Failed to parse request body in controller
+        "${controllerName}" for argument ${parameterIndex}
+        error=${e.message}`);
       });
+    }
 
+    if (jsonSchema && enableSchemaValidation) {
+      const validator: JsonSchemaValidator = c.getComponent(Identity(JSON_VALIDATOR));
 
+      parsed = parsed.then(body => {
+        const res = validator.validate(
+          body,
+          jsonSchema,
+          `Error parsing parameter "${getMethodParamName(target, propertyKey, parameterIndex)}"
+          (argument ${parameterIndex})
+          in controller ${controllerName}`);
+
+        if (isDefined(res)) {
+          throw res;
+        }
+
+        return body;
+      });
     }
 
     return parsed;
-
   };
 
   return applySingleAnnotation(

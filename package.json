@@ -27,7 +27,6 @@
     "email": "dmitri.snytkine@adp.com"
   },
   "dependencies": {
-    "@types/http-errors": "^1.6.3",
     "JSONStream": "1.3.0",
     "acorn": "^7.1.1",
     "body-parser": "^1.19.0",
@@ -58,6 +57,8 @@
     "@types/cookie": "^0.1.29",
     "@types/cookies": "^0.6.0",
     "@types/debug": "^4.1.5",
+    "@types/http-errors": "^1.6.3",
+    "@types/inflation": "^2.0.0",
     "@types/jsonschema": "0.0.5",
     "@types/node": "^13.7.7",
     "@types/raw-body": "^2.3.0",

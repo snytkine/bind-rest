@@ -18,9 +18,14 @@ import {
   SYM_REQUEST_METHOD,
   SYM_REQUEST_PATH,
 } from '../decorators';
-import { makeParamsValidator } from '../core/paramsvalidator';
-import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
-import { ParamExtractor } from '../types/controllerparamextractor';
+import { makeParamsValidator,makeValidateAsync } from '../core/paramsvalidator';
+import {
+  ParamExtractor,
+  MiddlewareFunc,
+  MiddlewareFuncFactory,
+  AsyncContextParamValidator,
+  IntoPromise,
+} from '../types';
 import Context from '../../components/context';
 import HTTPMethod from 'http-method-enum';
 
@@ -72,7 +77,19 @@ export function parseController(container: IfIocContainer) {
       }
 
       const paramExtractors: Array<ParamExtractor> = paramsMeta.map(meta => meta.f(container));
+      const validators: Array<AsyncContextParamValidator> = paramsMeta.map(meta => {
+        if (meta.validator) {
+          return meta.validator(container);
+        }
+        /**
+         * If no .validator for this controller parameter
+         * then generate a function that takes context and
+         * returns a no-op function.
+         */
+        return (ctx: Context) => val => undefined;
+      });
       const validateParams = makeParamsValidator(paramsMeta, controllerName);
+
       /**
        * @todo
        * type: Array<any> => Array<any> or Throw ValidationError
@@ -90,6 +107,12 @@ export function parseController(container: IfIocContainer) {
 
         context.controllerName = controllerName;
 
+        const validateAsync = makeValidateAsync(
+          context,
+          validators,
+          controllerName,
+        );
+
         const oCtrl = component.get([context]);
         let futureParams: Promise<Array<any>>;
         if (paramExtractors.length > 0) {
@@ -104,18 +127,20 @@ export function parseController(container: IfIocContainer) {
         /**
          * paramsExtractors may be empty array. Must check first
          */
-        return futureParams.then(aParams => {
-          debug('%s got params for controller "%s" params="%o"', TAG, controllerName, aParams);
-          const validatedParams = validateParams(aParams);
-          /**
-           * @todo here we can join array of controller arguments with
-           * controller argument names. This is for logging and debugging only
-           * the array of names and array of arguments can be added to context
-           */
-          context.controllerArguments = validatedParams;
+        return futureParams
+          .then(validateParams)
+          .then(validateAsync)
+          .then(validatedParams => {
 
-          return oCtrl[p](...validatedParams);
-        });
+            /**
+             * @todo here we can join array of controller arguments with
+             * controller argument names. This is for logging and debugging only
+             * the array of names and array of arguments can be added to context
+             */
+            context.controllerArguments = validatedParams;
+
+            return oCtrl[p](...validatedParams);
+          });
 
       };
 

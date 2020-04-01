@@ -3,3 +3,4 @@ export * from './middlewarefunc';
 export * from './stringtohttpmethod';
 export * from './paramvalidatorfunc';
 export * from './paramdecoratorfunc';
+export * from './controllerparamextractor';

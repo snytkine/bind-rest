@@ -1,6 +1,6 @@
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
 import { PathDetailsType } from '../enums';
-import { AsyncParamValidator, ParamValidator } from '../types';
+import { AsyncValidator, ParamValidator } from '../types';
 
 export interface IControllerParamMeta {
   f: ParamExtractorFactory
@@ -8,5 +8,5 @@ export interface IControllerParamMeta {
   paramName: string
   paramDecoratorType: PathDetailsType
   paramType?: any
-  validator?: AsyncParamValidator
+  validator?: AsyncValidator
 }

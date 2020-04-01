@@ -1,6 +1,8 @@
-import { paramdecorator, AsyncParamValidator, ParamValidator } from '../../types';
+import {
+  paramdecorator,
+  AsyncValidator, AsyncParamValidator, AsyncContextParamValidator, ParamValidator,
+} from '../../types';
 import Context from '../../../components/context';
-import { ValidationError } from '../../core';
 import {
   IfIocContainer,
   Maybe,
@@ -10,25 +12,35 @@ import {
 } from 'bind';
 import { IControllerParamMeta } from '../../interfaces';
 import { SYM_METHOD_PARAMS } from '../metaprops';
+import { DOTTED_LINE } from '../../consts';
 
-export function ValidateAsync(...validators: AsyncParamValidator[]): paramdecorator {
+/**
+ * Take validator function and turn it into AsyncValidator function
+ * The new function will not use container and context but will satisfy
+ * the AsyncValidator signature and can be used anywhere the AsyncValidator is expected.
+ * @param validator
+ */
+const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
+  return (c: IfIocContainer) => (ctx: Context) => validator
+};
+
+export function ValidateAsync(...validators: AsyncValidator[]): paramdecorator {
 
   return (target: ClassPrototype, propertyKey: string, index: number): void => {
 
-    const controllerName = `${target.constructor.name}.${propertyKey}`;
     const paramName = getMethodParamName(target, propertyKey, index);
     /**
      * Generate single function from array of paramvalidator functions;
      */
-    const validatorFunc: AsyncParamValidator = function paramValidator(container: IfIocContainer) {
+    const validatorFunc: AsyncValidator = function paramValidator(container: IfIocContainer) {
       return function (ctx: Context) {
-        return function (param: any): Maybe<Error> | Promise<Maybe<Error>> {
+        return function (param: any): Promise<Maybe<Error>> {
           const validationResults: Array<Maybe<Error> | Promise<Maybe<Error>>> = validators
-            .map(f => f(container))
-            .map(f => f(ctx))
-            .map(param);
+            .map((f: AsyncValidator) => f(container))
+            .map((f: AsyncContextParamValidator) => f(ctx))
+            .map((f: AsyncParamValidator) => f(param));
 
-          const res = Promise.all(validationResults)
+          return Promise.all(validationResults)
             .then((results: Array<Maybe<Error>>) => {
 
               return results.reduce((acc: string[], next: Maybe<Error>) => {
@@ -40,20 +52,16 @@ export function ValidateAsync(...validators: AsyncParamValidator[]): paramdecora
 
             }).then((errors: string[]) => {
               if (errors.length > 0) {
-                return new ValidationError(`Validation failed for parameter "${paramName}"
-                argument ${index}
-                controller "${controllerName}"
-                Errors: ${errors.join('\n')}
+                return new Error(`Parameter "${paramName}" (argument ${index})
+                Errors:\n${errors.join(DOTTED_LINE)}
                 `);
               }
 
               return undefined;
             })
             .catch(e => {
-              return new ValidationError(`Validation error for parameter "${paramName}"
-                argument ${index}
-                controller "${controllerName}"
-                Error: ${e.message}
+              return new Error(`Parameter "${paramName}" (argument ${index})
+              Error: ${e.message}
                 `);
             });
         };
@@ -70,20 +78,20 @@ export function ValidateAsync(...validators: AsyncParamValidator[]): paramdecora
       target,
       propertyKey) || [];
 
-    if(!metaDetails[index]){
+    if (!metaDetails[index]) {
       metaDetails[index] = {
         f: undefined,
         isRequired: false,
         paramName: '',
-        paramDecoratorType: undefined
-      }
+        paramDecoratorType: undefined,
+      };
     }
     /**
      * metaDataDetails may already exist for this param if
      * any of the method param decorator or @Required decorator was already applied
      * this is fine as long as it does not already have .validator
      */
-    if(metaDetails[index] && metaDetails[index].validator){
+    if (metaDetails[index] && metaDetails[index].validator) {
       throw new Error(`Method parameter validator for argument ${index} already defined 
       on method ${target.constructor?.name}.${propertyKey}`);
     }
@@ -96,4 +104,12 @@ export function ValidateAsync(...validators: AsyncParamValidator[]): paramdecora
     Reflect.defineMetadata(SYM_METHOD_PARAMS, metaDetails, target, propertyKey);
 
   };
+}
+
+
+export function Validate(...validators: Array<ParamValidator>): paramdecorator {
+
+  const asyncValidators = validators.map(toAsyncValidator);
+
+  return ValidateAsync(...asyncValidators);
 }

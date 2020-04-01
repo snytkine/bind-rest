@@ -1,5 +1,6 @@
 import { IControllerParamMeta } from '../interfaces';
 import {
+  DOTTED_LINE,
   PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
@@ -9,6 +10,10 @@ import {
 import { HttpError } from '../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import { PathDetailsType } from '../enums';
+import { ValidationError } from './apperrors';
+import { AsyncContextParamValidator, AsyncParamValidator, IntoPromise } from '../types/paramvalidatorfunc';
+import Context from '../../components/context';
+import { Maybe, isDefined } from 'bind';
 
 const debug = require('debug')('promiseoft:runtime:validation');
 const TAG = 'ParamsValidator';
@@ -169,30 +174,30 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
 
 /*
 
-export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
+ export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
 
-  const params = o.params.map((param, i) => {
-    if (param instanceof Error) return param;
+ const params = o.params.map((param, i) => {
+ if (param instanceof Error) return param;
 
-    if (o.meta[i] && o.meta[i].validator) {
-      const res = o.meta[i].validator(param);
-      if (!res) {
-        return param;
-      }
+ if (o.meta[i] && o.meta[i].validator) {
+ const res = o.meta[i].validator(param);
+ if (!res) {
+ return param;
+ }
 
-      return new Error(`Validation failed for parameter 
-      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
-      parameterName="${o.meta[i].paramName}" 
-      position="${i + 1}"
-      ValidationError=${res.message}`);
-    }
+ return new Error(`Validation failed for parameter
+ parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}"
+ parameterName="${o.meta[i].paramName}"
+ position="${i + 1}"
+ ValidationError=${res.message}`);
+ }
 
-    return param;
-  });
+ return param;
+ });
 
-  return { params, meta: o.meta };
-}
-*/
+ return { params, meta: o.meta };
+ }
+ */
 
 
 export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
@@ -245,7 +250,7 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
              * converted to JSON
              * in such case throw exception
              */
-            if(typeof param === 'string'){
+            if (typeof param==='string') {
               debug('%s Cannot set prototype of body param to %s because body is string',
                 TAG, paramTypeToString(o.meta[i].paramType));
               ret = new TypeError();
@@ -281,7 +286,7 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
 }
 
 
-export function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: string) {
+function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: string) {
 
   return function paramsValidator(params: Array<any>): Array<any> {
 
@@ -295,9 +300,10 @@ export function makeParamsValidator(meta: Array<IControllerParamMeta>, controlle
     const errors = res.params.filter(param => param instanceof Error);
     if (errors && errors.length > 0) {
       const message = printErrors(errors);
-
-      throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
-        `Input Validation Error. Controller="${controllerName}" \n${message}`);
+      /**
+       *
+       */
+      throw new ValidationError(`Controller="${controllerName}"\nErrors:\n${message}`);
     }
 
     return res.params;
@@ -305,3 +311,55 @@ export function makeParamsValidator(meta: Array<IControllerParamMeta>, controlle
   };
 }
 
+
+function makeValidateAsync(context: Context,
+                           validators: Array<AsyncContextParamValidator>,
+                           controllerName: string): IntoPromise<Array<any>> {
+
+
+  const asyncValidators: Array<AsyncParamValidator> = validators.map(v => v(context));
+
+  return function validateParamsAsync(params: any[]): Promise<any[]> {
+    debug('%s Entered validateParamsAsync with params=%o', TAG, params);
+    const validationResults: Array<Maybe<Error> | Promise<Maybe<Error>>> = params.map(
+      (param: any, i: number) => {
+        /**
+         * If there is a validator for this index, apply validator,
+         * else return undefined
+         */
+        if (asyncValidators[i]) {
+          return asyncValidators[i](param);
+        } else {
+          return undefined;
+        }
+      });
+
+    return Promise.all(validationResults).then((results: Array<Maybe<Error>>) => {
+      /**
+       * If any of the results are error
+       * then format a single error message
+       * and throw ValidationError from here
+       *
+       * Else return params from here (original array of params)
+       * this way the return of validateParamsAsync will be Promise<original params>
+       */
+
+      const errors: string[] = results.reduce((acc, next: Maybe<Error>, i) => {
+        if (isDefined(next)) {
+          acc.push(next.message);
+        }
+
+        return acc;
+      }, []);
+
+      if (errors.length > 0) {
+        throw new ValidationError(`Controller=${controllerName}\n${errors.join(DOTTED_LINE)}`)
+      } else {
+        return params;
+      }
+    });
+
+  };
+}
+
+export { makeParamsValidator,makeValidateAsync };

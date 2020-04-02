@@ -4,7 +4,7 @@ import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
 import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
 import {
   Constructor,
-  Target,
+  ClassPrototype,
   COMPONENT_IDENTITY,
   EXTRA_DEPENDENCIES,
   IfIocContainer,
@@ -55,7 +55,9 @@ export const toMWFuncFactory = (arr: Array<MiddlewareFuncFactory>): MiddlewareFu
  */
 export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
 
-  return function middlewaresDecorator(target: Target, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
+  return function middlewaresDecorator(target: ClassPrototype,
+                                       propertyKey: string,
+                                       descriptor: TypedPropertyDescriptor<ControllerFunc>) {
 
     debug('%s defining on controller method="%s.%s"', TAG, target?.constructor?.name, propertyKey);
     let p = Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, target, propertyKey);

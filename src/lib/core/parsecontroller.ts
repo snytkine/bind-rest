@@ -18,16 +18,16 @@ import {
   SYM_REQUEST_METHOD,
   SYM_REQUEST_PATH,
 } from '../decorators';
-import { makeParamsValidator,makeValidateAsync } from '../core/paramsvalidator';
+import { makeParamsValidator, makeValidateAsync } from '../core/paramsvalidator';
 import {
   ParamExtractor,
   MiddlewareFunc,
   MiddlewareFuncFactory,
   AsyncContextParamValidator,
-  IntoPromise,
 } from '../types';
 import Context from '../../components/context';
 import HTTPMethod from 'http-method-enum';
+import { ApplicationError } from './apperrors';
 
 
 const debug = require('debug')('promiseoft:runtime:controller');
@@ -66,7 +66,7 @@ export function parseController(container: IfIocContainer) {
       let metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
       let paramsMeta: Array<IControllerParamMeta> = Reflect.getMetadata(SYM_METHOD_PARAMS, o, p) || [];
       const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
-      const controllerName = `${component.identity.clazz.name}.${p}`;
+      const controllerName = `${component.identity?.clazz?.name}.${p}`;
       let controllerMiddleware: Maybe<MiddlewareFuncFactory> = Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, o, p);
 
       if (!isDefined(metaMethods)) {
@@ -116,7 +116,14 @@ export function parseController(container: IfIocContainer) {
         const oCtrl = component.get([context]);
         let futureParams: Promise<Array<any>>;
         if (paramExtractors.length > 0) {
-          futureParams = Promise.all(paramExtractors.map(f => f(context)));
+          futureParams = Promise.all(paramExtractors.map(f => f(context)))
+            .catch(e => {
+              debug('%s exception from futureParams %o', TAG, e);
+
+              throw new ApplicationError(`Error Parsing request parameters
+              Controller=${controllerName}
+              Error=${e.message}`, e);
+            });
         } else {
           /**
            * For No-Arg controller it is necessary to have this.
@@ -144,6 +151,11 @@ export function parseController(container: IfIocContainer) {
 
       };
 
+      /**
+       * If there are any ControllerMiddlewares for this controller
+       * then create a MiddlewareFunc and run it first
+       * and then run actual controller.
+       */
       if (isDefined(controllerMiddleware)) {
         debug('%s adding controller middleware for controller="%s"', TAG, controllerName);
         middleware = controllerMiddleware(container);

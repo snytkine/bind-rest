@@ -18,25 +18,25 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
   switch (t) {
     case PathDetailsType.CookieParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
-        return Promise.resolve(ctx.parsedCookies[paramName]);
+        return ctx.parsedCookies[paramName];
       };
       break;
 
     case PathDetailsType.ContextScopeParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
-        return Promise.resolve(ctx.storage[paramName]);
+        return ctx.storage[paramName];
       };
       break;
 
     case PathDetailsType.QueryParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
-        return Promise.resolve(ctx.parsedUrlQuery[paramName]);
+        return ctx.parsedUrlQuery[paramName];
       };
       break;
 
     case PathDetailsType.HeaderParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
-        return Promise.resolve(ctx.req.headers[paramName]);
+        return ctx.req.headers[paramName];
       };
       break;
 
@@ -44,7 +44,7 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
       ret = (c: IfIocContainer) => (ctx: Context) => {
         const pathParam = ctx.routeParams?.pathParams?.find(p => p.paramName===paramName);
 
-        return Promise.resolve(pathParam?.paramValue);
+        return pathParam?.paramValue;
       };
       break;
 

@@ -7,11 +7,14 @@ import {
   PARAM_TYPE_OBJECT,
   PARAM_TYPE_STRING,
 } from '../consts';
-import { HttpError } from '../errors';
-import HTTP_STATUS_CODES from 'http-status-enum';
+
 import { PathDetailsType } from '../enums';
 import { ValidationError } from './apperrors';
-import { AsyncContextParamValidator, AsyncParamValidator, IntoPromise } from '../types/paramvalidatorfunc';
+import {
+  AsyncContextParamValidator,
+  AsyncParamValidator,
+  IntoPromise,
+} from '../types/paramvalidatorfunc';
 import Context from '../../components/context';
 import { Maybe, isDefined } from 'bind';
 
@@ -172,34 +175,6 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
   return { params, meta: o.meta };
 }
 
-/*
-
- export function customValidate(o: ParamsWithMeta): ParamsWithMeta {
-
- const params = o.params.map((param, i) => {
- if (param instanceof Error) return param;
-
- if (o.meta[i] && o.meta[i].validator) {
- const res = o.meta[i].validator(param);
- if (!res) {
- return param;
- }
-
- return new Error(`Validation failed for parameter
- parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}"
- parameterName="${o.meta[i].paramName}"
- position="${i + 1}"
- ValidationError=${res.message}`);
- }
-
- return param;
- });
-
- return { params, meta: o.meta };
- }
- */
-
-
 export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
 
   const params = o.params.map((param, i) => {
@@ -353,7 +328,7 @@ function makeValidateAsync(context: Context,
       }, []);
 
       if (errors.length > 0) {
-        throw new ValidationError(`Controller=${controllerName}\n${errors.join(DOTTED_LINE)}`)
+        throw new ValidationError(`Controller=${controllerName}\n${errors.join(DOTTED_LINE)}`);
       } else {
         return params;
       }
@@ -362,4 +337,4 @@ function makeValidateAsync(context: Context,
   };
 }
 
-export { makeParamsValidator,makeValidateAsync };
+export { makeParamsValidator, makeValidateAsync };

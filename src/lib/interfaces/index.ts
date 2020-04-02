@@ -7,5 +7,6 @@ export * from "./apperrorhandler";
 export * from "./exithandler";
 export * from "./logger";
 export * from './controllerparammeta';
+export * from './bodyparamextractor';
 
 

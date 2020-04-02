@@ -1,9 +1,6 @@
 import { PathDetailsType } from '../../enums';
 import { RequestContext } from '../../../components';
-import { JSON_VALIDATOR } from '../../consts';
 import { PARAM_TYPES, SYM_JSON_SCHEMA, SYM_METHOD_PARAMS } from '../metaprops';
-import inflate from 'inflation';
-import raw from 'raw-body';
 import {
   CONTENT_TYPE_JSON,
   PARAM_TYPE_ARRAY,
@@ -21,20 +18,19 @@ import FrameworkController from '../../core/frameworkcontroller';
 import { HttpError } from '../../errors';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import { Application } from '../../core';
-import JsonSchemaValidator from '../../../components/jsonschemavalidator';
+
 import {
   getMethodParamName,
   Identity,
   IfIocContainer,
   Target,
   ClassPrototype,
-  isDefined,
 } from 'bind';
-
+import { parseBody, parseJsonBody } from '../../utils';
+import makeParamDecorator from './makeparamdecorator';
 
 const debug = require('debug')('promiseoft:decorators');
 const TAG = 'NO_ARG_METHOD_DECORATOR';
-
 
 export const getParamType = (paramTypes: Array<any>, index: number): string | object | undefined => {
   let ret = undefined;
@@ -169,203 +165,18 @@ export function Required(target: ClassPrototype,
   return applySingleAnnotation(target, propertyKey, parameterIndex, true);
 }
 
-
-export function Container(target: ClassPrototype,
-                          propertyKey: string,
-                          parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => c;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.QueryString,
-    factory);
-}
-
-export function QueryString(target: ClassPrototype,
-                            propertyKey: string,
-                            parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.querystring;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.QueryString,
-    factory);
-}
-
-export function Cookies(target: ClassPrototype,
-                        propertyKey: string,
-                        parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedCookies;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.QueryString,
-    factory);
-}
-
-export function ParsedQuery(target: ClassPrototype,
-                            propertyKey: string,
-                            parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedUrlQuery;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.Query,
-    factory);
-}
-
-
-export function Headers(target: ClassPrototype,
-                        propertyKey: string,
-                        parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req.headers;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.Headers,
-    factory);
-}
-
-
-export function Router(target: ClassPrototype,
-                       propertyKey: string,
-                       parameterIndex: number) {
-
-  const paramFactory = (c: IfIocContainer) => {
-    return (context: RequestContext): Promise<HttpRouter<FrameworkController>> => {
-      return c.getComponent(Identity(HttpRouter), [context]);
-    };
-  };
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.HttpRouter,
-    paramFactory);
-}
-
-export function UriInfo(target: ClassPrototype,
-                        propertyKey: string,
-                        parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.parsedUrl;
-
-  return applySingleAnnotation(target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.UriInfo,
-    factory);
-}
-
-export function Request(target: ClassPrototype,
-                        propertyKey: string,
-                        parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req;
-
-  return applySingleAnnotation(
-    target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.Request,
-    factory,
-  );
-}
-
-
-export function Response(target: ClassPrototype,
-                         propertyKey: string,
-                         parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.res;
-
-  return applySingleAnnotation(
-    target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.Response,
-    factory,
-  );
-}
-
-
-export function Context(target: ClassPrototype,
-                        propertyKey: string,
-                        parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context;
-
-  return applySingleAnnotation(
-    target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.Context,
-    factory,
-  );
-}
-
-
-export function ContextStore(target: ClassPrototype,
-                             propertyKey: string,
-                             parameterIndex: number) {
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.storage;
-
-  return applySingleAnnotation(
-    target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.ContextScope,
-    factory,
-  );
-}
-
-
-export function RequestMethod(target: ClassPrototype,
-                              propertyKey: string,
-                              parameterIndex: number) {
-
-  const factory = (c: IfIocContainer) => (context: RequestContext) => context.req.method;
-
-  return applySingleAnnotation(
-    target,
-    propertyKey,
-    parameterIndex,
-    false,
-    PathDetailsType.RequestMethod,
-    factory,
-  );
-}
-
-
 export function Body(target: ClassPrototype,
                      propertyKey: string,
                      parameterIndex: number) {
 
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
   const controllerName = `${target.constructor.name}.${propertyKey}`;
+  const paramName = getMethodParamName(target, propertyKey, parameterIndex);
 
   const paramType = getParamType(paramTypes, parameterIndex);
   if (paramType===PARAM_TYPE_PROMISE) {
-    throw new Error(`Invalid argument type ${controllerName}
-        for argument ${parameterIndex}
+    throw new Error(`Invalid argument type ${controllerName} 
+    paramName="${paramName}" (argument ${parameterIndex})
         @Body param cannot be of type Promise.`);
   }
 
@@ -375,44 +186,21 @@ export function Body(target: ClassPrototype,
     let jsonSchema;
     const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
     const enableSchemaValidation = application?.settings?.validation?.jsonSchema;
+
     /**
      * If paramType is component decorated with JsonSchema then validate schema.
      */
-    if (typeof paramType!=='string') {
+    if (
+      enableSchemaValidation &&
+      paramType!==PARAM_TYPE_STRING &&
+      paramType!==PARAM_TYPE_BOOLEAN &&
+      paramType!==PARAM_TYPE_NUMBER
+    ) {
       jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
       debug('%s jsonSchema=%o', TAG, jsonSchema);
     }
 
-    /**
-     * If RequestMethod is NOT PUT or POST throw error here because
-     * cannot have @Body decorator for other methods.
-     */
-    /**
-     * @todo this guard may be unnecessary
-     * basically we are guarding against the case that someone
-     * will put @RequestBody annotation on a controller method that is not for POST or PUT
-     * It's better that we check for this when parsing the controller annotations GET or DELETE
-     * to make sure there are no body parsing in there.
-     *
-     * @type {[string,string]}
-     */
-    let allowedMethods = ['PUT', 'POST'];
-    if (!allowedMethods.includes(context.req.method)) {
-      throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
-        `Error in controller ${controllerName}
-        argument ${parameterIndex}
-  Error: Cannot extract @Body from Request.
-  Reason: request method "${context.req.method}" cannot include request body`);
-    }
-
-    /**
-     * @todo get value of options from
-     * 1. Look in the request, extract encoding part
-     * 2. Get instance of Application.config and look for body.encoding
-     * 3. default to utf-8
-     */
-      //const options: IBodyParserOptions = { encoding: 'utf-8' };
-    let contentType;
+    let contentType: string;
     /**
      * Use content-type header
      */
@@ -421,63 +209,23 @@ export function Body(target: ClassPrototype,
       contentType = context.req.headers['content-type'].toLowerCase();
     }
 
+    let parsed: Promise<any>;
 
-    /**
-     * @todo if NOT json but have bodyPrototype
-     * then throw Error because param has to be an instance of specific class
-     * but in order for this to work the body must be sent as json and it's
-     * the responsibility of client to set correct content-type header
-     */
-
-    /**
-     * @todo set options from application settings
-     * as settings.zlib
-     * @todo also have option to disable support for zlib compression
-     * and check for the flag here before attempting to decompress.
-     */
-
-    let parsed: Promise<any> = raw(inflate(context.req))
-      .then((rawBody): String => String(rawBody))
-      .then(body => body.valueOf());
-
-    /**
-     * parse as json ONLY if context-type is JSON or
-     * the type is set to custom class that has JsonSchema
-     *
-     * What if context-type is JSON but in controller method user specifically
-     * set to : string or : number or : boolean ?
-     * in case of boolean, string and number the setParamType() will generate Error
-     * in case of Array will set to Array if parse json is an array.
-     */
     if (contentType.startsWith(CONTENT_TYPE_JSON) || jsonSchema) {
-      parsed = parsed.then(body => JSON.parse(body)).catch(e => {
-        throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
-          `Failed to parse request body in controller
-        "${controllerName}" for argument ${parameterIndex}
-        error=${e.message}`);
-      });
+      parsed = parseJsonBody(context.req, jsonSchema);
+    } else {
+      parsed = parseBody(context.req);
     }
 
-    if (jsonSchema && enableSchemaValidation) {
-      const validator: JsonSchemaValidator = c.getComponent(Identity(JSON_VALIDATOR));
+    return parsed.catch(e => {
 
-      parsed = parsed.then(body => {
-        const res = validator.validate(
-          body,
-          jsonSchema,
-          `Error parsing parameter "${getMethodParamName(target, propertyKey, parameterIndex)}"
-          (argument ${parameterIndex})
-          in controller ${controllerName}`);
-
-        if (isDefined(res)) {
-          throw res;
-        }
-
-        return body;
-      });
-    }
-
-    return parsed;
+      throw new HttpError(HTTP_STATUS_CODES.BAD_REQUEST,
+        `Failed to parse request body.
+        Controller="${controllerName}" 
+        Parameter="${paramName}" (argument ${parameterIndex})
+        Error=${e.message}
+        `);
+    });
   };
 
   return applySingleAnnotation(
@@ -488,4 +236,68 @@ export function Body(target: ClassPrototype,
     PathDetailsType.RequestBody,
     paramFactory);
 }
+
+
+export const QueryString = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.querystring,
+);
+
+export const Cookies = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.parsedCookies,
+);
+
+export const ParsedQuery = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.parsedUrlQuery,
+);
+
+export const Headers = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.req.headers,
+);
+
+export const Router = makeParamDecorator(
+  (c: IfIocContainer) => {
+    return (context: RequestContext): Promise<HttpRouter<FrameworkController>> => {
+      return c.getComponent(Identity(HttpRouter), [context]);
+    };
+  },
+);
+
+
+export const UriInfo = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.parsedUrl,
+);
+
+
+export const Request = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.req,
+);
+
+export const Response = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.res,
+);
+
+export const Container = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => c,
+);
+
+export const Context = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context,
+);
+
+export const ContextStore = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.storage,
+);
+
+export const RequestMethod = makeParamDecorator(
+  (c: IfIocContainer) => (context: RequestContext) => context.req.method,
+);
+
+/**
+ * BodyParam users a makeParamDecorator function to make custom
+ * param decorator.
+ * This technique can be used to create any custom param decorator
+ * makeParamDecorator is called with no argument here and that is why
+ * the return value is a DecoratorFactory and not the actual paramdecorator function.
+ */
+export const BodyParam = makeParamDecorator();
 

@@ -28,7 +28,9 @@ export enum PathDetailsType {
   FormParam,
   Query,
   HttpRouter,
-  CustomParamDecorator
+  CustomParamDecorator,
+  BodyParam,
+  PathParamRegex
 }
 
 

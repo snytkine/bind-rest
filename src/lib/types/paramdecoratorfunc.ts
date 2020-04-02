@@ -1,3 +1,3 @@
-import { Target } from 'bind';
+import { ClassPrototype } from 'bind';
 
-export type paramdecorator = (target: Target, propertyKey: string, parameterIndex: number) => void
+export type paramdecorator = (target: ClassPrototype, propertyKey: string, parameterIndex: number) => void

@@ -7,3 +7,5 @@ export * from './controllerparamextractor';
 export * from './jmespath';
 export * from './decoratorfactory';
 export * from './controllermatcher';
+export * from './methoddecorator';
+export * from './middlewarefactory';

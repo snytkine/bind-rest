@@ -305,7 +305,7 @@ export const RequestMethod = makeParamDecorator(
  * param decorator.
  * This technique can be used to create any custom param decorator
  * makeParamDecorator is called with no argument here and that is why
- * the return value is a DecoratorFactory and not the actual paramdecorator function.
+ * the return value is a IParamDecoratorFactory and not the actual paramdecorator function.
  */
 export const BodyParam = makeParamDecorator();
 

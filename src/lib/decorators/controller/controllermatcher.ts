@@ -3,7 +3,7 @@ import { CONTROLLER_MATCHER } from '../metaprops';
 import { ClassPrototype,COMPONENT_META_DATA,defineMetadata } from 'bind';
 import { ApplicationError } from '../../core';
 
-export default function ControllerMatcher(matcher: IControllerMatcher) {
+export default function RequestMatch(matcher: IControllerMatcher) {
 
   return (target: ClassPrototype,
           propertyKey:string,

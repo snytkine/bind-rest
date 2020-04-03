@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import { MiddlewareFunc, MiddlewareFuncFactory, ControllerFunc } from '../types';
+import { MiddlewareFunc, IMiddlewareFactory, ControllerFunc } from '../types';
 import {
   Constructor,
   ClassPrototype,
@@ -16,7 +16,7 @@ import Context from '../../components/context';
 const debug = require('debug')('promiseoft:decorators');
 const TAG = '@Middlewares';
 
-export const toMWFactory = (middleware: Constructor<IMiddleware>): MiddlewareFuncFactory => {
+export const toMWFactory = (middleware: Constructor<IMiddleware>): IMiddlewareFactory => {
 
   return (container: IfIocContainer) => {
     const mwID = <ComponentIdentity>Reflect.getMetadata(COMPONENT_IDENTITY, middleware);
@@ -32,7 +32,7 @@ export const toMWFactory = (middleware: Constructor<IMiddleware>): MiddlewareFun
   };
 };
 
-export const toMWFuncFactory = (arr: Array<MiddlewareFuncFactory>): MiddlewareFuncFactory => {
+export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFactory => {
 
   return (container: IfIocContainer) => {
 
@@ -69,7 +69,7 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
       typeof descriptor.value,
     );
 
-    let aMiddlewares: MiddlewareFuncFactory[] = Reflect.getMetadata(
+    let aMiddlewares: IMiddlewareFactory[] = Reflect.getMetadata(
       SYM_CONTROLLER_MIDDLEWARES,
       target, propertyKey,
     ) || [];
@@ -83,13 +83,12 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
      * The order will depend on which decorator is added higher and which is lower.
      */
     aMiddlewares = aMiddlewares.concat(middlewares.map(toMWFactory));
-    //const middlewareFactory: MiddlewareFuncFactory = toMWFuncFactory(middlewareFactories);
 
     /**
      * Add middlewareFactory as SYM_CONTROLLER_MIDDLEWARES to target, propertyKey
      */
-    debug(`Adding ${TAG} decorator on '${target.constructor.name}.${propertyKey}' controller. 
-    Middlewares: ${JSON.stringify(middlewares)}`);
+    debug(`Adding ${TAG} decorator with ${aMiddlewares.length} middlewares 
+    to '${target.constructor.name}.${propertyKey}' controller.`);
 
     Reflect.defineMetadata(SYM_CONTROLLER_MIDDLEWARES, aMiddlewares, target, propertyKey);
 

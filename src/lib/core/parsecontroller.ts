@@ -6,7 +6,7 @@ import {
   isDefined,
   notEmpty,
   COMPONENT_META_DATA,
-  StringToAny
+  StringToAny,
 } from 'bind';
 import {
   IControllerDetails,
@@ -24,7 +24,7 @@ import { makeParamsValidator, makeValidateAsync } from '../core/paramsvalidator'
 import {
   ParamExtractor,
   MiddlewareFunc,
-  MiddlewareFuncFactory,
+  IMiddlewareFactory,
   AsyncContextParamValidator,
   ControllerFunc,
 } from '../types';
@@ -78,13 +78,13 @@ export function parseController(container: IfIocContainer) {
       const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
       const controllerName = `${component.identity?.clazz?.name}.${p}`;
 
-      let aMiddlewares: Maybe<Array<MiddlewareFuncFactory>> = Reflect.getMetadata(
+      let aMiddlewares: Maybe<Array<IMiddlewareFactory>> = Reflect.getMetadata(
         SYM_CONTROLLER_MIDDLEWARES,
         o,
         p,
       );
 
-      let controllerMiddlewareFactory: MiddlewareFuncFactory;
+      let controllerMiddlewareFactory: IMiddlewareFactory;
 
       if (Array.isArray(aMiddlewares) && aMiddlewares.length > 0) {
         /**
@@ -204,7 +204,7 @@ export function parseController(container: IfIocContainer) {
        * it will match first, this controller will never be tested for a match.
        */
 
-      const priority = isDefined(metaData[CONTROLLER_MATCHER]) ? 1 : 0;
+      const priority = isDefined(metaData[CONTROLLER_MATCHER]) ? 1:0;
 
       return {
         name: controllerName,
@@ -212,7 +212,7 @@ export function parseController(container: IfIocContainer) {
         routePath: joinPath(basePath, metaPath),
         ctrl: ctrlWithMiddleware || ctrl,
         matcher: metaData[CONTROLLER_MATCHER],
-        priority
+        priority,
       };
 
     }).filter(notEmpty);

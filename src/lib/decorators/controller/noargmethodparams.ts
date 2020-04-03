@@ -256,8 +256,16 @@ export const Headers = makeParamDecorator(
 
 export const Router = makeParamDecorator(
   (c: IfIocContainer) => {
+    /**
+     * Here we get componentDetails from container at the invocation
+     * of the first function. This way if component is not found
+     * the exception will be thrown at the initialization stage
+     * and not at runtime.
+     */
+    const componentDetails = c.getComponentDetails(Identity(HttpRouter));
+
     return (context: RequestContext): Promise<HttpRouter<FrameworkController>> => {
-      return c.getComponent(Identity(HttpRouter), [context]);
+      return componentDetails.get([context]);
     };
   },
 );

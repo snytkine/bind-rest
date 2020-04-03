@@ -135,13 +135,13 @@ export default class Context implements IScopedComponentStorage {
     return this.reqUrl;
   }
 
-  get request() {
+/*  get request() {
     return this.req;
   }
 
   get response() {
     return this.res;
-  }
+  }*/
 
   get parsedUrl(): UrlWithStringQuery {
     if (!this.uriInfo) {

@@ -1,0 +1,25 @@
+import { IControllerMatcher, ControllerFunc } from '../../types';
+import { CONTROLLER_MATCHER } from '../metaprops';
+import { ClassPrototype,COMPONENT_META_DATA,defineMetadata } from 'bind';
+import { ApplicationError } from '../../core';
+
+export default function ControllerMatcher(matcher: IControllerMatcher) {
+
+  return (target: ClassPrototype,
+          propertyKey:string,
+          descriptor: TypedPropertyDescriptor<ControllerFunc>): undefined => {
+
+    let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
+    if(metaData[CONTROLLER_MATCHER]){
+      throw new ApplicationError(`CONTROLLER_MATCHER is already defined 
+      for controller "${target.constructor.name}.${propertyKey}"`);
+    }
+
+    metaData[CONTROLLER_MATCHER] = matcher;
+
+    defineMetadata(COMPONENT_META_DATA, metaData, target, propertyKey)();
+
+    return undefined;
+  }
+
+}

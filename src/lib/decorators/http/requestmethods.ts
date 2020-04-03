@@ -1,5 +1,5 @@
 import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
-import { ControllerFunc } from '../../interfaces/controller';
+import { ControllerFunc } from '../../types';
 import { Path } from '../controller/pathdecorator';
 import { Target, Maybe, getOrElse } from 'bind';
 import HTTPMethod from 'http-method-enum';

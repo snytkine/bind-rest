@@ -1,16 +1,22 @@
 import { IControllerContainer } from 'holiday-router';
-import { IController } from '../interfaces';
 import Context from '../../components/context';
+import { IControllerMatcher, IController } from '../types';
+import { IControllerDetails } from '../interfaces';
 
 const defaultMatcher = (ctx: Context) => true;
 
 export default class FrameworkController implements IControllerContainer {
 
-  constructor(public readonly controller: IController,
-              public readonly id: string,
-              public readonly priority: number = 1,
-              public readonly matcher: (ctx: Context) => boolean = defaultMatcher,
-  ) {
+  public readonly controller: IController;
+  public readonly id: string;
+  public readonly priority: number;
+  public readonly matcher: IControllerMatcher;
+
+  constructor(controllerDetails: IControllerDetails) {
+    this.controller = controllerDetails.ctrl;
+    this.id = controllerDetails.name;
+    this.priority = controllerDetails.priority || 0;
+    this.matcher = controllerDetails.matcher || defaultMatcher;
   }
 
   equals(other: IControllerContainer) {

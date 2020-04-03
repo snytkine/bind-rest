@@ -1,4 +1,5 @@
 import Context from '../../components/context';
+import { IAppResponse } from '../interfaces';
 export type ClassMethod = [{}, string];
 
 /**
@@ -12,3 +13,6 @@ export type ClassMethod = [{}, string];
 export type ParamsValidator = (params: Array<any>)  => Array<any>
 export type contextToParam = (ctx: Context) => any;
 export type HandlerFunc = (ctx:Context) => Promise<Context>
+
+export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>
+export type IController = (ctx: Context) => Promise<IAppResponse>

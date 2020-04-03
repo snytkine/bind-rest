@@ -1,9 +1,9 @@
 import {
   IMethodDecorator,
-  ControllerFunc, IMiddlewareFactory,
+  ControllerFunc, IMiddlewareFactory, IMethodDecoratorFactory,
 } from '../../types';
 
-import {ClassPrototype} from 'bind'
+import { ClassPrototype } from 'bind';
 import { SYM_CONTROLLER_MIDDLEWARES } from '../metaprops';
 
 const debug = require('debug')('promiseoft:decorators');
@@ -12,8 +12,8 @@ const TAG = 'MAKE-CONTROLLER-DECORATOR';
 const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator => {
 
   return function controllerMethodDecorator(target: ClassPrototype,
-                                       propertyKey: string,
-                                       descriptor: TypedPropertyDescriptor<ControllerFunc>) {
+                                            propertyKey: string,
+                                            descriptor: TypedPropertyDescriptor<ControllerFunc>) {
 
     /**
      * define controller middleware metadata.
@@ -45,16 +45,17 @@ const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator 
   };
 };
 
-function makeControllerDecorator(): IMiddlewareFactory
-function makeControllerDecorator(f: IMiddlewareFactory): IMethodDecorator
-function makeControllerDecorator(f?: IMiddlewareFactory): IMethodDecorator | IMiddlewareFactory {
-
+function makeDecorator(): IMethodDecoratorFactory;
+function makeDecorator(f: IMiddlewareFactory): IMethodDecorator;
+function makeDecorator(f?: IMiddlewareFactory): IMethodDecorator | IMethodDecoratorFactory {
+  let ret: IMethodDecorator | IMethodDecoratorFactory;
   if (f) {
-    return decorateMethod(f);
+    ret = decorateMethod(f);
   } else {
-    return (f: IMiddlewareFactory) => decorateMethod(f);
+    ret = (f: IMiddlewareFactory) => decorateMethod(f);
   }
 
+  return ret;
 }
 
-export default makeControllerDecorator;
+export default makeDecorator;

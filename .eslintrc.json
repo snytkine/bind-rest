@@ -1,0 +1,30 @@
+{
+  "extends": [
+    "airbnb-typescript/base",
+    "prettier/@typescript-eslint",
+    "plugin:prettier/recommended"
+  ],
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "parserOptions": {
+    "ecmaVersion": 2016,
+    "parser": "@typescript-eslint/parser",
+    "project": "./tsconfig.json"
+  },
+  "parser": "@typescript-eslint/parser",
+  "rules": {
+    "no-inner-declarations": "off",
+    "no-restricted-syntax": "off"
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.test.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-unused-expressions": "off"
+      }
+    }
+  ]
+}

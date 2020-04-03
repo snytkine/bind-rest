@@ -1,7 +1,7 @@
 import { IfIocContainer, arrayNotEmpty, Identity } from 'bind';
 import getControllerComponents from './getcontrollercomponents';
 import { parseController } from '../parsecontroller';
-import { ControllerDetails } from '../../interfaces';
+import { IControllerDetails } from '../../interfaces';
 import { ApplicationError } from '../apperrors';
 import { FrameworkController } from '../index';
 import {HttpRouter} from 'holiday-router';
@@ -13,7 +13,7 @@ export default function setupRoutes(container: IfIocContainer) {
   const controllerComponents = getControllerComponents(container);
   debug('% Found %d controller components', TAG, controllerComponents.length);
 
-  const parsedControllers: Array<ControllerDetails> = controllerComponents.map(c => {
+  const parsedControllers: Array<IControllerDetails> = controllerComponents.map(c => {
     return parseController(container)(c);
   }).flat();
   console.log('===== parsedControllers =====');
@@ -30,7 +30,8 @@ export default function setupRoutes(container: IfIocContainer) {
       router.addRoute(
         method,
         controllerDetails.routePath,
-        new FrameworkController(controllerDetails.ctrl, controllerDetails.name));
+        new FrameworkController(controllerDetails)
+      );
     });
   });
 

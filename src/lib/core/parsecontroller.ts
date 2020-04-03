@@ -5,13 +5,15 @@ import {
   Maybe,
   isDefined,
   notEmpty,
+  COMPONENT_META_DATA,
+  StringToAny
 } from 'bind';
 import {
-  ControllerDetails,
-  ControllerFunc,
+  IControllerDetails,
   IControllerParamMeta,
 } from '../interfaces';
 import {
+  CONTROLLER_MATCHER,
   IS_CONTROLLER,
   SYM_CONTROLLER_MIDDLEWARES,
   SYM_METHOD_PARAMS,
@@ -24,6 +26,7 @@ import {
   MiddlewareFunc,
   MiddlewareFuncFactory,
   AsyncContextParamValidator,
+  ControllerFunc,
 } from '../types';
 import Context from '../../components/context';
 import HTTPMethod from 'http-method-enum';
@@ -37,7 +40,8 @@ const joinPath = (base: string = '', callPath: string = '') => base + callPath;
 
 export function parseController(container: IfIocContainer) {
 
-  return (component: IfIocComponent): Array<ControllerDetails> => {
+  return (component: IfIocComponent): Array<IControllerDetails> => {
+
     const id: string = stringifyIdentity(component.identity);
 
     if (!component.componentMetaData[IS_CONTROLLER]) {
@@ -62,8 +66,9 @@ export function parseController(container: IfIocContainer) {
       let ctrl: ControllerFunc;
       let ctrlWithMiddleware: ControllerFunc;
       let methods: Array<HTTPMethod>;
-      let middleware: MiddlewareFunc;
+      let controllerMiddleware: MiddlewareFunc;
       let metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
+      let metaData: StringToAny = Reflect.getMetadata(COMPONENT_META_DATA, o, p) || {};
       let paramsMeta: Array<IControllerParamMeta> = Reflect.getMetadata(
         SYM_METHOD_PARAMS,
         o,
@@ -80,7 +85,6 @@ export function parseController(container: IfIocContainer) {
       );
 
       let controllerMiddlewareFactory: MiddlewareFuncFactory;
-      let controllerMiddleware: MiddlewareFunc;
 
       if (Array.isArray(aMiddlewares) && aMiddlewares.length > 0) {
         /**
@@ -191,11 +195,24 @@ export function parseController(container: IfIocContainer) {
         };
       }
 
+      /**
+       * if there is a matcher function
+       * the priority should be greater than 0
+       * so that this specific controller will be tested for match first,
+       * otherwise the default matcher in other controller will match
+       * and if other component for the same route has same or higher priority
+       * it will match first, this controller will never be tested for a match.
+       */
+
+      const priority = isDefined(metaData[CONTROLLER_MATCHER]) ? 1 : 0;
+
       return {
         name: controllerName,
         requestMethods: methods,
         routePath: joinPath(basePath, metaPath),
         ctrl: ctrlWithMiddleware || ctrl,
+        matcher: metaData[CONTROLLER_MATCHER],
+        priority
       };
 
     }).filter(notEmpty);

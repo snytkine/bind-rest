@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import { ControllerFunc, IMiddleware } from '../interfaces';
+import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import { MiddlewareFunc, MiddlewareFuncFactory } from '../types';
+import { MiddlewareFunc, MiddlewareFuncFactory, ControllerFunc } from '../types';
 import {
   Constructor,
   ClassPrototype,

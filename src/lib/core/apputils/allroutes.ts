@@ -1,29 +1,29 @@
 import {
-  ControllerDetails,
+  IControllerDetails,
 } from '../../interfaces'
 
 const SYM_ALL_ROUTES = Symbol.for('@ALL_ROUTES');
 const debug = require('debug')('promiseoft:runtime:application');
 
+/**
+ * @todo remove this, not used in new version
+ */
 class AllRoutes {
 
-  private aControllerDetails_: Array<ControllerDetails>;
+  private aControllerDetails_: Array<IControllerDetails>;
 
-  set allControllers(aControllerDetails: Array<ControllerDetails>) {
+  set allControllers(aControllerDetails: Array<IControllerDetails>) {
     this.aControllerDetails_ = aControllerDetails;
     debug('AllRoutes::set allControllers', aControllerDetails);
   }
 
-  get allControllers(): Array<ControllerDetails> {
+  get allControllers(): Array<IControllerDetails> {
     const ret = this.aControllerDetails_;
     debug('AllRoutes::get allControllers', ret);
 
     return ret;
   }
 }
-
-//Reflect.defineMetadata(SYM_COMPONENT_TYPE, ComponentType.COMPONENT, AllRoutes);
-//Reflect.defineMetadata(SYM_COMPONENT_NAME, SYM_ALL_ROUTES, AllRoutes);
 
 export {
   AllRoutes,

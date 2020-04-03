@@ -1,5 +1,5 @@
 import { ClassPrototype } from 'bind';
 
-export type paramdecorator = (target: ClassPrototype,
+export type IParamDecorator = (target: ClassPrototype,
                               propertyKey: string,
                               parameterIndex: number) => void;

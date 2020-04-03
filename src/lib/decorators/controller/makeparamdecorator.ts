@@ -2,9 +2,9 @@ import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { ClassPrototype } from 'bind';
 import { PathDetailsType } from '../../enums';
 import { applySingleAnnotation } from './noargmethodparams';
-import { DecoratorFactory, paramdecorator } from '../../types';
+import { IParamDecoratorFactory, IParamDecorator } from '../../types';
 
-const paramDecorator = (decoratorFactory: ParamExtractorFactory): paramdecorator => {
+const paramDecorator = (decoratorFactory: ParamExtractorFactory): IParamDecorator => {
 
   return function customParamDecorator(target: ClassPrototype,
                                        propertyKey: string,
@@ -21,9 +21,9 @@ const paramDecorator = (decoratorFactory: ParamExtractorFactory): paramdecorator
   };
 };
 
-function makeParamDecorator(): DecoratorFactory
-function makeParamDecorator(f: ParamExtractorFactory): paramdecorator
-function makeParamDecorator(f?: ParamExtractorFactory): paramdecorator | DecoratorFactory {
+function makeParamDecorator(): IParamDecoratorFactory
+function makeParamDecorator(f: ParamExtractorFactory): IParamDecorator
+function makeParamDecorator(f?: ParamExtractorFactory): IParamDecorator | IParamDecoratorFactory {
 
   if (f) {
     return paramDecorator(f);

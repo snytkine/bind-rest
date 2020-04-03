@@ -1,6 +1,9 @@
 import {
-  paramdecorator,
-  AsyncValidator, AsyncParamValidator, AsyncContextParamValidator, ParamValidator,
+  IParamDecorator,
+  AsyncValidator,
+  AsyncParamValidator,
+  AsyncContextParamValidator,
+  ParamValidator,
 } from '../../types';
 import Context from '../../../components/context';
 import {
@@ -24,7 +27,7 @@ const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
   return (c: IfIocContainer) => (ctx: Context) => validator
 };
 
-export function ValidateAsync(...validators: AsyncValidator[]): paramdecorator {
+export function ValidateAsync(...validators: AsyncValidator[]): IParamDecorator {
 
   return (target: ClassPrototype, propertyKey: string, index: number): void => {
 
@@ -107,7 +110,7 @@ export function ValidateAsync(...validators: AsyncValidator[]): paramdecorator {
 }
 
 
-export function Validate(...validators: Array<ParamValidator>): paramdecorator {
+export function Validate(...validators: Array<ParamValidator>): IParamDecorator {
 
   const asyncValidators = validators.map(toAsyncValidator);
 

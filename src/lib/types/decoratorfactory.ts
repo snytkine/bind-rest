@@ -1,4 +1,4 @@
 import { ParamExtractorFactory } from './controllerparamextractor';
-import { paramdecorator } from './paramdecoratorfunc';
+import { IParamDecorator } from './paramdecoratorfunc';
 
-export type DecoratorFactory = (f: ParamExtractorFactory) => paramdecorator
+export type IParamDecoratorFactory = (f: ParamExtractorFactory) => IParamDecorator

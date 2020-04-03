@@ -16,7 +16,7 @@ import {
   SYM_CONTROLLER_MIDDLEWARES,
   SYM_METHOD_PARAMS,
   SYM_REQUEST_METHOD,
-  SYM_REQUEST_PATH,
+  SYM_REQUEST_PATH, toMWFuncFactory,
 } from '../decorators';
 import { makeParamsValidator, makeValidateAsync } from '../core/paramsvalidator';
 import {
@@ -64,13 +64,41 @@ export function parseController(container: IfIocContainer) {
       let methods: Array<HTTPMethod>;
       let middleware: MiddlewareFunc;
       let metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
-      let paramsMeta: Array<IControllerParamMeta> = Reflect.getMetadata(SYM_METHOD_PARAMS, o, p) || [];
+      let paramsMeta: Array<IControllerParamMeta> = Reflect.getMetadata(
+        SYM_METHOD_PARAMS,
+        o,
+        p,
+      ) || [];
+
       const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
       const controllerName = `${component.identity?.clazz?.name}.${p}`;
-      let controllerMiddleware: Maybe<MiddlewareFuncFactory> = Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, o, p);
+
+      let aMiddlewares: Maybe<Array<MiddlewareFuncFactory>> = Reflect.getMetadata(
+        SYM_CONTROLLER_MIDDLEWARES,
+        o,
+        p,
+      );
+
+      let controllerMiddlewareFactory: MiddlewareFuncFactory;
+      let controllerMiddleware: MiddlewareFunc;
+
+      if (Array.isArray(aMiddlewares) && aMiddlewares.length > 0) {
+        /**
+         * Create single middleware factory from array of middleware factories
+         * Then create a middleware function.
+         */
+        controllerMiddlewareFactory = toMWFuncFactory(aMiddlewares);
+        controllerMiddleware = controllerMiddlewareFactory(container);
+      }
+
+
+      /**
+       * If have aMiddlewares then combine all middlewares
+       * into a single MiddlewareFuncFactory
+       */
 
       if (!isDefined(metaMethods)) {
-        debug('%s Method "%s" is NOT a controller', TAG, controllerName);
+        debug('%s Method "%s" is NOT a controller. Returning null!!!', TAG, controllerName);
         return null;
       } else {
         methods = Array.from(metaMethods);
@@ -152,15 +180,14 @@ export function parseController(container: IfIocContainer) {
       };
 
       /**
-       * If there are any ControllerMiddlewares for this controller
-       * then create a MiddlewareFunc and run it first
+       * If there are any controllerMiddleware for this controller
+       * then run it first
        * and then run actual controller.
        */
-      if (isDefined(controllerMiddleware)) {
+      if (controllerMiddleware) {
         debug('%s adding controller middleware for controller="%s"', TAG, controllerName);
-        middleware = controllerMiddleware(container);
         ctrlWithMiddleware = (context: Context) => {
-          return middleware(context).then(ctrl);
+          return controllerMiddleware(context).then(ctrl);
         };
       }
 

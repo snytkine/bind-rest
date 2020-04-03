@@ -8,7 +8,8 @@ import {
   COMPONENT_IDENTITY,
   EXTRA_DEPENDENCIES,
   IfIocContainer,
-  ComponentIdentity
+  IfIocComponent,
+  ComponentIdentity,
 } from 'bind';
 import Context from '../../components/context';
 
@@ -19,9 +20,12 @@ export const toMWFactory = (middleware: Constructor<IMiddleware>): MiddlewareFun
 
   return (container: IfIocContainer) => {
     const mwID = <ComponentIdentity>Reflect.getMetadata(COMPONENT_IDENTITY, middleware);
+    debug('%s got mwID="%s"', TAG, mwID);
+
+    const componentDetails: IfIocComponent = container.getComponentDetails(mwID);
 
     return (context: Context) => {
-      const oMW = <IMiddleware>container.getComponent(mwID, [context]);
+      const oMW = <IMiddleware>componentDetails.get([context]);
 
       return oMW.doFilter(context);
     };
@@ -59,25 +63,35 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
                                        propertyKey: string,
                                        descriptor: TypedPropertyDescriptor<ControllerFunc>) {
 
-    debug('%s defining on controller method="%s.%s"', TAG, target?.constructor?.name, propertyKey);
-    let p = Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, target, propertyKey);
-    if (p) {
-      throw new ReferenceError(`${TAG} decorator already exists on controller 
-        "${target.constructor.name}.${propertyKey}"`);
-    }
+    debug('%s defining on controller method="%s.%s" descriptorTime="%s"',
+      TAG,
+      target.constructor?.name, propertyKey,
+      typeof descriptor.value,
+    );
+
+    let aMiddlewares: MiddlewareFuncFactory[] = Reflect.getMetadata(
+      SYM_CONTROLLER_MIDDLEWARES,
+      target, propertyKey,
+    ) || [];
 
     /**
-     * Create single middlewareFactory function from
-     * array of Middleware Classes
+     * Add array of middleware factories to
+     * existing array of factories (if one already exists)
+     * These new middleware factories are added to the end of array.
+     * This way multiple decorators that create middleware factory
+     * can be added to controller
+     * The order will depend on which decorator is added higher and which is lower.
      */
-    const middlewareFactories: Array<MiddlewareFuncFactory> = middlewares.map(toMWFactory);
-    const middlewareFactory: MiddlewareFuncFactory = toMWFuncFactory(middlewareFactories);
+    aMiddlewares = aMiddlewares.concat(middlewares.map(toMWFactory));
+    //const middlewareFactory: MiddlewareFuncFactory = toMWFuncFactory(middlewareFactories);
 
     /**
      * Add middlewareFactory as SYM_CONTROLLER_MIDDLEWARES to target, propertyKey
      */
-    debug(`Adding ${TAG} decorator on '${target.constructor.name}.${propertyKey}' controller. Middlewares: ${JSON.stringify(middlewares)}`);
-    Reflect.defineMetadata(SYM_CONTROLLER_MIDDLEWARES, middlewareFactory, target, propertyKey);
+    debug(`Adding ${TAG} decorator on '${target.constructor.name}.${propertyKey}' controller. 
+    Middlewares: ${JSON.stringify(middlewares)}`);
+
+    Reflect.defineMetadata(SYM_CONTROLLER_MIDDLEWARES, aMiddlewares, target, propertyKey);
 
     /**
      * Need to get array if Identities from array of IMiddleware constructors

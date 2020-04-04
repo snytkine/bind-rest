@@ -1,74 +1,29 @@
 import { HttpRouter } from 'holiday-router';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind';
-import { PathDetailsType } from '../../enums/pathdetails';
-import { RequestContext } from '../../../components';
+import ControllerParamType from '../../enums/controllerparamtype';
+import RequestContext from '../../../components/context';
 import { PARAM_TYPES, SYM_JSON_SCHEMA } from '../metaprops';
 import {
   CONTENT_TYPE_JSON,
-  PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
-  PARAM_TYPE_OBJECT,
   PARAM_TYPE_PROMISE,
   PARAM_TYPE_STRING,
 } from '../../consts/controllermethodparams';
 import FrameworkController from '../../core/frameworkcontroller';
-import { HttpError } from '../../errors';
+import HttpError from '../../errors/http';
 import { Application } from '../../core/application';
 
-import { parseBody, parseJsonBody } from '../../utils';
+import { parseBody, parseJsonBody } from '../../utils/parsebody';
 import makeParamDecorator from './makeparamdecorator';
 import applyNoParamDecorator from './applysingledecorator';
 import { APPLICATION_COMPONENT } from '../../consts/appcomponents';
+import getParamType from './getparamtype';
 
 const debug = require('debug')('promiseoft:decorators');
 
 const TAG = 'NO_ARG_METHOD_DECORATOR';
-
-export const getParamType = (
-  paramTypes: Array<any>,
-  index: number,
-): string | object | undefined => {
-  let ret;
-
-  if (paramTypes[index] && typeof paramTypes[index] === 'function') {
-    switch (paramTypes[index].name) {
-      case 'String':
-        ret = PARAM_TYPE_STRING;
-        break;
-
-      case 'Number':
-        ret = PARAM_TYPE_NUMBER;
-        break;
-
-      case 'Boolean':
-        ret = PARAM_TYPE_BOOLEAN;
-        break;
-
-      case 'Array':
-        ret = PARAM_TYPE_ARRAY;
-        break;
-
-      case 'Object':
-        /**
-         * No type was specified for this body parameter
-         * Typescript defaults to generic Object
-         */
-        ret = PARAM_TYPE_OBJECT;
-        break;
-
-      case 'Promise':
-        ret = PARAM_TYPE_PROMISE;
-        break;
-
-      default:
-        ret = paramTypes[index];
-    }
-  }
-
-  return ret;
-};
 
 export function Required(target: ClassPrototype, propertyKey: string, parameterIndex: number) {
   return applyNoParamDecorator(target, propertyKey, parameterIndex, true);
@@ -140,7 +95,7 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
     propertyKey,
     parameterIndex,
     false,
-    PathDetailsType.RequestBody,
+    ControllerParamType.Body,
     paramFactory,
   );
 }

@@ -2,7 +2,7 @@ import { Singleton } from 'bind';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import Context from './context';
 import { Afterware } from '../lib/decorators';
-import { HttpError } from '../lib/errors';
+import HttpError from '../lib/errors/http';
 import { PRIORITY_RESPONSE_WRITER } from '../lib/consts';
 
 const debug = require('debug')('promiseoft:runtime:responsewriter');

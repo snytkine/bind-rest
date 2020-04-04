@@ -1,16 +1,16 @@
 import { Target, getMethodParamName } from 'bind';
-import { PathDetailsType } from '../../enums/pathdetails';
+import ControllerParamType from '../../enums/controllerparamtype';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
-import { getParamType } from './noargmethodparams';
+import getParamType from './getparamtype';
 
 export default function applyNoParamDecorator(
   target: Target,
   propertyKey: string,
   parameterIndex: number,
   required: boolean = false,
-  methodParamType?: PathDetailsType,
+  methodParamType?: ControllerParamType,
   paramFactory?: ParamExtractorFactory,
 ) {
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
@@ -70,7 +70,7 @@ export default function applyNoParamDecorator(
      *        then we can detect this gap in array here and throw an Error.
      *        At least it will be thrown at initialization time.
      *
-     * @type {{type: PathDetailsType, name: string, position: number}}
+     * @type {{type: ControllerParamType, name: string, position: number}}
      */
     metaDetails[parameterIndex] = {
       f: paramFactory,

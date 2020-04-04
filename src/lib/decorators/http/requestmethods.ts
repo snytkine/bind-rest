@@ -78,7 +78,7 @@ export function GET(
   propertyKey?: string,
   descriptor?: TypedPropertyDescriptor<ControllerFunc>,
 ) {
-  return decorate(target, propertyKey, HTTPMethod.GET);
+  return decorate(target, propertyKey, HTTPMethod.GET, descriptor);
 }
 
 export function PUT(

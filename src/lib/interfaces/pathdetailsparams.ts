@@ -1,4 +1,4 @@
-import { PathDetailsType } from '../enums/pathdetails';
+import ControllerParamType from '../enums/controllerparamtype';
 /**
  * Created by snytkind on 12/29/16.
  */
@@ -8,7 +8,7 @@ import { PathDetailsType } from '../enums/pathdetails';
  * replaced with IControllerParamMeta
  */
 export interface PathDetailsParam {
-  type: PathDetailsType;
+  type: ControllerParamType;
   /**
    * name of parameter.
    * This will be named path param or named query param

@@ -5,6 +5,7 @@ import {
   defineMetadata,
   DEFAULT_SCOPE,
   ComponentScope,
+  Constructor,
 } from 'bind';
 import { IS_CONTROLLER } from '../metaprops';
 
@@ -31,7 +32,7 @@ const TAG = '@Controller';
  * @constructor
  * @returns undefined
  */
-export function Controller(target: Target): void {
+export default function Controller(target: Constructor<any>): void {
   debug('Defining %s for constructor %s', TAG, target.name);
   Component(target);
   const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};

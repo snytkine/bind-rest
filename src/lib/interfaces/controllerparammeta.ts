@@ -1,5 +1,5 @@
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
-import { PathDetailsType } from '../enums';
+import { ControllerParamType } from '../enums';
 import { AsyncValidator } from '../types';
 
 /**
@@ -20,7 +20,7 @@ export interface IControllerParamMeta {
   f: ParamExtractorFactory;
   isRequired: boolean;
   paramName: string;
-  paramDecoratorType: PathDetailsType;
+  paramDecoratorType: ControllerParamType;
   paramType?: any;
   validator?: AsyncValidator;
 }

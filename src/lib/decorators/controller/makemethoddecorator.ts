@@ -1,27 +1,28 @@
+import { ClassPrototype } from 'bind';
 import {
   IMethodDecorator,
-  ControllerFunc, IMiddlewareFactory, IMethodDecoratorFactory,
+  ControllerFunc,
+  IMiddlewareFactory,
+  IMethodDecoratorFactory,
 } from '../../types';
 
-import { ClassPrototype } from 'bind';
 import { SYM_CONTROLLER_MIDDLEWARES } from '../metaprops';
 
 const debug = require('debug')('promiseoft:decorators');
+
 const TAG = 'MAKE-CONTROLLER-DECORATOR';
 
 const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator => {
-
-  return function controllerMethodDecorator(target: ClassPrototype,
-                                            propertyKey: string,
-                                            descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-
+  return function controllerMethodDecorator(
+    target: ClassPrototype,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<ControllerFunc>,
+  ) {
     /**
      * define controller middleware metadata.
      */
-    let aMiddlewares: IMiddlewareFactory[] = Reflect.getMetadata(
-      SYM_CONTROLLER_MIDDLEWARES,
-      target, propertyKey,
-    ) || [];
+    const aMiddlewares: IMiddlewareFactory[] =
+      Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, target, propertyKey) || [];
 
     /**
      * Add array of middleware factories to
@@ -41,7 +42,6 @@ const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator 
     methodType=${typeof descriptor.value}`);
 
     Reflect.defineMetadata(SYM_CONTROLLER_MIDDLEWARES, aMiddlewares, target, propertyKey);
-
   };
 };
 

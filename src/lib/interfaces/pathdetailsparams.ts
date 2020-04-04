@@ -1,9 +1,7 @@
-import {PathDetailsType} from "../enums/pathdetails";
-import {StringOrSymbol} from 'bind';
+import { PathDetailsType } from '../enums/pathdetails';
 /**
  * Created by snytkind on 12/29/16.
  */
-
 
 /**
  * @todo delete this. Not used it V2
@@ -33,6 +31,5 @@ export interface PathDetailsParam {
    * ParamsValidator will throw error
    * if required param is not passed in request
    */
-  required?:boolean
+  required?: boolean;
 }
-

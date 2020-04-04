@@ -15,7 +15,8 @@
   "parser": "@typescript-eslint/parser",
   "rules": {
     "no-inner-declarations": "off",
-    "no-restricted-syntax": "off"
+    "no-restricted-syntax": "off",
+    "import/no-extraneous-dependencies": "off"
   },
   "overrides": [
     {

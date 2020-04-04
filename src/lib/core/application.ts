@@ -1,9 +1,8 @@
 import * as http from 'http';
+import { IfIocContainer, Container, load, Maybe, notEmpty, Identity, ComponentScope } from 'bind';
+import * as path from 'path';
 import Context from '../../components/context';
-import {
-  ApplicationOptions,
-  AppErrorHandlerFunc,
-} from '../interfaces';
+import { ApplicationOptions, AppErrorHandlerFunc } from '../interfaces';
 import { MiddlewareFunc } from '../types';
 
 import {
@@ -13,38 +12,31 @@ import {
   getErrorHandlers,
 } from './apputils';
 
-import {
-  IfIocContainer,
-  Container,
-  load,
-  Maybe,
-  notEmpty,
-  Identity,
-  ComponentScope,
-} from 'bind';
-
-import * as path from 'path';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
 import { APPLICATION_COMPONENT } from '../consts';
 
 const debug = require('debug')('promiseoft:runtime:application');
+
 const TAG = 'APPLICATION';
 
 export const validateOptions = (options: ApplicationOptions): void => {
   if (options.baseUrl) {
     if (!options.baseUrl.startsWith('/')) {
-      throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl must start with a "/"`);
+      throw new Error(
+        `Bad value of baseUrl option "${options.baseUrl}" baseUrl must start with a "/"`,
+      );
     }
 
     if (options.baseUrl.endsWith('/')) {
-      throw new Error(`Bad value of baseUrl option "${options.baseUrl}" baseUrl cannot end with a "/"`);
+      throw new Error(
+        `Bad value of baseUrl option "${options.baseUrl}" baseUrl cannot end with a "/"`,
+      );
     }
   }
 };
 
 export class Application {
-
   private middlewares: Array<MiddlewareFunc> = [];
 
   private errHandlers: Array<AppErrorHandlerFunc> = [errorHandler];
@@ -94,20 +86,18 @@ export class Application {
     registerProcessEventListeners(this);
   }
 
-
-  get settings(): ApplicationOptions{
+  get settings(): ApplicationOptions {
     return this.configOptions;
   }
 
-  set settings(options: ApplicationOptions){
+  set settings(options: ApplicationOptions) {
     validateOptions(options);
     this.configOptions = options;
   }
 
-  get container(){
+  get container() {
     return this.bindContainer;
   }
-
 
   registerApplicationComponent() {
     this.bindContainer.addComponent({
@@ -121,13 +111,11 @@ export class Application {
   }
 
   onExit(exitCode: number): Promise<number> {
-
     return new Promise((resolve) => {
       debug('%s onExit called with code=%d', TAG, exitCode);
       resolve(exitCode);
     });
   }
-
 
   /**
    * Main application request/response function
@@ -137,8 +125,7 @@ export class Application {
    * @param res Node.js response http.ServerResponse
    */
   public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-
-    const ctx = (new Context()).init(req, res);
+    const ctx = new Context().init(req, res);
 
     const handlerPromise = this.middlewares.reduce((prev, next) => {
       return prev.then(next);
@@ -149,53 +136,54 @@ export class Application {
       runners.push(rejectLater(~~this.configOptions.timeout));
     }
 
-    Promise.race(runners).catch(e => {
-        return this.errHandlers.map(eh => eh(ctx)).reduceRight((acc: Maybe<Error>, next) => {
+    Promise.race(runners).catch((e) => {
+      return this.errHandlers
+        .map((eh) => eh(ctx))
+        .reduceRight((acc: Maybe<Error>, next) => {
           return next(acc);
         }, e);
-      },
-    );
+    });
   }
 
-
   init(): Promise<http.RequestListener> {
-    return this.container.initialize()
+    return this.container
+      .initialize()
       .then(() => (req: http.IncomingMessage, res: http.ServerResponse) => {
         return this.handleRequest(req, res);
       });
   }
 
   init_(): Promise<http.RequestListener> {
-    return this.container.initialize()
+    return this.container
+      .initialize()
       .then(() => (req: http.IncomingMessage, res: http.ServerResponse) => {
+        const ctx = new Context().init(req, res);
 
-        const ctx = (new Context()).init(req, res);
-
-        const handlerPromise = this.middlewares.reduce((prev, next) => {
-          return prev.then(next);
-        }, this.middlewares.shift()(ctx)).catch(e => {
-          console.log('Exception in handler');
-          return e;
-        });
+        const handlerPromise = this.middlewares
+          .reduce((prev, next) => {
+            return prev.then(next);
+          }, this.middlewares.shift()(ctx))
+          .catch((e) => {
+            console.log('Exception in handler');
+            return e;
+          });
 
         const runners: Array<Promise<Context>> = [handlerPromise];
-        /*if (this.configOptions?.timeout > 0) {
+        /* if (this.configOptions?.timeout > 0) {
          runners.push(rejectLater(~~this.configOptions.timeout));
-         }*/
+         } */
 
-        Promise.race(runners)
-          .catch(e => {
-              return this.errHandlers.map(eh => eh(ctx)).reduceRight((acc: Maybe<Error>, next) => {
-                return next(acc);
-              }, e);
-            },
-          );
-
+        Promise.race(runners).catch((e) => {
+          return this.errHandlers
+            .map((eh) => eh(ctx))
+            .reduceRight((acc: Maybe<Error>, next) => {
+              return next(acc);
+            }, e);
+        });
       });
   }
 
   toString() {
     return 'Application Instance';
   }
-
 }

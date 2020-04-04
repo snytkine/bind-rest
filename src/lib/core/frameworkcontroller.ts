@@ -6,10 +6,12 @@ import { IControllerDetails } from '../interfaces';
 const defaultMatcher = (ctx: Context) => true;
 
 export default class FrameworkController implements IControllerContainer {
-
   public readonly controller: IController;
+
   public readonly id: string;
+
   public readonly priority: number;
+
   public readonly matcher: IControllerMatcher;
 
   constructor(controllerDetails: IControllerDetails) {
@@ -21,10 +23,7 @@ export default class FrameworkController implements IControllerContainer {
 
   equals(other: IControllerContainer) {
     return (
-      other instanceof FrameworkController &&
-      other.id===this.id &&
-      other.matcher===this.matcher
+      other instanceof FrameworkController && other.id === this.id && other.matcher === this.matcher
     );
   }
-
 }

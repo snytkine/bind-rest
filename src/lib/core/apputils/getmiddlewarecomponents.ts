@@ -8,7 +8,7 @@ import { MIDDLEWARE_PRIORITY } from '../../decorators';
  * @param container
  */
 export default function getMiddlewareComponents(container: IfIocContainer): Array<IfIocComponent> {
-  return container.components.filter(comp => {
-    return comp?.componentMetaData?.[MIDDLEWARE_PRIORITY]!==undefined;
+  return container.components.filter((comp) => {
+    return comp?.componentMetaData?.[MIDDLEWARE_PRIORITY] !== undefined;
   });
 }

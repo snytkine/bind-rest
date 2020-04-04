@@ -1,3 +1,4 @@
+import { Maybe, isDefined } from 'bind';
 import { IControllerParamMeta } from '../interfaces';
 import {
   DOTTED_LINE,
@@ -16,18 +17,18 @@ import {
   IntoPromise,
 } from '../types/paramvalidatorfunc';
 import Context from '../../components/context';
-import { Maybe, isDefined } from 'bind';
 
 const debug = require('debug')('promiseoft:runtime:validation');
+
 const TAG = 'ParamsValidator';
 
 export const printErrors = (errors: Array<Error>): string => {
-  return errors.map(e => e.message).join('\n');
+  return errors.map((e) => e.message).join('\n');
 };
 
 type IParamsValidator = (params: ParamsWithMeta) => ParamsWithMeta;
 
-export const isNullOrUndefined = (val: any): boolean => val===undefined || val===null;
+export const isNullOrUndefined = (val: any): boolean => val === undefined || val === null;
 
 /**
  * Validates that input is a number
@@ -35,7 +36,6 @@ export const isNullOrUndefined = (val: any): boolean => val===undefined || val==
  * @returns number|undefined
  */
 export const toNumber = (i: any): Number | TypeError => {
-
   /**
    * If undefined then return it as undefined
    * Do not convert to number. This way
@@ -43,7 +43,7 @@ export const toNumber = (i: any): Number | TypeError => {
    */
   if (isNullOrUndefined(i)) return undefined;
 
-  let x = Number(i);
+  const x = Number(i);
   if (isNaN(x)) {
     return new TypeError();
   }
@@ -51,9 +51,7 @@ export const toNumber = (i: any): Number | TypeError => {
   return x;
 };
 
-
 export const toArray = (i: any): Array<any> | TypeError => {
-
   /**
    * If undefined then return it as undefined
    * Do not convert to number. This way
@@ -77,7 +75,6 @@ export const toArray = (i: any): Array<any> | TypeError => {
  * @returns boolean|undefined
  */
 export const toBoolean = (s: any): boolean | TypeError => {
-
   /**
    * If undefined then return it as undefined
    * Do not convert to boolean. This way
@@ -85,22 +82,23 @@ export const toBoolean = (s: any): boolean | TypeError => {
    */
   if (isNullOrUndefined(s)) return undefined;
 
-  if (typeof s==='boolean') {
+  if (typeof s === 'boolean') {
     return s;
-  } else if (typeof s!=='string') {
+  }
+  if (typeof s !== 'string') {
     return new TypeError();
   }
 
   s = s.toLocaleLowerCase();
-  if (s==='false' || s==='0') {
+  if (s === 'false' || s === '0') {
     return false;
-  } else if (s==='true' || s==='1') {
+  }
+  if (s === 'true' || s === '1') {
     return true;
   }
 
   return new TypeError();
 };
-
 
 /**
  * If null of undefined return empty string
@@ -114,51 +112,48 @@ export const toBoolean = (s: any): boolean | TypeError => {
  * @returns {any}
  */
 export const toString = (s: any): string | TypeError => {
-
   /**
    * If undefined then return it as undefined
    * Do not convert to string. This way
    * it will be possible to use default value in controller
    */
   if (isNullOrUndefined(s)) return undefined;
-  if (typeof s==='string') return s;
+  if (typeof s === 'string') return s;
   if (s instanceof String) return s.valueOf();
-  if (typeof s==='number') return String(s);
+  if (typeof s === 'number') return String(s);
 
   return new TypeError();
 };
 
-
 export const paramTypeToString = (paramType: any): string => {
   let ret = toString(paramType);
-  if (paramType===null) {
+  if (paramType === null) {
     return 'Null';
-  } else if (paramType===undefined) {
+  }
+  if (paramType === undefined) {
     return 'undefined';
-  } else if (typeof ret==='string') {
+  }
+  if (typeof ret === 'string') {
     return ret;
-  } else if (paramType.name) {
+  }
+  if (paramType.name) {
     return paramType.name;
-  } else {
-    try {
-      ret = '' + paramType;
-      return ret;
-    } catch (e) {
-      return 'UNKNOWN_TYPE';
-    }
+  }
+  try {
+    ret = `${paramType}`;
+    return ret;
+  } catch (e) {
+    return 'UNKNOWN_TYPE';
   }
 };
 
 interface ParamsWithMeta {
-  params: Array<any>
-  meta: Array<IControllerParamMeta>
+  params: Array<any>;
+  meta: Array<IControllerParamMeta>;
 }
 
-
 export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
-
   const params = o.params.map((param, i) => {
-
     if (param instanceof Error) return param;
 
     if (o.meta[i] && o.meta[i].isRequired && isNullOrUndefined(param)) {
@@ -176,9 +171,7 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
 }
 
 export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
-
   const params = o.params.map((param, i) => {
-
     if (param instanceof Error) return param;
 
     let ret: any;
@@ -217,7 +210,7 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
            *
            * For a RequestBody set param prototype to custom paramType
            */
-          if (o.meta[i].paramDecoratorType===PathDetailsType.RequestBody) {
+          if (o.meta[i].paramDecoratorType === PathDetailsType.RequestBody) {
             /**
              * Check that param is NOT a string
              * if request did not have content-type header with application/json
@@ -225,22 +218,23 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
              * converted to JSON
              * in such case throw exception
              */
-            if (typeof param==='string') {
-              debug('%s Cannot set prototype of body param to %s because body is string',
-                TAG, paramTypeToString(o.meta[i].paramType));
+            if (typeof param === 'string') {
+              debug(
+                '%s Cannot set prototype of body param to %s because body is string',
+                TAG,
+                paramTypeToString(o.meta[i].paramType),
+              );
               ret = new TypeError();
             } else {
               debug('%s Setting prototype of Body param to "%s"', TAG, o.meta[i].paramType?.name);
               Reflect.setPrototypeOf(param, o.meta[i].paramType);
               ret = param;
             }
-          } else if (param instanceof o.meta[i].paramType
-          ) {
+          } else if (param instanceof o.meta[i].paramType) {
             ret = param;
           } else {
             ret = new TypeError();
           }
-
       }
     }
 
@@ -260,19 +254,16 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
   return { params, meta: o.meta };
 }
 
-
 function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: string) {
-
   return function paramsValidator(params: Array<any>): Array<any> {
+    const res = [validateRequired, setParamType].reduce(
+      (acc, next) => {
+        return next(acc);
+      },
+      { params, meta },
+    );
 
-    const res = [
-      validateRequired,
-      setParamType,
-    ].reduce((acc, next) => {
-      return next(acc);
-    }, { params, meta });
-
-    const errors = res.params.filter(param => param instanceof Error);
+    const errors = res.params.filter((param) => param instanceof Error);
     if (errors && errors.length > 0) {
       const message = printErrors(errors);
       /**
@@ -282,17 +273,15 @@ function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: 
     }
 
     return res.params;
-
   };
 }
 
-
-function makeValidateAsync(context: Context,
-                           validators: Array<AsyncContextParamValidator>,
-                           controllerName: string): IntoPromise<Array<any>> {
-
-
-  const asyncValidators: Array<AsyncParamValidator> = validators.map(v => v(context));
+function makeValidateAsync(
+  context: Context,
+  validators: Array<AsyncContextParamValidator>,
+  controllerName: string,
+): IntoPromise<Array<any>> {
+  const asyncValidators: Array<AsyncParamValidator> = validators.map((v) => v(context));
 
   return function validateParamsAsync(params: any[]): Promise<any[]> {
     debug('%s Entered validateParamsAsync with params=%o', TAG, params);
@@ -304,10 +293,10 @@ function makeValidateAsync(context: Context,
          */
         if (asyncValidators[i]) {
           return asyncValidators[i](param);
-        } else {
-          return undefined;
         }
-      });
+        return undefined;
+      },
+    );
 
     return Promise.all(validationResults).then((results: Array<Maybe<Error>>) => {
       /**
@@ -333,7 +322,6 @@ function makeValidateAsync(context: Context,
         return params;
       }
     });
-
   };
 }
 

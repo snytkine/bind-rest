@@ -1,4 +1,4 @@
-import { IfIocContainer, IfIocComponent, } from 'bind';
+import { IfIocContainer, IfIocComponent } from 'bind';
 import { IS_CONTROLLER } from '../../decorators';
 
 /**
@@ -8,7 +8,7 @@ import { IS_CONTROLLER } from '../../decorators';
  * @param container
  */
 export default function getControllerComponents(container: IfIocContainer): Array<IfIocComponent> {
-  return container.components.filter(comp => {
-    return comp.componentMetaData !== undefined && comp.componentMetaData[IS_CONTROLLER]===true;
+  return container.components.filter((comp) => {
+    return comp.componentMetaData !== undefined && comp.componentMetaData[IS_CONTROLLER] === true;
   });
 }

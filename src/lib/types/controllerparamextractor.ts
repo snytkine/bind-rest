@@ -1,5 +1,5 @@
+import { IfIocContainer } from 'bind';
 import Context from '../../components/context';
-import {IfIocContainer} from 'bind';
 
 /**
  * FutureParam function can return value or Promise<value>

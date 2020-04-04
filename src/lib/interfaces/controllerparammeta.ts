@@ -17,10 +17,10 @@ import { AsyncValidator } from '../types';
  * other custom validators for body in addition to Schema Validator
  */
 export interface IControllerParamMeta {
-  f: ParamExtractorFactory
-  isRequired: boolean
-  paramName: string
-  paramDecoratorType: PathDetailsType
-  paramType?: any
-  validator?: AsyncValidator
+  f: ParamExtractorFactory;
+  isRequired: boolean;
+  paramName: string;
+  paramDecoratorType: PathDetailsType;
+  paramType?: any;
+  validator?: AsyncValidator;
 }

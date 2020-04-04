@@ -1,1 +1,1 @@
-export const SYM_ERROR_HANDLER = Symbol.for("@ErrorHandler");
+export const SYM_ERROR_HANDLER = Symbol.for('@ErrorHandler');

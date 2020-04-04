@@ -1,9 +1,9 @@
 export interface ApplicationOptions {
-  componentDirs: string[]
-  timeout?:number
-  baseUrl?:string
+  componentDirs: string[];
+  timeout?: number;
+  baseUrl?: string;
   validation?: {
-    jsonSchema?: boolean
-  }
-  extraComponents?: Array<any>
+    jsonSchema?: boolean;
+  };
+  extraComponents?: Array<any>;
 }

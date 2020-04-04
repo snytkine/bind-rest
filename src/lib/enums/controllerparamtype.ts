@@ -1,4 +1,3 @@
-
 export enum PathDetailsType {
   PathParam = 2001,
   QueryString,

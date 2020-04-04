@@ -1,7 +1,4 @@
 import 'reflect-metadata';
-import { IMiddleware } from '../interfaces';
-import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import { MiddlewareFunc, IMiddlewareFactory, ControllerFunc } from '../types';
 import {
   Constructor,
   ClassPrototype,
@@ -11,13 +8,16 @@ import {
   IfIocComponent,
   ComponentIdentity,
 } from 'bind';
+import { IMiddleware } from '../interfaces';
+import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
+import { MiddlewareFunc, IMiddlewareFactory, ControllerFunc } from '../types';
 import Context from '../../components/context';
 
 const debug = require('debug')('promiseoft:decorators');
+
 const TAG = '@Middlewares';
 
 export const toMWFactory = (middleware: Constructor<IMiddleware>): IMiddlewareFactory => {
-
   return (container: IfIocContainer) => {
     const mwID = <ComponentIdentity>Reflect.getMetadata(COMPONENT_IDENTITY, middleware);
     debug('%s got mwID="%s"', TAG, mwID);
@@ -33,17 +33,12 @@ export const toMWFactory = (middleware: Constructor<IMiddleware>): IMiddlewareFa
 };
 
 export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFactory => {
-
   return (container: IfIocContainer) => {
-
-    const aMW: Array<MiddlewareFunc> = arr.map(f => f(container));
+    const aMW: Array<MiddlewareFunc> = arr.map((f) => f(container));
 
     return (context: Context): Promise<Context> => {
-
       return aMW.reduce((acc, next) => {
-
         return acc.then(next);
-
       }, Promise.resolve(context));
     };
   };
@@ -58,21 +53,21 @@ export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFact
  * @constructor
  */
 export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
-
-  return function middlewaresDecorator(target: ClassPrototype,
-                                       propertyKey: string,
-                                       descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-
-    debug('%s defining on controller method="%s.%s" descriptorTime="%s"',
+  return function middlewaresDecorator(
+    target: ClassPrototype,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<ControllerFunc>,
+  ) {
+    debug(
+      '%s defining on controller method="%s.%s" descriptorTime="%s"',
       TAG,
-      target.constructor?.name, propertyKey,
+      target.constructor?.name,
+      propertyKey,
       typeof descriptor.value,
     );
 
-    let aMiddlewares: IMiddlewareFactory[] = Reflect.getMetadata(
-      SYM_CONTROLLER_MIDDLEWARES,
-      target, propertyKey,
-    ) || [];
+    let aMiddlewares: IMiddlewareFactory[] =
+      Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, target, propertyKey) || [];
 
     /**
      * Add array of middleware factories to
@@ -95,7 +90,7 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
     /**
      * Need to get array if Identities from array of IMiddleware constructors
      */
-    const extraDependencies: Array<ComponentIdentity> = middlewares.map(dep => {
+    const extraDependencies: Array<ComponentIdentity> = middlewares.map((dep) => {
       const ret = Reflect.getMetadata(COMPONENT_IDENTITY, dep);
       if (!ret) {
         throw new Error(`${TAG} decorator. Could not determine identity of middleware ${dep.name}`);
@@ -111,6 +106,5 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
      * for extraction as dependencies.
      */
     Reflect.defineMetadata(EXTRA_DEPENDENCIES, extraDependencies, target, propertyKey);
-
   };
 }

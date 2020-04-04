@@ -1,5 +1,5 @@
+import { Maybe } from 'bind';
 import Context from '../../components/context';
-import {Maybe} from 'bind';
 
 /**
  * Error Handle Class must have handleError method which takes
@@ -14,5 +14,5 @@ import {Maybe} from 'bind';
 export type AppErrorHandlerFunc = (ctx: Context) => (e: Maybe<Error>) => Maybe<Error>;
 
 export interface AppErrorHandler {
-  handleError: AppErrorHandlerFunc
+  handleError: AppErrorHandlerFunc;
 }

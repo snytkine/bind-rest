@@ -12,7 +12,7 @@ export default function RequestMatch(matcher: IControllerMatcher) {
     const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
     if (metaData[CONTROLLER_MATCHER]) {
       throw new ApplicationError(`CONTROLLER_MATCHER is already defined 
-      for controller "${target.constructor.name}.${propertyKey}"`);
+      for controller "${target.constructor.name}.${propertyKey}" (${typeof descriptor?.value})`);
     }
 
     metaData[CONTROLLER_MATCHER] = matcher;

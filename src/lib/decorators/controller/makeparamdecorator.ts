@@ -1,6 +1,6 @@
 import { ClassPrototype } from 'bind';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
-import { PathDetailsType } from '../../enums/pathdetails';
+import ControllerParamType from '../../enums/controllerparamtype';
 import { IParamDecoratorFactory } from '../../types/decoratorfactory';
 import applyNoParamDecorator from './applysingledecorator';
 import { IParamDecorator } from '../../types/paramdecoratorfunc';
@@ -16,7 +16,7 @@ const paramDecorator = (decoratorFactory: ParamExtractorFactory): IParamDecorato
       propertyKey,
       parameterIndex,
       false,
-      PathDetailsType.CustomParamDecorator,
+      ControllerParamType.CustomParamDecorator,
       decoratorFactory,
     );
   };
@@ -28,7 +28,7 @@ function makeParamDecorator(f?: ParamExtractorFactory): IParamDecorator | IParam
   if (f) {
     return paramDecorator(f);
   }
-  return (f: ParamExtractorFactory) => paramDecorator(f);
+  return (factory: ParamExtractorFactory) => paramDecorator(factory);
 }
 
 export default makeParamDecorator;

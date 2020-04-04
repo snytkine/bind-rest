@@ -1,4 +1,4 @@
-export enum PathDetailsType {
+enum ControllerParamType {
   PathParam = 2001,
   QueryString,
   QueryParam,
@@ -19,4 +19,7 @@ export enum PathDetailsType {
   Body,
   Form,
   FormParam,
+  CustomParamDecorator,
 }
+
+export default ControllerParamType;

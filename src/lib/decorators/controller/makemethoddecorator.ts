@@ -52,7 +52,7 @@ function makeDecorator(f?: IMiddlewareFactory): IMethodDecorator | IMethodDecora
   if (f) {
     ret = decorateMethod(f);
   } else {
-    ret = (f: IMiddlewareFactory) => decorateMethod(f);
+    ret = (factory: IMiddlewareFactory) => decorateMethod(factory);
   }
 
   return ret;

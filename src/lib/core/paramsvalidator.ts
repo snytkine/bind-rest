@@ -1,15 +1,14 @@
 import { Maybe, isDefined } from 'bind';
 import { IControllerParamMeta } from '../interfaces';
 import {
-  DOTTED_LINE,
   PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
   PARAM_TYPE_OBJECT,
   PARAM_TYPE_STRING,
-} from '../consts';
+} from '../consts/controllermethodparams';
 
-import { PathDetailsType } from '../enums';
+import ControllerParamType from '../enums/controllerparamtype';
 import { ValidationError } from './apperrors';
 import {
   AsyncContextParamValidator,
@@ -17,6 +16,7 @@ import {
   IntoPromise,
 } from '../types/paramvalidatorfunc';
 import Context from '../../components/context';
+import { DOTTED_LINE } from '../consts/dottedline';
 
 const debug = require('debug')('promiseoft:runtime:validation');
 
@@ -159,7 +159,7 @@ export function validateRequired(o: ParamsWithMeta): ParamsWithMeta {
     if (o.meta[i] && o.meta[i].isRequired && isNullOrUndefined(param)) {
       return new Error(`
       Required parameter not passed from request
-      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
+      parameterType="${ControllerParamType[o.meta[i].paramDecoratorType]}" 
       parameterName="${o.meta[i].paramName}" 
       position="${i + 1}"`);
     }
@@ -210,7 +210,7 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
            *
            * For a RequestBody set param prototype to custom paramType
            */
-          if (o.meta[i].paramDecoratorType === PathDetailsType.RequestBody) {
+          if (o.meta[i].paramDecoratorType === ControllerParamType.Body) {
             /**
              * Check that param is NOT a string
              * if request did not have content-type header with application/json
@@ -242,7 +242,7 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
       return new Error(`
       Request parameter of type "${typeof param}" 
       cannot be converted to "${paramTypeToString(o.meta[i].paramType)}"
-      parameterType="${PathDetailsType[o.meta[i].paramDecoratorType]}" 
+      parameterType="${ControllerParamType[o.meta[i].paramDecoratorType]}" 
       parameterName="${o.meta[i].paramName}" 
       position="${i + 1}" 
       `);

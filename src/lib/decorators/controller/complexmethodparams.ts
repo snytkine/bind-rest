@@ -2,9 +2,9 @@ import 'reflect-metadata';
 import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } from 'bind';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
-import { PathDetailsType } from '../../enums/pathdetails';
+import ControllerParamType from '../../enums/controllerparamtype';
 import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
-import { getParamType } from './noargmethodparams';
+import getParamType from './getparamtype';
 import makeParamExtractorFactory from './makeparamextractorfactory';
 
 const debug = require('debug')('promiseoft:decorators');
@@ -23,25 +23,26 @@ function applyParamAnnotation(
   propertyKey: string,
 ): undefined {
   const index = methodArgumentDetail.position;
-  /**
-   *  Array of objects of PathDetailsParam
-   *  This array gets new element each time this function is run on
-   *  the same method which is the case where multiple arguments of the method
-   *  are annotated with @PathParam
-   */
-  let metaDetails: Array<IControllerParamMeta>;
+
   const targetStereoType = getTargetStereotype(target);
   debug('%s targetStereoType="%s"', TAG, targetStereoType);
 
   if (targetStereoType !== TargetStereoType.PROTOTYPE) {
-    throw new TypeError(`${PathDetailsType[methodArgumentDetail.type]} 
+    throw new TypeError(`${ControllerParamType[methodArgumentDetail.type]} 
     can be added only to class method`);
   }
 
   debug(`Defining @PathParam ${String(methodArgumentDetail.name)} for arg ${index} 
   of method ${target.constructor.name}.${String(propertyKey)}`);
 
-  metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey) || [];
+  /**
+   *  Array of objects of PathDetailsParam
+   *  This array gets new element each time this function is run on
+   *  the same method which is the case where multiple arguments of the method
+   *  are annotated with @PathParam
+   */
+  const metaDetails: Array<IControllerParamMeta> =
+    Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey) || [];
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
 
   if (metaDetails[index]) {
@@ -84,7 +85,7 @@ function applyParamAnnotation(
      *        then we can detect this gap in array here and throw an Error.
      *        At least it will be thrown at initialization time.
      *
-     * @type {{type: PathDetailsType, name: string, position: number}}
+     * @type {{type: ControllerParamType, name: string, position: number}}
      */
     metaDetails[index] = {
       f: makeParamExtractorFactory(methodArgumentDetail.type, methodArgumentDetail.name),
@@ -104,7 +105,7 @@ function applyParamAnnotation(
 
 export const doParamAnnotation = (
   name: string,
-  paramType: PathDetailsType,
+  paramType: ControllerParamType,
 ): ParamDecoratorFunction => (
   target: Target,
   propertyKey: string,
@@ -131,7 +132,7 @@ export const doParamAnnotation = (
  * @param target
  */
 export const delegateParamAnnotation = (target: Target | string) => (
-  paramType: PathDetailsType,
+  paramType: ControllerParamType,
 ) => (propertyKey: string, parameterIndex: number): ParamDecoratorFunction | undefined => {
   if (typeof target === 'string') {
     return doParamAnnotation(target, paramType);
@@ -144,13 +145,19 @@ export const delegateParamAnnotation = (target: Target | string) => (
 export function PathParam(name: string);
 export function PathParam(target: Target, propertyKey: string, parameterIndex: number);
 export function PathParam(target: Target | string, propertyKey?: string, parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.PathParam)(propertyKey, parameterIndex);
+  return delegateParamAnnotation(target)(ControllerParamType.PathParam)(
+    propertyKey,
+    parameterIndex,
+  );
 }
 
 export function QueryParam(name: string);
 export function QueryParam(target: Target, propertyKey: string, parameterIndex: number);
 export function QueryParam(target: Target | string, propertyKey?: string, parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.QueryParam)(propertyKey, parameterIndex);
+  return delegateParamAnnotation(target)(ControllerParamType.QueryParam)(
+    propertyKey,
+    parameterIndex,
+  );
 }
 
 export function HeaderParam(name: string);
@@ -160,7 +167,7 @@ export function HeaderParam(
   propertyKey?: string,
   parameterIndex?: number,
 ) {
-  return delegateParamAnnotation(target)(PathDetailsType.HeaderParam)(propertyKey, parameterIndex);
+  return delegateParamAnnotation(target)(ControllerParamType.Header)(propertyKey, parameterIndex);
 }
 
 export function CookieParam(name: string);
@@ -170,7 +177,7 @@ export function CookieParam(
   propertyKey?: string,
   parameterIndex?: number,
 ) {
-  return delegateParamAnnotation(target)(PathDetailsType.CookieParam)(propertyKey, parameterIndex);
+  return delegateParamAnnotation(target)(ControllerParamType.Cookie)(propertyKey, parameterIndex);
 }
 
 export function ContextParam(name: string);
@@ -180,7 +187,7 @@ export function ContextParam(
   propertyKey?: string,
   parameterIndex?: number,
 ) {
-  return delegateParamAnnotation(target)(PathDetailsType.ContextScopeParam)(
+  return delegateParamAnnotation(target)(ControllerParamType.ContextParam)(
     propertyKey,
     parameterIndex,
   );

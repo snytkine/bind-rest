@@ -26,8 +26,6 @@ export const printErrors = (errors: Array<Error>): string => {
   return errors.map((e) => e.message).join('\n');
 };
 
-type IParamsValidator = (params: ParamsWithMeta) => ParamsWithMeta;
-
 export const isNullOrUndefined = (val: any): boolean => val === undefined || val === null;
 
 /**

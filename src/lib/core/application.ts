@@ -1,6 +1,15 @@
 import http from 'http';
 import path from 'path';
-import { IfIocContainer, Container, load, Maybe, notEmpty, Identity, ComponentScope } from 'bind';
+import {
+  IfIocContainer,
+  Container,
+  load,
+  Maybe,
+  notEmpty,
+  Identity,
+  ComponentScope,
+  isDefined,
+} from 'bind';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
@@ -12,10 +21,12 @@ import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
 import errorHandler from './apputils/errorhandler';
 import getErrorHandlers from './apputils/geterrorhandlers';
 import registerProcessEventListeners from './apputils/processexithelper';
+import ApplicationError from '../errors/applicationerror';
 
 const debug = require('debug')('promiseoft:runtime:application');
 
 const TAG = 'APPLICATION';
+const APPLICATION_COMPONENTS_DIR = path.resolve(__dirname, '../../components');
 
 export const validateOptions = (options: ApplicationOptions): void => {
   if (options.baseUrl) {
@@ -51,35 +62,10 @@ export class Application {
    * generate middlewares from sorted preProcessors, routerHandler, sorted postProcessors
    */
   constructor(options: ApplicationOptions) {
-    validateOptions(options);
     this.settings = options;
 
     this.bindContainer = new Container();
-    const frameworkComponentsDir = path.resolve(__dirname, '../../components');
-    load(this.bindContainer, [...options.componentDirs, frameworkComponentsDir]);
-    /**
-     * @todo add extra components here, before parsing controllers because
-     * extra components may container controllers and middlewares
-     *
-     */
 
-    /**
-     * All components are loaded into container
-     * Now parse all controllers and add routes to router
-     */
-    setupRoutes(this.bindContainer);
-
-    /**
-     * Get all Middleware, sort then by order (lower order first)
-     * and create array of middleware functions.
-     */
-    this.middlewares = getMiddlewares(this.bindContainer);
-    debug('%s got %d middleware functions', TAG, this.middlewares.length);
-
-    this.errHandlers = this.errHandlers.concat(getErrorHandlers(this.container)).filter(notEmpty);
-    debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
-
-    this.registerApplicationComponent();
     registerProcessEventListeners(this);
   }
 
@@ -96,8 +82,58 @@ export class Application {
     return this.bindContainer;
   }
 
-  registerApplicationComponent() {
-    this.bindContainer.addComponent({
+  /**
+   * Initialize container
+   * then setup middlewares, routes, errorHandlers
+   * register this application as container component
+   * and then set the container as instance variable
+   * of this application object
+   *
+   * It therefore should be possible to replace the container
+   * with another container in the running application
+   * but only if passed-in container initializes without errors.
+   *
+   * @param container
+   */
+  public async setContainer(container: IfIocContainer): Promise<Maybe<IfIocContainer>> {
+    load(container, [...this.configOptions.componentDirs, APPLICATION_COMPONENTS_DIR]);
+    /**
+     * @todo add extra components here, before parsing controllers because
+     * extra components may container controllers and middlewares
+     *
+     */
+    try {
+      const initializedContainer: IfIocContainer = await container.initialize();
+      /**
+       * All components are loaded into container
+       * Now parse all controllers and add routes to router
+       */
+      setupRoutes(initializedContainer);
+
+      /**
+       * Get all Middleware, sort then by order (lower order first)
+       * and create array of middleware functions.
+       */
+      this.middlewares = getMiddlewares(initializedContainer);
+      debug('%s got %d middleware functions', TAG, this.middlewares.length);
+
+      this.errHandlers = this.errHandlers
+        .concat(getErrorHandlers(initializedContainer))
+        .filter(notEmpty);
+      debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
+
+      this.registerApplicationComponent(initializedContainer);
+      const previousContainer = this.bindContainer;
+      this.bindContainer = initializedContainer;
+
+      return previousContainer;
+    } catch (e) {
+      throw new ApplicationError(`Failed to initialize container Error=${e.message}`, e);
+    }
+  }
+
+  registerApplicationComponent(container: IfIocContainer) {
+    container.addComponent({
       identity: Identity(APPLICATION_COMPONENT),
       propDependencies: [],
       constructorDependencies: [],
@@ -108,9 +144,11 @@ export class Application {
   }
 
   onExit(exitCode: number): Promise<number> {
-    return new Promise((resolve) => {
-      debug('%s %s onExit called with code=%d', TAG, this.toString(), exitCode);
-      resolve(exitCode);
+    debug('%s %s onExit called with code=%d', TAG, this.toString(), exitCode);
+
+    return this.container.cleanup().then((status) => {
+      debug('%s Container cleanup completed with res="%s"', TAG, status);
+      return exitCode;
     });
   }
 
@@ -143,11 +181,12 @@ export class Application {
   }
 
   init(): Promise<http.RequestListener> {
-    return this.container
-      .initialize()
-      .then(() => (req: http.IncomingMessage, res: http.ServerResponse) => {
+    return this.setContainer(this.container).then((previous) => {
+      debug('%s finished setContainer. previousContainer %s', TAG, isDefined(previous));
+      return (req: http.IncomingMessage, res: http.ServerResponse) => {
         return this.handleRequest(req, res);
-      });
+      };
+    });
   }
 
   toString() {

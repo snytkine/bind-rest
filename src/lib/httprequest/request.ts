@@ -11,6 +11,7 @@ import { ILogger } from '../interfaces/logger';
 import { HttpResponse, HttpErrorResponse, stringifyBody } from '../httpresponse';
 import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
 import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
+import ApplicationError from '../errors/applicationerror';
 
 const debug = require('debug')('promiseoft:request');
 
@@ -64,6 +65,7 @@ export function requestLogger(logger: ILogger, headers: Object): ILogger {
   return reqLogger;
 }
 
+/* eslint-disable no-param-reassign */
 function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOptions {
   debug(TAG, 'Entered setServiceOptions with options: ', options);
 
@@ -77,7 +79,7 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
       options.requestOptions.headers = {};
     }
 
-    options.requestOptions.headers.Authorization = `Basic ${new Buffer(
+    options.requestOptions.headers.Authorization = `Basic ${Buffer.from(
       `${options.basicAuth.user}:${options.basicAuth.password}`,
       'utf8',
     ).toString('base64')}`;
@@ -97,7 +99,7 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
       options.requestOptions.port = 443;
     }
 
-    if (options.disableCertificateValidation == true) {
+    if (options.disableCertificateValidation === true) {
       options.requestOptions.rejectUnauthorized = false;
 
       debug(TAG, 'added rejectUnauthorized');
@@ -120,10 +122,11 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
      * Set tunneling agent if the endpoint requires a proxy otherwise use a regular https agent;
      */
     options.requestOptions.protocol = 'http:';
-    options.requestOptions.agent = options.hasOwnProperty('proxy')
-      ? getHTTPOverHTTPTunnel(options)
-      : false; // new
-    // http.Agent(options.requestOptions);
+    if (options.proxy) {
+      options.requestOptions.agent = getHTTPOverHTTPTunnel(options);
+    } else {
+      options.requestOptions.agent = false;
+    }
   }
 
   if (options.requestOptions.port) {
@@ -212,7 +215,6 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
     let request: http.ClientRequest;
     let resolved;
     let timeoutOccured = false;
-    let timeoutId;
 
     if (typeof options.payload === 'string') {
       const payloadLen = Buffer.byteLength(options.payload);
@@ -223,7 +225,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       }
       options.requestOptions.headers['Content-Length'] = payloadLen;
 
-      options.logger &&
+      if (options.logger) {
         options.logger.debug(
           TAG,
           'payload is string. Method=',
@@ -231,6 +233,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           'headers=',
           options.requestOptions.headers,
         );
+      }
     }
 
     /*
@@ -239,7 +242,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
      * This timeout is a hard stop for the time the function is open so a streamed request will not be open longer
      * than X amount of time. This is variable but defaults to 5000,s
      */
-    timeoutId = setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       timeoutOccured = true;
       try {
         /*
@@ -250,7 +253,9 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
             `${TAG}=TimeoutReached for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
           );
         }
-        request && request.abort();
+        if (request) {
+          request.abort();
+        }
       } catch (e) {
         /*
          * If request abort fails -> log
@@ -358,15 +363,15 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
         if (options.logger) {
           options.logger.debug(
             TAG,
-            '=debug request aborted for requestID=',
+            'request aborted for requestID=',
             requestID,
-            ' ${REQUEST_HOST}=',
+            ' REQUEST_HOST=',
             options.requestOptions.hostname,
             ' requestURI="',
             myuri,
-            '" ${REQUEST_METHOD}=',
+            ' REQUEST_METHOD=',
             options.requestOptions.method,
-            ' ${TIMEOUT_VALUE}=',
+            ' TIMEOUT_VALUE=',
             timeout,
             ' milliseconds',
           );
@@ -429,7 +434,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       });
 
       request.on('end', (response) => {
-        debug('ON-END CALLED');
+        debug('ON-END CALLED with response="%s"', !!response);
         if (options.logger) {
           options.logger.info(
             `${TAG}=end ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
@@ -438,7 +443,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       });
 
       request.on('upgrade', (response) => {
-        debug('ON-UPGRADE CALLED');
+        debug('ON-UPGRADE CALLED with resonse="%s"', !!response);
         if (options.logger) {
           options.logger.info(
             `${TAG}=upgrade ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
@@ -453,18 +458,19 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           debug('%s Request method=%s has payload=%s', TAG, options.requestOptions.method);
           if (typeof options.payload === 'string') {
             debug(TAG, 'Request payload is a string: %s', options.payload);
-            options.logger &&
+            if (options.logger) {
               options.logger.debug(
                 TAG,
                 'Request payload is a string. Method=',
                 options.requestOptions.method,
                 options.requestOptions.headers,
               );
+            }
 
             request.write(options.payload);
             debug(TAG, 'Written payload to request');
           } else {
-            options.logger &&
+            if (options.logger) {
               options.logger.debug(
                 TAG,
                 'Request payload is a stream=.',
@@ -473,6 +479,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
                 options.requestOptions.method,
                 options.requestOptions.headers,
               );
+            }
             debug(TAG, 'Request payload is a stream');
             options.payload.pipe(request);
             payloadPiped = true;
@@ -493,7 +500,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
         );
       }
 
-      reject(`${TAG} request object ${REQUEST_ERROR}="${ex.message}"`);
+      reject(new ApplicationError(`${TAG} request object ${REQUEST_ERROR}="${ex.message}"`));
     }
   })
     .then((resp) => {

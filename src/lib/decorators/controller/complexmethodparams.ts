@@ -3,7 +3,7 @@ import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } fro
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
 import { PathDetailsType } from '../../enums/pathdetails';
-import { IControllerParamMeta } from '../../interfaces';
+import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
 import { getParamType } from './noargmethodparams';
 import makeParamExtractorFactory from './makeparamextractorfactory';
 

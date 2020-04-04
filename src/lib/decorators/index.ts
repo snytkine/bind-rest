@@ -4,7 +4,7 @@ export * from './middleware';
 export * from './http/requestmethods';
 export * from './controller/controller';
 export * from './controller/complexmethodparams';
-export * from './controller/pathdecorator';
+export { default as Path } from './controller/pathdecorator';
 export { default as JsonSchema } from './jsonschema';
 export { default as ErrorHandler } from './errorhandler';
 export * from './middlewares';

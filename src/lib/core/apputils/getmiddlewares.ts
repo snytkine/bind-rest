@@ -13,7 +13,7 @@ import {
 } from '../../decorators/metaprops';
 import { IMiddleware } from '../../interfaces/middleware';
 import Context from '../../../components/context';
-import { ApplicationError } from '../apperrors';
+import ApplicationError from '../../errors/applicationerror';
 
 const debug = require('debug')('promiseoft:runtime:middleware');
 

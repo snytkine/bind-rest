@@ -1,7 +1,7 @@
 import { Validator } from 'jsonschema';
 import { Component, Maybe } from 'bind';
-import { JSON_VALIDATOR } from '../lib/consts';
-import { SchemaValidationError } from '../lib/core';
+import { JSON_VALIDATOR } from '../lib/consts/appcomponents';
+import SchemaValidationError from '../lib/errors/schemavalidationerror';
 
 @Component(JSON_VALIDATOR)
 export default class JsonSchemaValidator {

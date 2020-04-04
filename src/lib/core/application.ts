@@ -1,20 +1,17 @@
-import * as http from 'http';
+import http from 'http';
+import path from 'path';
 import { IfIocContainer, Container, load, Maybe, notEmpty, Identity, ComponentScope } from 'bind';
-import * as path from 'path';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
-import {
-  errorHandler,
-  rejectLater,
-  registerProcessEventListeners,
-  getErrorHandlers,
-} from './apputils';
-
+import rejectLater from './apputils/rejectlater';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
 import { APPLICATION_COMPONENT } from '../consts/appcomponents';
 import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
+import errorHandler from './apputils/errorhandler';
+import getErrorHandlers from './apputils/geterrorhandlers';
+import registerProcessEventListeners from './apputils/processexithelper';
 
 const debug = require('debug')('promiseoft:runtime:application');
 
@@ -112,7 +109,7 @@ export class Application {
 
   onExit(exitCode: number): Promise<number> {
     return new Promise((resolve) => {
-      debug('%s onExit called with code=%d', TAG, exitCode);
+      debug('%s %s onExit called with code=%d', TAG, this.toString(), exitCode);
       resolve(exitCode);
     });
   }
@@ -133,7 +130,7 @@ export class Application {
 
     const runners: Array<Promise<Context>> = [handlerPromise];
     if (this.configOptions?.timeout > 0) {
-      runners.push(rejectLater(~~this.configOptions.timeout));
+      runners.push(rejectLater(Math.floor(Math.abs(this.configOptions.timeout))));
     }
 
     Promise.race(runners).catch((e) => {
@@ -153,37 +150,7 @@ export class Application {
       });
   }
 
-  init_(): Promise<http.RequestListener> {
-    return this.container
-      .initialize()
-      .then(() => (req: http.IncomingMessage, res: http.ServerResponse) => {
-        const ctx = new Context().init(req, res);
-
-        const handlerPromise = this.middlewares
-          .reduce((prev, next) => {
-            return prev.then(next);
-          }, this.middlewares.shift()(ctx))
-          .catch((e) => {
-            console.log('Exception in handler');
-            return e;
-          });
-
-        const runners: Array<Promise<Context>> = [handlerPromise];
-        /* if (this.configOptions?.timeout > 0) {
-         runners.push(rejectLater(~~this.configOptions.timeout));
-         } */
-
-        Promise.race(runners).catch((e) => {
-          return this.errHandlers
-            .map((eh) => eh(ctx))
-            .reduceRight((acc: Maybe<Error>, next) => {
-              return next(acc);
-            }, e);
-        });
-      });
-  }
-
   toString() {
-    return 'Application Instance';
+    return `Application Instance with ${this.bindContainer.components.length} components`;
   }
 }

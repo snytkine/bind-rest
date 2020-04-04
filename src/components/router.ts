@@ -70,10 +70,10 @@ class RouterMiddleware {
       return Promise.reject(new NotFoundError(`Controller not found for this request`));
     }
 
-    context.routeParams = routeMatch.params;
+    Reflect.set(context, 'routeParams', routeMatch?.params);
 
     return ctrlContainer.controller(context).then((response) => {
-      context.appResponse = response;
+      Reflect.set(context, 'appResponse', response);
 
       return context;
     });

@@ -1,5 +1,4 @@
 import {
-  Target,
   Component,
   COMPONENT_META_DATA,
   defineMetadata,

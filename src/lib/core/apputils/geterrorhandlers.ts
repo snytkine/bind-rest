@@ -1,6 +1,6 @@
 import { IfIocContainer, IfIocComponent, Maybe, isDefined } from 'bind';
-import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces';
-import { IS_ERROR_HANDLER } from '../../decorators';
+import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces/apperrorhandler';
+import { IS_ERROR_HANDLER } from '../../decorators/metaprops';
 import Context from '../../../components/context';
 
 const debug = require('debug')('promiseoft:init');

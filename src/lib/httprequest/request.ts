@@ -8,7 +8,7 @@ import stream from 'stream';
 import querystring from 'querystring';
 import isStream from 'is-stream';
 import { ILogger } from '../interfaces/logger';
-import { HttpResponse, HttpErrorResponse, stringifyBody } from './response';
+import { HttpResponse, HttpErrorResponse, stringifyBody } from '../httpresponse';
 import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
 import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
 

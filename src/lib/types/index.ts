@@ -9,3 +9,4 @@ export * from './decoratorfactory';
 export * from './controllermatcher';
 export * from './methoddecorator';
 export * from './middlewarefactory';
+export * from './responseheaders';

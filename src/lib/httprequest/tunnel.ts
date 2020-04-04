@@ -1,26 +1,9 @@
 import tunnel from 'tunnel';
-import { StringToString } from 'bind';
-import { IHttpRequestOptions } from '../interfaces';
+import { IHttpRequestOptions, ITunnelOptions } from '../interfaces';
 // const tunnel = require('tunnel');
 const debug = require('debug')('promiseoft:httprequest');
 
 const TAG = 'TUNNEL';
-
-export interface ITunnelProxy {
-  host: string;
-  port: string;
-  headers: StringToString;
-  proxyAuth?: string;
-}
-
-export interface ITunnelOptions {
-  maxSockets: string | number;
-  proxy: ITunnelProxy;
-  ca?: string;
-  key?: string;
-  cert?: string;
-  rejectUnauthorized?: boolean;
-}
 
 export function getHTTPSOverHTTPTunnel(options: IHttpRequestOptions) {
   debug('%s ENTERED getHTTPSOverHTTPTunnel with ', TAG, options);

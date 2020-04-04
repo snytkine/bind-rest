@@ -9,3 +9,4 @@ export * from './logger';
 export * from './controllerparammeta';
 export * from './bodyparamextractor';
 export * from './requestoptions';
+export * from './tunneloptions';

@@ -27,7 +27,7 @@ import {
   ControllerFunc,
 } from '../types';
 import Context from '../../components/context';
-import { ApplicationError } from './apperrors';
+import ApplicationError from '../errors/applicationerror';
 import { toMWFuncFactory } from '../decorators/middlewares';
 
 const debug = require('debug')('promiseoft:runtime:controller');

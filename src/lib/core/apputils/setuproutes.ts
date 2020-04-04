@@ -3,7 +3,7 @@ import { HttpRouter } from 'holiday-router';
 import getControllerComponents from './getcontrollercomponents';
 import parseController from '../parsecontroller';
 import { IControllerDetails } from '../../interfaces/controller';
-import { ApplicationError } from '../apperrors';
+import ApplicationError from '../../errors/applicationerror';
 import FrameworkController from '../frameworkcontroller';
 
 const debug = require('debug')('promiseoft:context');

@@ -1,9 +1,6 @@
-/**
- * Created by snytkind on 2/20/17.
- */
 const debug = require('debug')('promiseoft:util');
 
-export function copyHeaders(
+export default function copyHeaders(
   headers: { [key: string]: any },
   dropHeaders: Array<string> = [],
 ): { [key: string]: any } {

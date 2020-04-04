@@ -2,7 +2,7 @@ import * as http from 'http';
 import inflate from 'inflation';
 import raw from 'raw-body';
 import { Validator } from 'jsonschema';
-import { SchemaValidationError } from '../core/apperrors';
+import SchemaValidationError from '../errors/schemavalidationerror';
 
 /**
  * Convert incoming request into a string

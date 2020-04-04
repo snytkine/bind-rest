@@ -2,7 +2,7 @@ import { IfIocContainer } from 'bind';
 import ControllerParamType from '../../enums/controllerparamtype';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import Context from '../../../components/context';
-import { SystemError } from '../../core/apperrors';
+import SystemError from '../../errors/systemerror';
 
 const debug = require('debug')('promiseoft:decorators');
 

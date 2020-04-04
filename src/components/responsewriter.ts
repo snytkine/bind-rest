@@ -23,9 +23,18 @@ export default class ResponseWriter {
           debug('%s Getting appResponse statusCode', TAG);
           ctx.res.statusCode = ctx.appResponse.statusCode;
 
-          for (const h in ctx.appResponse.headers) {
-            ctx.res.setHeader(h, ctx.appResponse.headers[h]);
+          if (ctx.appResponse.headers) {
+            const hdrs = Object.entries(ctx.appResponse.headers);
+            hdrs.forEach(([key, val]) => {
+              ctx.res.setHeader(key, val);
+            });
           }
+
+          /* for (const h in ctx.appResponse.headers) {
+            if (Object.prototype.hasOwnProperty.call(ctx.appResponse.headers, h)) {
+              ctx.res.setHeader(h, ctx.appResponse.headers[h]);
+            }
+          } */
 
           /**
            * @todo when appResponse has support for cookies
@@ -38,7 +47,7 @@ export default class ResponseWriter {
 
           ctx.res.on('finished', () => debug('%s res onFinished', TAG));
           ctx.res.on('close', () => debug('%s res onClosed', TAG));
-          ctx.res.on('error', function (e) {
+          ctx.res.on('error', function onResponseStreamError(e) {
             reject(
               new HttpError(
                 HTTP_STATUS_CODES.SERVICE_UNAVAILABLE,

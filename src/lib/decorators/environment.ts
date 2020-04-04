@@ -4,8 +4,17 @@ const debug = require('debug')('promiseoft:decorators');
 
 const TAG = '@Environment';
 
-export function Environment(...names: string[]) {
-  return function (target: any, propertyKey?: string, descriptor?: PropertyDescriptor) {
+export default function Environment(...names: string[]) {
+  return function environmentDecorator(
+    target: any,
+    propertyKey?: string,
+    descriptor?: PropertyDescriptor,
+  ) {
+    debug('%s Entered with description %s', TAG, !!descriptor);
+    /**
+     * @todo use getTargetStereotype
+     * from bind instead of manually determining type
+     */
     if (typeof target === 'function' && !propertyKey) {
       debug(`Defining '${TAG}' '${names.join(', ')}' for class ${target.name}`);
       const envs = Reflect.getMetadata(SYM_COMPONENT_ENVIRONMENTS, target);

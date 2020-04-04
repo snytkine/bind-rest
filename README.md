@@ -1,11 +1,11 @@
-promiseoft (Promise-of-T)
+Bind-Rest
 ==========
+Annotation based framework for creating Rest APIs with Node.js with TypeScript
 ## BETA 0.3.X
 
 ### Installation
 ```
-npm install promiseoft --save --registry http://ct-avs-web.es.ad.adp.com:4873/
-
+Not available at this time. Will be available when released
 ```
 #### OR
 ```

@@ -20,30 +20,35 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
 
   switch (t) {
     case PathDetailsType.CookieParam:
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ret = (c: IfIocContainer) => (ctx: Context) => {
         return ctx.parsedCookies[paramName];
       };
       break;
 
     case PathDetailsType.ContextScopeParam:
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ret = (c: IfIocContainer) => (ctx: Context) => {
         return ctx.storage[paramName];
       };
       break;
 
     case PathDetailsType.QueryParam:
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ret = (c: IfIocContainer) => (ctx: Context) => {
         return ctx.parsedUrlQuery[paramName];
       };
       break;
 
     case PathDetailsType.HeaderParam:
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ret = (c: IfIocContainer) => (ctx: Context) => {
         return ctx.req.headers[paramName];
       };
       break;
 
     case PathDetailsType.PathParam:
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ret = (c: IfIocContainer) => (ctx: Context) => {
         const pathParam = ctx.routeParams?.pathParams?.find((p) => p.paramName === paramName);
 

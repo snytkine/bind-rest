@@ -3,6 +3,7 @@ import Context from '../../components/context';
 import { IControllerMatcher, IController } from '../types';
 import { IControllerDetails } from '../interfaces';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const defaultMatcher = (ctx: Context) => true;
 
 export default class FrameworkController implements IControllerContainer {

@@ -145,22 +145,27 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
   );
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const QueryString = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.querystring,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Cookies = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.parsedCookies,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ParsedQuery = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.parsedUrlQuery,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Headers = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.req.headers,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Router = makeParamDecorator((c: IfIocContainer) => {
   /**
    * Here we get componentDetails from container at the invocation
@@ -175,28 +180,35 @@ export const Router = makeParamDecorator((c: IfIocContainer) => {
   };
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const UriInfo = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.parsedUrl,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Request = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.req,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Response = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.res,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Container = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) => c);
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Context = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const ContextStore = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.storage,
 );
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const RequestMethod = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
   context.req.method,
 );

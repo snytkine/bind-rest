@@ -36,7 +36,7 @@ const TAG = 'ControllerParser';
 
 const joinPath = (base: string = '', callPath: string = '') => base + callPath;
 
-export function parseController(container: IfIocContainer) {
+export default function parseController(container: IfIocContainer) {
   return (component: IfIocComponent): Array<IControllerDetails> => {
     const id: string = stringifyIdentity(component.identity);
 
@@ -108,7 +108,7 @@ export function parseController(container: IfIocContainer) {
            * then generate a function that takes context and
            * returns a no-op function.
            */
-          // eslint-disable-next-line no-unused-vars
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           return (ctx: Context) => (val) => undefined;
         });
         const validateParams = makeParamsValidator(paramsMeta, controllerName);

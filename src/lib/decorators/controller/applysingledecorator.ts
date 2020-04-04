@@ -1,8 +1,8 @@
 import { Target, getMethodParamName } from 'bind';
-import { PathDetailsType } from '../../enums';
-import { ParamExtractorFactory } from '../../types';
+import { PathDetailsType } from '../../enums/pathdetails';
+import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
-import { IControllerParamMeta } from '../../interfaces';
+import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
 import { getParamType } from './noargmethodparams';
 
 export default function applyNoParamDecorator(

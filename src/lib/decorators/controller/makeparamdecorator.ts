@@ -1,8 +1,9 @@
 import { ClassPrototype } from 'bind';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
-import { PathDetailsType } from '../../enums';
-import { IParamDecoratorFactory, IParamDecorator } from '../../types';
+import { PathDetailsType } from '../../enums/pathdetails';
+import { IParamDecoratorFactory } from '../../types/decoratorfactory';
 import applyNoParamDecorator from './applysingledecorator';
+import { IParamDecorator } from '../../types/paramdecoratorfunc';
 
 const paramDecorator = (decoratorFactory: ParamExtractorFactory): IParamDecorator => {
   return function customParamDecorator(

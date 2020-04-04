@@ -2,9 +2,8 @@ import * as http from 'http';
 import { IfIocContainer, Container, load, Maybe, notEmpty, Identity, ComponentScope } from 'bind';
 import * as path from 'path';
 import Context from '../../components/context';
-import { ApplicationOptions, AppErrorHandlerFunc } from '../interfaces';
-import { MiddlewareFunc } from '../types';
-
+import { ApplicationOptions } from '../interfaces/application';
+import { MiddlewareFunc } from '../types/middlewarefunc';
 import {
   errorHandler,
   rejectLater,
@@ -14,7 +13,8 @@ import {
 
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
-import { APPLICATION_COMPONENT } from '../consts';
+import { APPLICATION_COMPONENT } from '../consts/appcomponents';
+import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
 
 const debug = require('debug')('promiseoft:runtime:application');
 

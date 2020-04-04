@@ -1,6 +1,6 @@
 import 'reflect-metadata';
-import { SYM_REQUEST_PATH } from '../metaprops';
 import { Target, getTargetStereotype, TargetStereoType } from 'bind';
+import { SYM_REQUEST_PATH } from '../metaprops';
 import { ControllerFunc } from '../../types';
 
 const debug = require('debug')('promiseoft:decorators');
@@ -16,9 +16,11 @@ export default function Path(path: string) {
     // path = path.replace(/\{/g, ':').replace(/}/g, '');
   }
 
-  return function pathDecorator(target: Target,
-                                propertyKey?: string,
-                                descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
+  return function pathDecorator(
+    target: Target,
+    propertyKey?: string,
+    descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+  ) {
     debug('entered pathDecorator with description %s', !!descriptor);
 
     const targetType = getTargetStereotype(target);
@@ -33,19 +35,19 @@ export default function Path(path: string) {
      * @todo use getStereotype from bind
      * to figure out this is constructor or prototype
      */
-    if (typeof target==='function' && !propertyKey) {
-      //debug(`Defining @Path ${path} for controller class ${target.name}`);
+    if (typeof target === 'function' && !propertyKey) {
+      // debug(`Defining @Path ${path} for controller class ${target.name}`);
       const ctrlPath = Reflect.getMetadata(SYM_REQUEST_PATH, target);
       if (ctrlPath) {
-       // debug(
-       //   `@Path ${ctrlPath} already defined on controller ${target.name} Attempted to set another @Path ${path}`,
-        //);
+        // debug(
+        //   `@Path ${ctrlPath} already defined on controller ${target.name} Attempted to set another @Path ${path}`,
+        // );
       }
 
       /**
        * basePath IF not empty then MUST start with a slash
        */
-      if (path && path[0]!=='/') {
+      if (path && path[0] !== '/') {
         throw new Error(
           `Annotation @Path '${path}' of controller class is invalid. It must start with a '/' Did you mean /${path}'?`,
         );
@@ -61,7 +63,7 @@ export default function Path(path: string) {
        */
       debug(`Defining @Path ${path} for method  ${target.constructor?.name}.${propertyKey}`);
 
-      if (path[0]!=='/') {
+      if (path[0] !== '/') {
         path = `/${path}`;
       }
 

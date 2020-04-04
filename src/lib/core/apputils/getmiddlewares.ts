@@ -5,13 +5,13 @@ import {
   IfIocComponent,
   getComponentNameFromIdentity,
 } from 'bind';
-import { MiddlewareFunc } from '../../types';
+import { MiddlewareFunc } from '../../types/middlewarefunc';
 import {
   MIDDLEWARE_PRIORITY,
   SYM_MIDDLEWARE_NAME,
   SYM_MIDDLEWARE_PRIORITY,
-} from '../../decorators';
-import { IMiddleware } from '../../interfaces';
+} from '../../decorators/metaprops';
+import { IMiddleware } from '../../interfaces/middleware';
 import Context from '../../../components/context';
 import { ApplicationError } from '../apperrors';
 
@@ -32,21 +32,6 @@ export default function getMiddlewares(ctr: IfIocContainer): Array<MiddlewareFun
 
   ret.sort((a, b) => {
     return a.componentMetaData[MIDDLEWARE_PRIORITY] - b.componentMetaData[MIDDLEWARE_PRIORITY];
-  });
-
-  /**
-   * @todo remove this
-   */
-  const aMW_ = ret.map((comp: IfIocComponent<IMiddleware>) => (ctx: Context) => {
-    const mw = comp.get([ctx]);
-    /**
-     * Add Middleware name and priority to middleware function
-     * as special Symbol properties of the function.
-     */
-    mw[SYM_MIDDLEWARE_NAME] = getComponentNameFromIdentity(comp.identity);
-    mw[SYM_MIDDLEWARE_PRIORITY] = comp.componentMetaData[MIDDLEWARE_PRIORITY];
-
-    return mw.doFilter(ctx);
   });
 
   const aMW = ret.map((comp: IfIocComponent<IMiddleware>) => {

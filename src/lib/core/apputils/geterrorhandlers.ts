@@ -1,7 +1,6 @@
 import { IfIocContainer, IfIocComponent, Maybe, isDefined } from 'bind';
 import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces';
 import { IS_ERROR_HANDLER } from '../../decorators';
-import { ApplicationError } from '../apperrors';
 import Context from '../../../components/context';
 
 const debug = require('debug')('promiseoft:init');
@@ -14,7 +13,7 @@ export default function getErrorHandlers(ctr: IfIocContainer): Array<AppErrorHan
   });
 
   if (!isDefined(ret)) {
-    debug('No AppErrorHandler components found in container');
+    debug('%s No AppErrorHandler components found in container', TAG);
     return [];
   }
 

@@ -44,7 +44,7 @@ export const toNumber = (i: any): Number | TypeError => {
   if (isNullOrUndefined(i)) return undefined;
 
   const x = Number(i);
-  if (isNaN(x)) {
+  if (Number.isNaN(x)) {
     return new TypeError();
   }
 
@@ -89,11 +89,11 @@ export const toBoolean = (s: any): boolean | TypeError => {
     return new TypeError();
   }
 
-  s = s.toLocaleLowerCase();
-  if (s === 'false' || s === '0') {
+  const lc = s.toLocaleLowerCase();
+  if (lc === 'false' || lc === '0') {
     return false;
   }
-  if (s === 'true' || s === '1') {
+  if (lc === 'true' || lc === '1') {
     return true;
   }
 
@@ -308,7 +308,7 @@ function makeValidateAsync(
        * this way the return of validateParamsAsync will be Promise<original params>
        */
 
-      const errors: string[] = results.reduce((acc, next: Maybe<Error>, i) => {
+      const errors: string[] = results.reduce((acc, next: Maybe<Error>) => {
         if (isDefined(next)) {
           acc.push(next.message);
         }

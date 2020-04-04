@@ -1,10 +1,4 @@
-import {
-  IfIocContainer,
-  Maybe,
-  isDefined,
-  getMethodParamName,
-  ClassPrototype
-} from 'bind';
+import { IfIocContainer, Maybe, isDefined, getMethodParamName, ClassPrototype } from 'bind';
 import {
   IParamDecorator,
   AsyncValidator,
@@ -24,7 +18,7 @@ import { DOTTED_LINE } from '../../consts';
  * @param validator
  */
 const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
-  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (c: IfIocContainer) => (ctx: Context) => validator;
 };
 

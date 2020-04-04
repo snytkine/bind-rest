@@ -1,7 +1,3 @@
-/**
- * Created by snytkind on 11/26/16.
- */
-
 export enum ErrorType {
   InputValidation = 3001,
   SchemaValidation,
@@ -51,14 +47,6 @@ export class ValidationError extends BindRestError {
   }
 }
 
-export class TypeValidationError extends ValidationError {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class TypeValidationError extends ValidationError {}
 
-export class SchemaValidationError extends ValidationError {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class SchemaValidationError extends ValidationError {}

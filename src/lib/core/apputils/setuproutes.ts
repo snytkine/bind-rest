@@ -1,10 +1,10 @@
 import { IfIocContainer, arrayNotEmpty, Identity } from 'bind';
 import { HttpRouter } from 'holiday-router';
 import getControllerComponents from './getcontrollercomponents';
-import { parseController } from '../parsecontroller';
-import { IControllerDetails } from '../../interfaces';
+import parseController from '../parsecontroller';
+import { IControllerDetails } from '../../interfaces/controller';
 import { ApplicationError } from '../apperrors';
-import { FrameworkController } from '../index';
+import FrameworkController from '../frameworkcontroller';
 
 const debug = require('debug')('promiseoft:context');
 
@@ -19,8 +19,6 @@ export default function setupRoutes(container: IfIocContainer) {
       return parseController(container)(c);
     })
     .flat();
-  console.log('===== parsedControllers =====');
-  console.dir(parsedControllers, { depth: 4 });
 
   if (!arrayNotEmpty(parsedControllers)) {
     throw new ApplicationError('No Controller components found');

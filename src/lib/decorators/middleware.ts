@@ -1,14 +1,14 @@
 import 'reflect-metadata';
-import { MIDDLEWARE_PRIORITY } from './metaprops';
-import { IMiddleware } from '../interfaces/middleware';
 import {
   Component,
   COMPONENT_META_DATA,
   defineMetadata,
   DEFAULT_SCOPE,
   ComponentScope,
+  Constructor,
 } from 'bind';
-import { Constructor } from 'bind';
+import { MIDDLEWARE_PRIORITY } from './metaprops';
+import { IMiddleware } from '../interfaces/middleware';
 
 const debug = require('debug')('promiseoft:decorators');
 
@@ -17,10 +17,9 @@ const TAG = 'Middleware';
 export type NumberOrMiddleware = number | Constructor<IMiddleware>;
 
 const validatePriority = (i: any): boolean => {
+  const res = Number(i);
 
-  let res = Number(i);
-
-  return !isNaN(res) && res >= 0 && res <= 1000;
+  return !Number.isNaN(res) && res >= 0 && res <= 1000;
 };
 
 /**
@@ -29,8 +28,12 @@ const validatePriority = (i: any): boolean => {
  * @param target
  * @param priority
  */
-function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number, decoratorName?: string) {
-  debug('Defining %s for constructor %s', TAG, target.name);
+function decorateMiddleware(
+  target: Constructor<IMiddleware>,
+  priority?: number,
+  decoratorName?: string,
+) {
+  debug('Defining %s for constructor %s. decoratorName=', TAG, target.name, decoratorName);
   Component(target);
   /**
    * Need to set DEFAULT_SCOPE for Middleware component
@@ -43,8 +46,7 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
   defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
 
   if (priority) {
-
-    let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
+    const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
 
     metaData[MIDDLEWARE_PRIORITY] = priority;
 
@@ -52,30 +54,24 @@ function decorateMiddleware(target: Constructor<IMiddleware>, priority?: number,
   }
 }
 
-
 export function Middleware(constructor: Constructor<IMiddleware>);
 export function Middleware(priority: number);
 
 export function Middleware(val: NumberOrMiddleware) {
-
-  if (typeof val==='number') {
+  if (typeof val === 'number') {
     if (!validatePriority(val)) {
       throw new TypeError(`Value passed to @Middleware decorator '${val}' is invalid.  
       It must be a number between 0 and 1000`);
     }
 
     return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
-      decorateMiddleware(constructor, (Number.MIN_SAFE_INTEGER + val), 'Middleware');
+      decorateMiddleware(constructor, Number.MIN_SAFE_INTEGER + val, 'Middleware');
     };
-  } else {
-    decorateMiddleware(val);
   }
-
+  decorateMiddleware(val);
 }
 
-
 export function Afterware(priority: number) {
-
   if (!validatePriority(priority)) {
     throw new TypeError(`Value passed to @Middleware decorator '${priority}' is invalid.  
       It must be a number between 0 and 1000`);
@@ -84,15 +80,10 @@ export function Afterware(priority: number) {
   return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
     decorateMiddleware(constructor, priority, 'Afterware');
   };
-
 }
-
 
 export function AfterResponse(priority: number) {
-
   return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
-    decorateMiddleware(constructor, (priority + 1000), 'AfterResponse');
+    decorateMiddleware(constructor, priority + 1000, 'AfterResponse');
   };
-
 }
-

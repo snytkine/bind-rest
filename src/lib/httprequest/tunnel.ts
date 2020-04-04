@@ -1,83 +1,94 @@
-const tunnel = require('tunnel');
+import tunnel from 'tunnel';
+import { StringToString } from 'bind';
+import { IHttpRequestOptions } from '../interfaces';
+// const tunnel = require('tunnel');
 const debug = require('debug')('promiseoft:httprequest');
-import {IHttpRequestOptions} from "../"
-/*
- * This code is not yet implemented. place holders
- */
 
-export function getHTTPSOverHTTPTunnel(options: IHttpRequestOptions) {
+const TAG = 'TUNNEL';
 
-  debug("ENTERED getHTTPSOverHTTPTunnel with ", options);
-
-  let g = {
-
-    maxSockets: options.poolSize || 10, // Defaults to 5
-
-    proxy: { // Proxy settings
-      host: options.proxy.proxyHost,
-      port: options.proxy.proxyPort,
-      headers: options.proxy.headers || {"User-Agent": "Promise-Of-T Browser"}
-    }
-  };
-
-  if (options['ca']) {
-    g['ca'] = options['ca']
-  }
-
-  if (options['key']) {
-    g['key'] = options['key']
-  }
-
-  if (options['cert']) {
-    g['cert'] = options['cert']
-  }
-
-  if (options.proxy.auth) {
-    // Basic authorization for proxy server if necessary
-    debug("Setting proxyAuth on tunnel to " + options.proxy.auth);
-    g.proxy['proxyAuth'] = options.proxy.auth;
-  }
-
-  g['rejectUnauthorized'] = options.requestOptions.rejectUnauthorized;
-  //g['secureProtocol'] = 'SSLv3_method';
-
-  debug("HTTPS proxy options: ", g);
-
-  try {
-    let ret = tunnel.httpsOverHttp(g);
-
-    debug("Returning tunnel object");
-
-    return ret;
-
-  } catch (ex) {
-    debug("http tunnel exception. ex.message=%s", ex.message);
-    throw new Error("Failed to create https tunnel object");
-  }
-
-
+export interface ITunnelProxy {
+  host: string;
+  port: string;
+  headers: StringToString;
+  proxyAuth?: string;
 }
 
+export interface ITunnelOptions {
+  maxSockets: string | number;
+  proxy: ITunnelProxy;
+  ca?: string;
+  key?: string;
+  cert?: string;
+  rejectUnauthorized?: boolean;
+}
 
-export function getHTTPOverHTTPTunnel(options: IHttpRequestOptions) {
-  debug("ENTERED getHTTPOverHTTPTunnel with proxyOptions ", options);
+export function getHTTPSOverHTTPTunnel(options: IHttpRequestOptions) {
+  debug('%s ENTERED getHTTPSOverHTTPTunnel with ', TAG, options);
 
-  let g = {
+  const proxyOptions: ITunnelOptions = {
     maxSockets: options.poolSize || 10, // Defaults to 5
-    proxy: { // Proxy settings
+    proxy: {
+      // Proxy settings
       host: options.proxy.proxyHost,
       port: options.proxy.proxyPort,
-      headers: options.proxy.headers || {"User-Agent": "Promise-Of-T Browser"},
-    }
+      headers: options.proxy.headers || { 'User-Agent': 'Promise-Of-T Browser' },
+    },
+  };
+
+  if (options.ca) {
+    proxyOptions.ca = options.ca;
+  }
+
+  if (options.key) {
+    proxyOptions.key = options.key;
+  }
+
+  if (options.cert) {
+    proxyOptions.cert = options.cert;
+  }
+
+  if (options.proxy.auth) {
+    // Basic authorization for proxy server if necessary
+    debug(`Setting proxyAuth on tunnel to ${options.proxy.auth}`);
+    proxyOptions.proxy.proxyAuth = options.proxy.auth;
+  }
+
+  proxyOptions.rejectUnauthorized = options.requestOptions.rejectUnauthorized;
+  // g['secureProtocol'] = 'SSLv3_method';
+
+  debug('%s HTTPS proxy options: ', TAG, proxyOptions);
+
+  try {
+    const ret = tunnel.httpsOverHttp(proxyOptions);
+
+    debug('Returning tunnel object');
+
+    return ret;
+  } catch (ex) {
+    debug('http tunnel exception. ex.message=%s', ex.message);
+    throw new Error('Failed to create https tunnel object');
+  }
+}
+
+export function getHTTPOverHTTPTunnel(options: IHttpRequestOptions) {
+  debug('ENTERED getHTTPOverHTTPTunnel with proxyOptions ', options);
+
+  const proxyOptions: ITunnelOptions = {
+    maxSockets: options.poolSize || 10, // Defaults to 5
+    proxy: {
+      // Proxy settings
+      host: options.proxy.proxyHost,
+      port: options.proxy.proxyPort,
+      headers: options.proxy.headers || { 'User-Agent': 'Promise-Of-T Browser' },
+    },
   };
 
   if (options.proxy.auth) {
     // Basic authorization for proxy server if necessary
-    g.proxy['proxyAuth'] = options.proxy.auth;
+    proxyOptions.proxy.proxyAuth = options.proxy.auth;
   }
 
-  let tunnelingAgent = tunnel.httpOverHttp(g);
+  const tunnelingAgent = tunnel.httpOverHttp(proxyOptions);
 
   return tunnelingAgent;
 }
-

@@ -7,36 +7,34 @@ export enum ErrorType {
   SchemaValidation,
   AppError,
   AppTimeout,
-  AuthorizationError
+  AuthorizationError,
 }
-
 
 export enum ErrorCategory {
   SystemError = 4001,
-  AppError
+  AppError,
 }
 
 export class BindRestError extends Error {
-
-  constructor(public message: string,
-              public readonly type: ErrorType,
-              public readonly category: ErrorCategory,
-              public readonly parentError?: Error) {
+  constructor(
+    public message: string,
+    public readonly type: ErrorType,
+    public readonly category: ErrorCategory,
+    public readonly parentError?: Error,
+  ) {
     super(message);
   }
 }
 
 export class ApplicationError extends BindRestError {
-
   constructor(message: string, error?: Error) {
     super(message, ErrorType.AppError, ErrorCategory.AppError, error);
-  };
+  }
 }
 
-
 export class SystemError extends Error {
-
   readonly type: ErrorType;
+
   readonly category: ErrorCategory;
 
   constructor(message: string, type: ErrorType = ErrorType.AppError) {
@@ -44,7 +42,7 @@ export class SystemError extends Error {
 
     this.type = type;
     this.category = ErrorCategory.SystemError;
-  };
+  }
 }
 
 export class ValidationError extends BindRestError {
@@ -58,7 +56,6 @@ export class TypeValidationError extends ValidationError {
     super(message);
   }
 }
-
 
 export class SchemaValidationError extends ValidationError {
   constructor(message: string) {

@@ -1,6 +1,4 @@
-import {
-  IControllerDetails,
-} from '../../interfaces'
+import { IControllerDetails } from '../../interfaces';
 
 const SYM_ALL_ROUTES = Symbol.for('@ALL_ROUTES');
 const debug = require('debug')('promiseoft:runtime:application');
@@ -9,7 +7,6 @@ const debug = require('debug')('promiseoft:runtime:application');
  * @todo remove this, not used in new version
  */
 class AllRoutes {
-
   private aControllerDetails_: Array<IControllerDetails>;
 
   set allControllers(aControllerDetails: Array<IControllerDetails>) {
@@ -25,7 +22,4 @@ class AllRoutes {
   }
 }
 
-export {
-  AllRoutes,
-  SYM_ALL_ROUTES
-}
+export { AllRoutes, SYM_ALL_ROUTES };

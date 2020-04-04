@@ -2,7 +2,7 @@ import * as http from 'http';
 import inflate from 'inflation';
 import raw from 'raw-body';
 import { Validator } from 'jsonschema';
-import { SchemaValidationError } from '../core';
+import { SchemaValidationError } from '../core/apperrors';
 
 /**
  * Convert incoming request into a string
@@ -10,8 +10,7 @@ import { SchemaValidationError } from '../core';
  * @return Promise<string>
  */
 export function parseBody(req: http.IncomingMessage): Promise<string> {
-
-  let allowedMethods = ['PUT', 'POST'];
+  const allowedMethods = ['PUT', 'POST'];
   if (!allowedMethods.includes(req.method)) {
     throw new Error(`
   Error: Cannot extract Body from Request.
@@ -20,7 +19,8 @@ export function parseBody(req: http.IncomingMessage): Promise<string> {
 
   const ret: Promise<string> = raw(inflate(req))
     .then((rawBody): String => String(rawBody))
-    .then(body => body.valueOf()).catch(e => {
+    .then((body) => body.valueOf())
+    .catch((e) => {
       return Promise.reject(e);
     });
 
@@ -39,18 +39,18 @@ export function parseBody(req: http.IncomingMessage): Promise<string> {
  * @return Promise<Object>
  */
 export function parseJsonBody(req: http.IncomingMessage, schema?: Object): Promise<Object> {
-
-  return parseBody(req).then(JSON.parse).then(obj => {
-
-    let validator: Validator;
-    if (schema) {
-      validator = new Validator();
-      let res = validator.validate(obj, schema, { propertyName: 'Object' });
-      if (!res.valid) {
-        throw new SchemaValidationError(`Schema Validation Error="${res.toString()}"`);
+  return parseBody(req)
+    .then(JSON.parse)
+    .then((obj) => {
+      let validator: Validator;
+      if (schema) {
+        validator = new Validator();
+        const res = validator.validate(obj, schema, { propertyName: 'Object' });
+        if (!res.valid) {
+          throw new SchemaValidationError(`Schema Validation Error="${res.toString()}"`);
+        }
       }
-    }
 
-    return obj
-  });
+      return obj;
+    });
 }

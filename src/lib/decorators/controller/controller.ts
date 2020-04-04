@@ -31,14 +31,12 @@ const TAG = '@Controller';
  * @constructor
  * @returns undefined
  */
-export function Controller(target: Target):void {
-
+export function Controller(target: Target): void {
   debug('Defining %s for constructor %s', TAG, target.name);
   Component(target);
-  let metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
+  const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
   metaData[IS_CONTROLLER] = true;
 
   defineMetadata(COMPONENT_META_DATA, metaData, target)();
   defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
-
 }

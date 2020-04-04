@@ -11,12 +11,12 @@ export default class JsonSchemaValidator {
     this.validator = new Validator();
   }
 
-  validate(body: Object,
-           schema: Object,
-           errorMessage: string = ''): Maybe<Error> {
-    let res = this.validator.validate(body, schema, { propertyName: 'Object' });
+  validate(body: Object, schema: Object, errorMessage: string = ''): Maybe<Error> {
+    const res = this.validator.validate(body, schema, { propertyName: 'Object' });
     if (!res.valid) {
       return new SchemaValidationError([errorMessage, res.toString()].join('\n'));
     }
-  };
+
+    return undefined;
+  }
 }

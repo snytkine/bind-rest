@@ -1,5 +1,5 @@
-import {SystemError, ErrorType} from "../apperrors";
-import Context from '../../../components/context'
+import { SystemError, ErrorType } from '../apperrors';
+import Context from '../../../components/context';
 /**
  * Helper function that returns promise that rejects after number of milliseconds
  *
@@ -8,6 +8,15 @@ import Context from '../../../components/context'
  */
 export function rejectLater(milliseconds: number): Promise<Context> {
   return new Promise((_, reject) => {
-    setTimeout(() => reject(new SystemError(`Response timed out after ${milliseconds} milliseconds`, ErrorType.AppTimeout)), milliseconds);
-  })
+    setTimeout(
+      () =>
+        reject(
+          new SystemError(
+            `Response timed out after ${milliseconds} milliseconds`,
+            ErrorType.AppTimeout,
+          ),
+        ),
+      milliseconds,
+    );
+  });
 }

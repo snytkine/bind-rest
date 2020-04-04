@@ -1,17 +1,20 @@
+import { IfIocContainer } from 'bind';
 import { PathDetailsType } from '../../enums';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
-import { IfIocContainer } from 'bind';
 import Context from '../../../components/context';
 import { SystemError } from '../../core';
 
 const debug = require('debug')('promiseoft:decorators');
+
 const TAG = 'MAKE-PARAMS-EXTRACTOR';
 
 function makeParamExtractorFactory(t: PathDetailsType, paramName: string): ParamExtractorFactory {
-  debug('%s Entered makeParamExtractorFactory with t="%s", paramName="%s"',
+  debug(
+    '%s Entered makeParamExtractorFactory with t="%s", paramName="%s"',
     TAG,
     PathDetailsType[t],
-    paramName);
+    paramName,
+  );
 
   let ret: ParamExtractorFactory;
 
@@ -42,7 +45,7 @@ function makeParamExtractorFactory(t: PathDetailsType, paramName: string): Param
 
     case PathDetailsType.PathParam:
       ret = (c: IfIocContainer) => (ctx: Context) => {
-        const pathParam = ctx.routeParams?.pathParams?.find(p => p.paramName===paramName);
+        const pathParam = ctx.routeParams?.pathParams?.find((p) => p.paramName === paramName);
 
         return pathParam?.paramValue;
       };

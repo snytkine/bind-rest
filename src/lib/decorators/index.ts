@@ -1,11 +1,11 @@
-export * from "./environment";
-export * from "./metaprops";
-export * from "./middleware";
-export * from "./http/requestmethods";
-export * from "./controller/controller";
-export * from "./controller/complexmethodparams";
-export * from "./controller/pathdecorator";
-export * from "./jsonschema"
-export * from "./errorhandler";
-export * from "./middlewares";
-export * from "./envoverride";
+export * from './environment';
+export * from './metaprops';
+export * from './middleware';
+export * from './http/requestmethods';
+export * from './controller/controller';
+export * from './controller/complexmethodparams';
+export * from './controller/pathdecorator';
+export { default as JsonSchema } from './jsonschema';
+export { default as ErrorHandler } from './errorhandler';
+export * from './middlewares';
+export * from './envoverride';

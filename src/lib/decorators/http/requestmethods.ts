@@ -1,17 +1,28 @@
-import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
-import { ControllerFunc } from '../../types';
-import { Path } from '../controller/pathdecorator';
 import { Target, Maybe, getOrElse } from 'bind';
 import HTTPMethod from 'http-method-enum';
+import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
+import { ControllerFunc } from '../../types';
+import Path from '../controller/pathdecorator';
 
 const debug = require('debug')('promiseoft:decorators');
+
 const TAG = 'ADD_METHOD_ANNOTATION';
 
-function addMethodAnnotation(target: any, propertyKey: string, method: HTTPMethod): undefined {
-
+function addMethodAnnotation(
+  target: any,
+  propertyKey: string,
+  method: HTTPMethod,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+): undefined {
   let p: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, target, propertyKey);
-  let rt = Reflect.getMetadata(RETURN_TYPE, target, propertyKey);
-  debug(`Adding Method annotation ${method} to ${target.constructor.name}.${propertyKey} returnType: ${rt}`);
+  const rt = Reflect.getMetadata(RETURN_TYPE, target, propertyKey);
+  debug(
+    `Adding Method annotation %s to ${target.constructor.name}.${propertyKey} 
+    returnType: ${rt}
+    with descriptor=%s`,
+    method,
+    descriptor,
+  );
 
   p = getOrElse(p, new Set<HTTPMethod>());
   p.add(method);
@@ -21,16 +32,21 @@ function addMethodAnnotation(target: any, propertyKey: string, method: HTTPMetho
   Reflect.defineMetadata(SYM_REQUEST_METHOD, p, target, propertyKey);
 
   return undefined;
-
 }
 
-export type IMethodDecorator = (target: Target, propertyKey: string, descriptor: PropertyDescriptor) => void
+export type IMethodDecorator = (
+  target: Target,
+  propertyKey: string,
+  descriptor: PropertyDescriptor,
+) => void;
 
-export const decorate = (pathOrTarget: string | Target,
-                         propertyKey: string,
-                         method: HTTPMethod): IMethodDecorator => {
-
-  if (typeof pathOrTarget==='string') {
+export const decorate = (
+  pathOrTarget: string | Target,
+  propertyKey: string,
+  method: HTTPMethod,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+): IMethodDecorator => {
+  if (typeof pathOrTarget === 'string') {
     /**
      * Return function that takes target, property key, descriptor and then applies
      * metadata
@@ -42,46 +58,49 @@ export const decorate = (pathOrTarget: string | Target,
        */
       Path(pathOrTarget)(target, prop, desc);
     };
-  } else {
-    /**
-     * target is actual class.
-     * apply method annotation
-     * but need to return function?
-     */
-    return addMethodAnnotation(pathOrTarget, propertyKey, method);
   }
+  /**
+   * target is actual class.
+   * apply method annotation
+   * but need to return function?
+   */
+  return addMethodAnnotation(pathOrTarget, propertyKey, method, descriptor);
 };
 
-export function GET(target: string): IMethodDecorator
-export function GET(target: Target,
-                    propertyKey: string,
-                    descriptor: TypedPropertyDescriptor<ControllerFunc>): void
-export function GET(target: string | Target,
-                    propertyKey?: string,
-                    descriptor?: TypedPropertyDescriptor<ControllerFunc>) {
-
+export function GET(target: string): IMethodDecorator;
+export function GET(
+  target: Target,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+): void;
+export function GET(
+  target: string | Target,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+) {
   return decorate(target, propertyKey, HTTPMethod.GET);
 }
 
-
-export function PUT(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-  addMethodAnnotation(target, propertyKey, HTTPMethod.PUT);
+export function PUT(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  addMethodAnnotation(target, propertyKey, HTTPMethod.PUT, descriptor);
 }
 
-
-export function POST(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-  addMethodAnnotation(target, propertyKey, HTTPMethod.POST);
+export function POST(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  addMethodAnnotation(target, propertyKey, HTTPMethod.POST, descriptor);
 }
 
-
-export function DELETE(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-  addMethodAnnotation(target, propertyKey, HTTPMethod.DELETE);
+export function DELETE(
+  target: any,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  addMethodAnnotation(target, propertyKey, HTTPMethod.DELETE, descriptor);
 }
-
-/*
-export function ALL(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<ControllerFunc>) {
-  addMethodAnnotation(target, propertyKey, RequestMethod.ALL);
-}*/
-
-
-

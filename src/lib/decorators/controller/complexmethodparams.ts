@@ -1,28 +1,27 @@
 import 'reflect-metadata';
+import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } from 'bind';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
 import { PathDetailsType } from '../../enums/pathdetails';
-import {
-  getTargetStereotype,
-  Target,
-  TargetStereoType,
-  getMethodParamName,
-} from 'bind';
 import { IControllerParamMeta } from '../../interfaces';
 import { getParamType } from './noargmethodparams';
 import makeParamExtractorFactory from './makeparamextractorfactory';
 
 const debug = require('debug')('promiseoft:decorators');
+
 const TAG = 'METHOD-ARGUMENTS';
 
-export type ParamDecoratorFunction = (target: Target,
-                                      propertyKey: string,
-                                      parameterIndex: number) => void;
+export type ParamDecoratorFunction = (
+  target: Target,
+  propertyKey: string,
+  parameterIndex: number,
+) => void;
 
-function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
-                              target: Target,
-                              propertyKey: string): undefined {
-
+function applyParamAnnotation(
+  methodArgumentDetail: PathDetailsParam,
+  target: Target,
+  propertyKey: string,
+): undefined {
   const index = methodArgumentDetail.position;
   /**
    *  Array of objects of PathDetailsParam
@@ -34,19 +33,18 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
   const targetStereoType = getTargetStereotype(target);
   debug('%s targetStereoType="%s"', TAG, targetStereoType);
 
-  if (targetStereoType!==TargetStereoType.PROTOTYPE) {
-    throw new TypeError(`${PathDetailsType[methodArgumentDetail['type']]} 
+  if (targetStereoType !== TargetStereoType.PROTOTYPE) {
+    throw new TypeError(`${PathDetailsType[methodArgumentDetail.type]} 
     can be added only to class method`);
   }
 
-  debug(`Defining @PathParam ${String(methodArgumentDetail['name'])} for arg ${index} 
+  debug(`Defining @PathParam ${String(methodArgumentDetail.name)} for arg ${index} 
   of method ${target.constructor.name}.${String(propertyKey)}`);
 
   metaDetails = Reflect.getMetadata(SYM_METHOD_PARAMS, target, propertyKey) || [];
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
 
   if (metaDetails[index]) {
-
     /**
      * This may be a the case when element has @Required decorator
      * in which case this method will be called twice.
@@ -69,10 +67,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
     metaDetails[index].paramName = methodArgumentDetail.name;
     metaDetails[index].paramDecoratorType = methodArgumentDetail.type;
     metaDetails[index].paramType = getParamType(paramTypes, index);
-
   } else {
-
-
     /**
      * @todo check that position of last element is == parameterIndex-1
      *        If it's not, then it would mean that there is one or more un-annotated params,
@@ -92,10 +87,7 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
      * @type {{type: PathDetailsType, name: string, position: number}}
      */
     metaDetails[index] = {
-      f: makeParamExtractorFactory(
-        methodArgumentDetail.type,
-        methodArgumentDetail.name,
-      ),
+      f: makeParamExtractorFactory(methodArgumentDetail.type, methodArgumentDetail.name),
       paramDecoratorType: methodArgumentDetail.type,
       isRequired: false,
       paramName: methodArgumentDetail.name,
@@ -110,18 +102,24 @@ function applyParamAnnotation(methodArgumentDetail: PathDetailsParam,
   return undefined;
 }
 
-export const doParamAnnotation = (name: string,
-                                  paramType: PathDetailsType): ParamDecoratorFunction =>
-  (target: Target,
-   propertyKey: string,
-   parameterIndex: number): undefined => {
-
-    return applyParamAnnotation({
+export const doParamAnnotation = (
+  name: string,
+  paramType: PathDetailsType,
+): ParamDecoratorFunction => (
+  target: Target,
+  propertyKey: string,
+  parameterIndex: number,
+): undefined => {
+  return applyParamAnnotation(
+    {
       type: paramType,
-      name: name,
+      name,
       position: parameterIndex,
-    }, target, propertyKey);
-  };
+    },
+    target,
+    propertyKey,
+  );
+};
 
 /**
  * @todo refactor this function
@@ -132,60 +130,58 @@ export const doParamAnnotation = (name: string,
  *
  * @param target
  */
-export const delegateParamAnnotation =
-  (target: Target | string) =>
-    (paramType: PathDetailsType) =>
-      (propertyKey: string, parameterIndex: number): ParamDecoratorFunction | undefined => {
-        if (typeof target==='string') {
-          return doParamAnnotation(target, paramType);
-        } else {
-          const paramName = getMethodParamName(target, propertyKey, parameterIndex);
-          doParamAnnotation(paramName, paramType)(target, propertyKey, parameterIndex);
-          return undefined;
-        }
-      };
+export const delegateParamAnnotation = (target: Target | string) => (
+  paramType: PathDetailsType,
+) => (propertyKey: string, parameterIndex: number): ParamDecoratorFunction | undefined => {
+  if (typeof target === 'string') {
+    return doParamAnnotation(target, paramType);
+  }
+  const paramName = getMethodParamName(target, propertyKey, parameterIndex);
+  doParamAnnotation(paramName, paramType)(target, propertyKey, parameterIndex);
+  return undefined;
+};
 
-export function PathParam(name: string)
-export function PathParam(target: Target, propertyKey: string, parameterIndex: number)
-export function PathParam(target: Target | string,
-                          propertyKey?: string,
-                          parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.PathParam)(propertyKey,
-    parameterIndex);
+export function PathParam(name: string);
+export function PathParam(target: Target, propertyKey: string, parameterIndex: number);
+export function PathParam(target: Target | string, propertyKey?: string, parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.PathParam)(propertyKey, parameterIndex);
 }
 
-export function QueryParam(name: string)
-export function QueryParam(target: Target, propertyKey: string, parameterIndex: number)
-export function QueryParam(target: Target | string,
-                           propertyKey?: string,
-                           parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.QueryParam)(propertyKey,
-    parameterIndex);
+export function QueryParam(name: string);
+export function QueryParam(target: Target, propertyKey: string, parameterIndex: number);
+export function QueryParam(target: Target | string, propertyKey?: string, parameterIndex?: number) {
+  return delegateParamAnnotation(target)(PathDetailsType.QueryParam)(propertyKey, parameterIndex);
 }
 
-export function HeaderParam(name: string)
-export function HeaderParam(target: Target, propertyKey: string, parameterIndex: number)
-export function HeaderParam(target: Target | string,
-                            propertyKey?: string,
-                            parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.HeaderParam)(propertyKey,
-    parameterIndex);
+export function HeaderParam(name: string);
+export function HeaderParam(target: Target, propertyKey: string, parameterIndex: number);
+export function HeaderParam(
+  target: Target | string,
+  propertyKey?: string,
+  parameterIndex?: number,
+) {
+  return delegateParamAnnotation(target)(PathDetailsType.HeaderParam)(propertyKey, parameterIndex);
 }
 
-export function CookieParam(name: string)
-export function CookieParam(target: Target, propertyKey: string, parameterIndex: number)
-export function CookieParam(target: Target | string,
-                            propertyKey?: string,
-                            parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.CookieParam)(propertyKey,
-    parameterIndex);
+export function CookieParam(name: string);
+export function CookieParam(target: Target, propertyKey: string, parameterIndex: number);
+export function CookieParam(
+  target: Target | string,
+  propertyKey?: string,
+  parameterIndex?: number,
+) {
+  return delegateParamAnnotation(target)(PathDetailsType.CookieParam)(propertyKey, parameterIndex);
 }
 
-export function ContextParam(name: string)
-export function ContextParam(target: Target, propertyKey: string, parameterIndex: number)
-export function ContextParam(target: Target | string,
-                             propertyKey?: string,
-                             parameterIndex?: number) {
-  return delegateParamAnnotation(target)(PathDetailsType.ContextScopeParam)(propertyKey,
-    parameterIndex);
+export function ContextParam(name: string);
+export function ContextParam(target: Target, propertyKey: string, parameterIndex: number);
+export function ContextParam(
+  target: Target | string,
+  propertyKey?: string,
+  parameterIndex?: number,
+) {
+  return delegateParamAnnotation(target)(PathDetailsType.ContextScopeParam)(
+    propertyKey,
+    parameterIndex,
+  );
 }

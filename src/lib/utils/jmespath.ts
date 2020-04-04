@@ -1,12 +1,10 @@
+import { IfIocContainer } from 'bind';
+import { search } from 'jmespath';
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
 import Context from '../../components/context';
-import { parseJsonBody } from '../utils';
-import { IfIocContainer } from 'bind';
-import {search} from 'jmespath'
-
+import { parseJsonBody } from './parsebody';
 
 export default function JMESPath(q: string): ParamExtractorFactory {
-
   try {
     search({}, q);
   } catch (e) {
@@ -18,13 +16,14 @@ export default function JMESPath(q: string): ParamExtractorFactory {
     throw new Error(`Invalid JMESPath query. Error="${e.message}"`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (c: IfIocContainer) => (ctx: Context) => {
-    return parseJsonBody(ctx.req).then(body => {
+    return parseJsonBody(ctx.req).then((body) => {
       try {
         return search(body, q);
-      } catch(e){
-        throw new Error(`JMESPath Failed to extract param from body. Error=${e.message}`)
+      } catch (e) {
+        throw new Error(`JMESPath Failed to extract param from body. Error=${e.message}`);
       }
-    })
-  }
+    });
+  };
 }

@@ -1,12 +1,10 @@
-import { ParamExtractorFactory } from '../types/controllerparamextractor';
-import Context from '../../components/context';
-import { parseJsonBody } from '../utils';
 import { IfIocContainer } from 'bind';
 import { parse, value } from 'jsonpath';
-
+import { ParamExtractorFactory } from '../types/controllerparamextractor';
+import Context from '../../components/context';
+import { parseJsonBody } from './parsebody';
 
 export default function JSONPath(q: string): ParamExtractorFactory {
-
   try {
     parse(q);
   } catch (e) {
@@ -18,13 +16,14 @@ export default function JSONPath(q: string): ParamExtractorFactory {
     throw new Error(`Invalid JSONPath query. Error="${e.toString()}"`);
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (c: IfIocContainer) => (ctx: Context) => {
-    return parseJsonBody(ctx.req).then(body => {
+    return parseJsonBody(ctx.req).then((body) => {
       try {
         return value(body, q);
-      } catch(e){
-        throw new Error(`JSONPath Failed to extract param from body. Error=${e.message}`)
+      } catch (e) {
+        throw new Error(`JSONPath Failed to extract param from body. Error=${e.message}`);
       }
-    })
-  }
+    });
+  };
 }

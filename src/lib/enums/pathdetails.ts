@@ -30,7 +30,5 @@ export enum PathDetailsType {
   HttpRouter,
   CustomParamDecorator,
   BodyParam,
-  PathParamRegex
+  PathParamRegex,
 }
-
-

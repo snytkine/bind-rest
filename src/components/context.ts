@@ -4,7 +4,6 @@ import * as http from 'http';
 import * as QueryString from 'querystring';
 import { ParsedUrlQuery } from 'querystring';
 import * as cookie from 'cookie';
-import { IAppResponse } from '../lib/interfaces/appresponse';
 import {
   Component,
   ComponentScope,
@@ -16,22 +15,31 @@ import {
   ComponentIdentity,
 } from 'bind';
 import { IUriParams } from 'holiday-router';
+import { IAppResponse } from '../lib/interfaces/appresponse';
 
 const debug = require('debug')('promiseoft:context');
+
 const TAG = 'ContextClass';
 
 @Component
 @Scope(ComponentScope.REQUEST)
 export default class Context implements IScopedComponentStorage {
-
   static readonly id: ComponentIdentity = Identity(Context);
+
   public req: http.IncomingMessage;
+
   public res: http.ServerResponse;
+
   private reqUrl: string;
+
   private uriInfo: UrlWithStringQuery;
+
   private cookies;
+
   private myControllerName = '';
+
   private myRouteParams: IUriParams;
+
   /**
    * Parsed url query
    */
@@ -69,7 +77,6 @@ export default class Context implements IScopedComponentStorage {
   }
 
   getComponent(id: ComponentIdentity) {
-
     /**
      * Special case if looking for instance of Context (this object)
      * then just return this
@@ -81,11 +88,10 @@ export default class Context implements IScopedComponentStorage {
       return this;
     }
 
-    return this.scopedComponents.find(component => isSameIdentity(component[0], id));
+    return this.scopedComponents.find((component) => isSameIdentity(component[0], id));
   }
 
   setComponent(id: ComponentIdentity, component: any): void {
-
     /**
      * Special case do not set Context instance (instance of this class)
      * into storage
@@ -100,7 +106,6 @@ export default class Context implements IScopedComponentStorage {
        */
       this.scopedComponents.push([id, component]);
     }
-
   }
 
   get controllerName() {
@@ -123,7 +128,9 @@ export default class Context implements IScopedComponentStorage {
     if (!this.myControllerName) {
       this.myControllerName = name;
     } else {
-      throw new Error(`Controller name is already set to '${this.myControllerName}' Cannot set new value '${name}'`);
+      throw new Error(
+        `Controller name is already set to '${this.myControllerName}' Cannot set new value '${name}'`,
+      );
     }
   }
 
@@ -135,13 +142,13 @@ export default class Context implements IScopedComponentStorage {
     return this.reqUrl;
   }
 
-/*  get request() {
+  /*  get request() {
     return this.req;
   }
 
   get response() {
     return this.res;
-  }*/
+  } */
 
   get parsedUrl(): UrlWithStringQuery {
     if (!this.uriInfo) {
@@ -165,7 +172,6 @@ export default class Context implements IScopedComponentStorage {
   }
 
   get parsedCookies() {
-
     if (this.cookies) return this.cookies;
 
     if (this.req.headers?.cookie) {
@@ -184,5 +190,4 @@ export default class Context implements IScopedComponentStorage {
   }
 
   controllerArguments: Array<any> = [];
-
 }

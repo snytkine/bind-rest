@@ -1,5 +1,6 @@
 import Context from '../../components/context';
-import { IAppResponse } from '../interfaces';
+import { IAppResponse } from '../interfaces/appresponse';
+
 export type ClassMethod = [{}, string];
 
 /**
@@ -10,9 +11,8 @@ export type ClassMethod = [{}, string];
  * @throws In case of validation error throws exception. Implementation may allow to either throw on first
  * validation error or throw with details about all validation errors
  */
-export type ParamsValidator = (params: Array<any>)  => Array<any>
+export type ParamsValidator = (params: Array<any>) => Array<any>;
 export type contextToParam = (ctx: Context) => any;
-export type HandlerFunc = (ctx:Context) => Promise<Context>
 
-export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>
-export type IController = (ctx: Context) => Promise<IAppResponse>
+export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>;
+export type IController = (ctx: Context) => Promise<IAppResponse>;

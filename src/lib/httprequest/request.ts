@@ -1,22 +1,16 @@
 import http from 'http';
 import https from 'https';
-import {
-  getHTTPSOverHTTPTunnel,
-  getHTTPOverHTTPTunnel
-} from './tunnel';
-import {
-  HttpResponse,
-  HttpErrorResponse,
-  stringifyBody
-} from './response';
 import { clearTimeout } from 'timers';
-import { ILogger } from '../interfaces'
 import util from 'util';
 import uuid from 'uuid/v4';
 import HttpStatusCode from 'http-status-enum';
 import stream from 'stream';
 import querystring from 'querystring';
 import isStream from 'is-stream';
+import { ILogger } from '../interfaces/logger';
+import { HttpResponse, HttpErrorResponse, stringifyBody } from './response';
+import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
+import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
 
 const debug = require('debug')('promiseoft:request');
 
@@ -31,71 +25,8 @@ const REQUEST_METHOD = 'requestMethod';
 const ELAPSED_TIME = 'elapsedTime';
 const RESPONSE_HEADERS = 'responseHeaders';
 
-
 const DEFAULT_TIMEOUT = 5000;
 const TAG = 'makeRequest';
-
-export interface IProxyOptions {
-  proxyHost: string
-  proxyPort: string
-  auth?: string
-  headers?: any
-}
-
-export interface UserPassword {
-  user: string
-  password: string
-}
-
-export interface IRequestOptions {
-  protocol?: string
-  host?: string
-  hostname?: string
-  family?: number
-  port?: string | number
-  localAddress?: string
-  socketPath?: string
-  method?: string
-  path?: string
-  query?: { [key: string]: string | number }
-  headers?: { [key: string]: any }
-  auth?: string;
-  agent?: http.Agent | boolean
-  rejectUnauthorized?: boolean
-}
-
-export interface IHttpRequestOptions {
-  timeout?: string | number
-  requestOptions: IRequestOptions
-  payload?: string | NodeJS.ReadableStream
-  proxy?: IProxyOptions
-  disableCertificateValidation?: boolean
-  ca?: string
-  key?: string
-  cert?: string
-  poolSize?: number
-  RequestType?: 'HTTPS' | 'HTTP'
-  basicAuth?: UserPassword
-  logger?: ILogger
-}
-
-//RequestOptions
-
-export interface INormalizedRequestOptions {
-  timeout?: string | number
-  requestOptions: http.RequestOptions
-  payload?: string | NodeJS.ReadableStream
-  proxy?: IProxyOptions
-  disableCertificateValidation?: boolean
-  ca?: string
-  key?: string
-  cert?: string
-  poolSize?: number
-  RequestType?: 'HTTPS' | 'HTTP'
-  basicAuth?: UserPassword
-  logger?: ILogger
-}
-
 
 /**
  * Wrapper helper function to create custom
@@ -108,10 +39,7 @@ export interface INormalizedRequestOptions {
  * @returns {ILogger}
  */
 export function requestLogger(logger: ILogger, headers: Object): ILogger {
-
   const reqLogger = {
-
-
     info(...messages: any[]): ILogger {
       logger.info(...messages, headers);
       return this;
@@ -122,7 +50,6 @@ export function requestLogger(logger: ILogger, headers: Object): ILogger {
       return this;
     },
 
-
     warn(...messages: any[]): ILogger {
       logger.warn(...messages, headers);
       return this;
@@ -131,33 +58,38 @@ export function requestLogger(logger: ILogger, headers: Object): ILogger {
     debug(...messages: any[]): ILogger {
       logger.debug(...messages, headers);
       return this;
-    }
+    },
   };
 
   return reqLogger;
 }
 
 function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOptions {
-
   debug(TAG, 'Entered setServiceOptions with options: ', options);
 
   if (!options.requestOptions.method) {
-    debug(TAG, 'Missing requestOptions.method  Setting default method \'GET\'');
+    debug(TAG, "Missing requestOptions.method  Setting default method 'GET'");
     options.requestOptions.method = 'GET';
   }
 
   if (options.basicAuth) {
-
     if (!options.requestOptions.headers) {
-      options.requestOptions.headers = {}
+      options.requestOptions.headers = {};
     }
 
-    options.requestOptions.headers['Authorization'] = 'Basic ' + new Buffer(options.basicAuth.user + ':' + options.basicAuth.password, 'utf8').toString('base64')
-    debug('%s Added AuthorizationHeader=%s', TAG, options.requestOptions.headers['Authorization']);
-    options.requestOptions.headers['cookie'] = 'jive.user.loggedIn=true';
+    options.requestOptions.headers.Authorization = `Basic ${new Buffer(
+      `${options.basicAuth.user}:${options.basicAuth.password}`,
+      'utf8',
+    ).toString('base64')}`;
+    debug('%s Added AuthorizationHeader=%s', TAG, options.requestOptions.headers.Authorization);
+    options.requestOptions.headers.cookie = 'jive.user.loggedIn=true';
   }
 
-  if (options.RequestType === 'HTTPS' || (options.requestOptions.protocol && options.requestOptions.protocol.toLocaleLowerCase() === 'https:')) {
+  if (
+    options.RequestType === 'HTTPS' ||
+    (options.requestOptions.protocol &&
+      options.requestOptions.protocol.toLocaleLowerCase() === 'https:')
+  ) {
     options.requestOptions.protocol = 'https:';
     debug(TAG, 'INSIDE HTTPS setServiceOptions with options: ', options);
 
@@ -182,30 +114,31 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
       // @ts-ignore
       options.requestOptions.agent = new https.Agent(options.requestOptions);
     }
-
-  }
-  else {
-
+  } else {
     debug(TAG, 'Not HTTPS. Setting options.requestOptions.protocol to http');
     /*
      * Set tunneling agent if the endpoint requires a proxy otherwise use a regular https agent;
      */
     options.requestOptions.protocol = 'http:';
-    options.requestOptions.agent = options.hasOwnProperty('proxy') ? getHTTPOverHTTPTunnel(options) : false;// new
-                                                                                                            // http.Agent(options.requestOptions);
+    options.requestOptions.agent = options.hasOwnProperty('proxy')
+      ? getHTTPOverHTTPTunnel(options)
+      : false; // new
+    // http.Agent(options.requestOptions);
   }
 
   if (options.requestOptions.port) {
     options.requestOptions.port = Number(options.requestOptions.port);
     if (Number.isNaN(options.requestOptions.port)) {
-      throw new TypeError(`${TAG} value of options.requestOptions.port could not be converted to Number. Value was="${options.requestOptions.port}"`)
+      throw new TypeError(
+        `${TAG} value of options.requestOptions.port could not be converted to Number. Value was="${options.requestOptions.port}"`,
+      );
     }
 
     debug(TAG, 'Port number set to=', options.requestOptions.port);
   }
 
   if (!options.requestOptions.hostname && options.requestOptions.host) {
-    options.requestOptions.hostname = options.requestOptions.host
+    options.requestOptions.hostname = options.requestOptions.host;
   }
 
   if (options.requestOptions.query) {
@@ -220,13 +153,11 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
       options.requestOptions.path = options.requestOptions.path.slice(0, -1);
     }
 
-    options.requestOptions.path = options.requestOptions.path + '?' + queryString;
+    options.requestOptions.path = `${options.requestOptions.path}?${queryString}`;
   }
 
   return <INormalizedRequestOptions>options;
-
 }
-
 
 /*
  * Select the call type for request http || https.
@@ -235,7 +166,6 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
  * https://nodejs.org/api/https.html#https_https_request_options_callback
  */
 export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse> {
-
   let ClientRequestorObject;
   let timeout = DEFAULT_TIMEOUT;
 
@@ -243,7 +173,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
     options = setServiceOptions(options);
   } catch (e) {
     if (options.logger) {
-      options.logger.error(TAG, '=Failed to setServiceOptions', e);
+      options.logger.error(TAG, 'Failed to setServiceOptions', e);
     }
     return Promise.reject(e);
   }
@@ -265,22 +195,24 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
     timeout = Number(options.timeout);
     if (Number.isNaN(timeout)) {
       if (options.logger) {
-        options.logger.error(TAG, `Value of options.timeout=${options.timeout} cannot be converted to number. Using default falue`);
+        options.logger.error(
+          TAG,
+          `Value of options.timeout=${options.timeout} cannot be converted to number. Using default falue`,
+        );
       }
 
       timeout = DEFAULT_TIMEOUT;
     }
   }
 
-  const myport = options.requestOptions.port ? (':' + options.requestOptions.port) : '';
+  const myport = options.requestOptions.port ? `:${options.requestOptions.port}` : '';
   const myuri = `${options.requestOptions.protocol}//${options.requestOptions.hostname}${myport}${options.requestOptions.path}`;
-
 
   return new Promise<HttpResponse>((resolve, reject) => {
     let request: http.ClientRequest;
-    let resolved,
-        timeoutOccured = false,
-        timeoutId;
+    let resolved;
+    let timeoutOccured = false;
+    let timeoutId;
 
     if (typeof options.payload === 'string') {
       const payloadLen = Buffer.byteLength(options.payload);
@@ -291,8 +223,14 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       }
       options.requestOptions.headers['Content-Length'] = payloadLen;
 
-      options.logger && options.logger.debug(TAG, 'payload is string. Method=', options.requestOptions.method, "headers=", options.requestOptions.headers);
-
+      options.logger &&
+        options.logger.debug(
+          TAG,
+          'payload is string. Method=',
+          options.requestOptions.method,
+          'headers=',
+          options.requestOptions.headers,
+        );
     }
 
     /*
@@ -308,17 +246,21 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
          * If timeout is reached ty to abort request and close socket
          */
         if (options.logger) {
-          options.logger.error(`${TAG}=TimeoutReached for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`);
+          options.logger.error(
+            `${TAG}=TimeoutReached for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+          );
         }
         request && request.abort();
-      }
-      catch (e) {
+      } catch (e) {
         /*
          * If request abort fails -> log
          */
         debug(TAG, ' Failed to abort request: %o', e);
         if (options.logger) {
-          options.logger.error(`${TAG}=Failed to abort request. ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}=`, e);
+          options.logger.error(
+            `${TAG}=Failed to abort request. ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}=`,
+            e,
+          );
         }
         /**
          *
@@ -327,12 +269,16 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       }
     }, timeout);
 
-
     // what we need at this point is this: options.requestOptions
     try {
       if (options.logger) {
-        options.logger.info(`${TAG}=Start ${TIMEOUT_VALUE}=${timeout} milliseconds. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`);
-        options.logger.debug(`${TAG}=Start ${REQUEST_ID}=${requestID} RequestHeaders:`, options.requestOptions.headers);
+        options.logger.info(
+          `${TAG}=Start ${TIMEOUT_VALUE}=${timeout} milliseconds. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+        );
+        options.logger.debug(
+          `${TAG}=Start ${REQUEST_ID}=${requestID} RequestHeaders:`,
+          options.requestOptions.headers,
+        );
       }
 
       startTime = Date.now();
@@ -348,19 +294,27 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           clearTimeout(timeoutId);
         } catch (ex) {
           if (options.logger) {
-            options.logger.error(`${TAG}=clearTimeoutFailed on error for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`);
+            options.logger.error(
+              `${TAG}=clearTimeoutFailed on error for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+            );
           }
         }
         if (!timeoutOccured) {
           if (options.logger) {
-            options.logger.error(`${TAG}=ErrorEvent ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname}" ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`, e);
+            options.logger.error(
+              `${TAG}=ErrorEvent ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname}" ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
+              e,
+            );
           }
 
           reject(new Error(`There is an error in the get request ${util.inspect(e)}`));
         } else {
           debug(TAG, ' HTTP REQUEST ERROR ', e.message);
           if (options.logger) {
-            options.logger.error(`${TAG}=ErrorEvent with timeout. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`, e);
+            options.logger.error(
+              `${TAG}=ErrorEvent with timeout. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
+              e,
+            );
           }
           /**
            * @todo timeoutOccured
@@ -371,7 +325,10 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           } else {
             debug(TAG, ' Promise was already resolved');
             if (options.logger) {
-              options.logger.debug(TAG, `error but already resolved. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`);
+              options.logger.debug(
+                TAG,
+                `error but already resolved. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+              );
             }
           }
         }
@@ -391,13 +348,28 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           clearTimeout(timeoutId);
         } catch (e) {
           if (options.logger) {
-            options.logger.error(`${TAG}=clearTimeoutFailed on abort event for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`);
+            options.logger.error(
+              `${TAG}=clearTimeoutFailed on abort event for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+            );
           }
         }
 
         debug(TAG, 'ON-ABORT CALLED');
         if (options.logger) {
-          options.logger.debug(TAG, '=debug request aborted for requestID=', requestID, ' ${REQUEST_HOST}=', options.requestOptions.hostname, ' requestURI="', myuri, '" ${REQUEST_METHOD}=', options.requestOptions.method, ' ${TIMEOUT_VALUE}=', timeout, ' milliseconds');
+          options.logger.debug(
+            TAG,
+            '=debug request aborted for requestID=',
+            requestID,
+            ' ${REQUEST_HOST}=',
+            options.requestOptions.hostname,
+            ' requestURI="',
+            myuri,
+            '" ${REQUEST_METHOD}=',
+            options.requestOptions.method,
+            ' ${TIMEOUT_VALUE}=',
+            timeout,
+            ' milliseconds',
+          );
         }
         /**
          *
@@ -408,17 +380,24 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
          */
         if (timeoutOccured) {
           if (options.logger) {
-            options.logger.debug(`${TAG}=debug resolving timed-out request. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`);
+            options.logger.debug(
+              `${TAG}=debug resolving timed-out request. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+            );
           }
           if (!resolved) {
             resolved = true;
-            resolve(new HttpErrorResponse(HttpStatusCode.GATEWAY_TIMEOUT, `The request has taken longer than the allotted ${options.timeout} milliseconds`, {}, requestID));
+            resolve(
+              new HttpErrorResponse(
+                HttpStatusCode.GATEWAY_TIMEOUT,
+                `The request has taken longer than the allotted ${options.timeout} milliseconds`,
+                {},
+                requestID,
+              ),
+            );
           }
-
         } else {
           reject(new Error(`Http Request aborted`));
         }
-
       });
 
       /*
@@ -426,17 +405,20 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
        * This fires one time;
        */
       request.on('response', (response: http.IncomingMessage) => {
-
         try {
           clearTimeout(timeoutId);
         } catch (ex) {
           if (options.logger) {
-            options.logger.error(`${TAG}=clearTimeoutFailed for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${REQUEST_ERROR}=${ex.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`);
+            options.logger.error(
+              `${TAG}=clearTimeoutFailed for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${REQUEST_ERROR}=${ex.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+            );
           }
         }
 
         if (options.logger) {
-          options.logger.debug(`${TAG}=onresponse ${REQUEST_ID}=${requestID} ${STATUS_CODE}=${response.statusCode} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`);
+          options.logger.debug(
+            `${TAG}=onresponse ${REQUEST_ID}=${requestID} ${STATUS_CODE}=${response.statusCode} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+          );
         }
         debug('%s onResponse called with statusCode=%s', TAG, response.statusCode);
 
@@ -444,21 +426,23 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           resolved = true;
           resolve(new HttpResponse(response.statusCode, response.headers, response, requestID));
         }
-
       });
 
       request.on('end', (response) => {
-
         debug('ON-END CALLED');
         if (options.logger) {
-          options.logger.info(`${TAG}=end ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`);
+          options.logger.info(
+            `${TAG}=end ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+          );
         }
       });
 
       request.on('upgrade', (response) => {
         debug('ON-UPGRADE CALLED');
         if (options.logger) {
-          options.logger.info(`${TAG}=upgrade ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`);
+          options.logger.info(
+            `${TAG}=upgrade ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+          );
         }
       });
 
@@ -469,17 +453,30 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
           debug('%s Request method=%s has payload=%s', TAG, options.requestOptions.method);
           if (typeof options.payload === 'string') {
             debug(TAG, 'Request payload is a string: %s', options.payload);
-            options.logger && options.logger.debug(TAG, 'Request payload is a string. Method=', options.requestOptions.method, options.requestOptions.headers);
+            options.logger &&
+              options.logger.debug(
+                TAG,
+                'Request payload is a string. Method=',
+                options.requestOptions.method,
+                options.requestOptions.headers,
+              );
 
             request.write(options.payload);
             debug(TAG, 'Written payload to request');
           } else {
-            options.logger && options.logger.debug(TAG, 'Request payload is a stream=.', isStream.readable(options.payload) ,' method=', options.requestOptions.method, options.requestOptions.headers);
+            options.logger &&
+              options.logger.debug(
+                TAG,
+                'Request payload is a stream=.',
+                isStream.readable(options.payload),
+                ' method=',
+                options.requestOptions.method,
+                options.requestOptions.headers,
+              );
             debug(TAG, 'Request payload is a stream');
             options.payload.pipe(request);
             payloadPiped = true;
           }
-
         } else {
           debug(TAG, 'NO payload in requestOptions');
         }
@@ -489,64 +486,86 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
         debug(TAG, 'Calling request.end()');
         request.end();
       }
-
     } catch (ex) {
       if (options.logger) {
-        options.logger.error(`${TAG}=Failed to create request object ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}="${ex.message}"`);
+        options.logger.error(
+          `${TAG}=Failed to create request object ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}="${ex.message}"`,
+        );
       }
 
       reject(`${TAG} request object ${REQUEST_ERROR}="${ex.message}"`);
     }
+  })
+    .then((resp) => {
+      const endTime = Date.now();
+      const elapsedTime = endTime - startTime;
 
-  }).then(resp => {
-    const endTime = Date.now();
-    const elapsedTime = (endTime - startTime);
+      debug(
+        '%s Request completed for %s=%s %s=%s %s=%s',
+        TAG,
+        REQUEST_ID,
+        requestID,
+        ELAPSED_TIME,
+        elapsedTime,
+        STATUS_CODE,
+        resp.statusCode,
+      );
 
-    debug('%s Request completed for %s=%s %s=%s %s=%s', TAG, REQUEST_ID, requestID, ELAPSED_TIME, elapsedTime, STATUS_CODE, resp.statusCode);
-
-    if (options.logger) {
-
-      /**
-       * Automatically log response body of error responses
-       */
-      if (resp.statusCode >= 400) {
+      if (options.logger) {
         /**
-         * Also log response headers
+         * Automatically log response body of error responses
          */
-        options.logger.error(`${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_HEADERS}=`, resp.headers);
-        return stringifyBody(resp)
-        .then(sresp => {
-          const errorBody = sresp.body;
-          options.logger.error(`${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_ERROR}=${errorBody}`,);
-          // Now we have stringBody response
-          // we need to convert it back to readable stream so we can return correct type
-          let bufferStream = new stream.PassThrough();
-          bufferStream.end(errorBody);
+        if (resp.statusCode >= 400) {
+          /**
+           * Also log response headers
+           */
+          options.logger.error(
+            `${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_HEADERS}=`,
+            resp.headers,
+          );
+          return stringifyBody(resp).then((sresp) => {
+            const errorBody = sresp.body;
+            options.logger.error(
+              `${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_ERROR}=${errorBody}`,
+            );
+            // Now we have stringBody response
+            // we need to convert it back to readable stream so we can return correct type
+            const bufferStream = new stream.PassThrough();
+            bufferStream.end(errorBody);
 
-          return new HttpResponse(resp.statusCode, resp.headers, bufferStream, resp.requestID);
-        })
-      } else {
-        options.logger.info(`${TAG}=OK Request complete. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${RESPONSE_HEADERS}=`, resp.headers, `${ELAPSED_TIME}=${elapsedTime} milliseconds`);
+            return new HttpResponse(resp.statusCode, resp.headers, bufferStream, resp.requestID);
+          });
+        }
+        options.logger.info(
+          `${TAG}=OK Request complete. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${RESPONSE_HEADERS}=`,
+          resp.headers,
+          `${ELAPSED_TIME}=${elapsedTime} milliseconds`,
+        );
       }
-    }
 
-    return resp;
+      return resp;
+    })
+    .catch((e) => {
+      const endTime = Date.now();
+      const elapsedTime = endTime - startTime;
 
-  })
-  .catch(e => {
-    const endTime = Date.now();
-    const elapsedTime = (endTime - startTime);
+      debug(
+        '%s Request FAILED for %s=%s %s=%s %s=%o',
+        TAG,
+        REQUEST_ID,
+        requestID,
+        ELAPSED_TIME,
+        elapsedTime,
+        REQUEST_ERROR,
+        e,
+      );
+      if (options.logger) {
+        options.logger.error(
+          `${TAG}=Exception  ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} Error="${e.message}" ${ELAPSED_TIME}=${elapsedTime} milliseconds. Exception=`,
+          e,
+        );
+      }
 
-    debug('%s Request FAILED for %s=%s %s=%s %s=%o', TAG, REQUEST_ID, requestID, ELAPSED_TIME, elapsedTime, REQUEST_ERROR, e);
-    if (options.logger) {
-      options.logger.error(`${TAG}=Exception  ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} Error="${e.message}" ${ELAPSED_TIME}=${elapsedTime} milliseconds. Exception=`, e);
-    }
-
-    throw e;
-  })
-
+      throw e;
+    });
 }
-
-
-
-

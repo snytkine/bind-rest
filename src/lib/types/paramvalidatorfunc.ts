@@ -25,4 +25,4 @@ export type AsyncValidator = (c: IfIocContainer) => AsyncContextParamValidator;
  * Error in case of validation error
  * or undefined if validation is successful
  */
-export type ParamValidator = (param: any) => Maybe<Error>
+export type ParamValidator = (param: any) => Maybe<Error>;

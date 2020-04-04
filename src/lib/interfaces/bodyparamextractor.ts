@@ -1,6 +1,6 @@
 import { ParamExtractorFactory } from '../types';
 
 export interface IBodyParamExtractor {
-  query: string
-  paramExtractor: ParamExtractorFactory
+  query: string;
+  paramExtractor: ParamExtractorFactory;
 }

@@ -87,11 +87,6 @@ export default function parseController(container: IfIocContainer) {
           controllerMiddleware = controllerMiddlewareFactory(container);
         }
 
-        /**
-         * If have aMiddlewares then combine all middlewares
-         * into a single MiddlewareFuncFactory
-         */
-
         if (!isDefined(metaMethods)) {
           debug('%s Method "%s" is NOT a controller. Returning null!!!', TAG, controllerName);
           return null;

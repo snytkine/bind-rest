@@ -103,28 +103,26 @@ export class Application {
      *
      */
     try {
-      const initializedContainer: IfIocContainer = await container.initialize();
+      await container.initialize();
       /**
        * All components are loaded into container
        * Now parse all controllers and add routes to router
        */
-      setupRoutes(initializedContainer);
+      setupRoutes(container);
 
       /**
        * Get all Middleware, sort then by order (lower order first)
        * and create array of middleware functions.
        */
-      this.middlewares = getMiddlewares(initializedContainer);
+      this.middlewares = getMiddlewares(container);
       debug('%s got %d middleware functions', TAG, this.middlewares.length);
 
-      this.errHandlers = this.errHandlers
-        .concat(getErrorHandlers(initializedContainer))
-        .filter(notEmpty);
+      this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
       debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
-      this.registerApplicationComponent(initializedContainer);
+      this.registerApplicationComponent(container);
       const previousContainer = this.bindContainer;
-      this.bindContainer = initializedContainer;
+      this.bindContainer = container;
 
       return previousContainer;
     } catch (e) {
@@ -182,7 +180,7 @@ export class Application {
 
   init(): Promise<http.RequestListener> {
     return this.setContainer(this.container).then((previous) => {
-      debug('%s finished setContainer. previousContainer %s', TAG, isDefined(previous));
+      debug('%s finished setContainer. has previousContainer %s', TAG, isDefined(previous));
       return (req: http.IncomingMessage, res: http.ServerResponse) => {
         return this.handleRequest(req, res);
       };

@@ -10,3 +10,4 @@ export * from './controllermatcher';
 export * from './methoddecorator';
 export * from './middlewarefactory';
 export * from './responseheaders';
+export * from './classdecorator';

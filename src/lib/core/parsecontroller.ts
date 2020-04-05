@@ -55,6 +55,9 @@ export default function parseController(container: IfIocContainer) {
     }
 
     const basePath = Reflect.getMetadata(SYM_REQUEST_PATH, component.identity.clazz) || '';
+    const constollerMiddlewares: Array<IMiddlewareFactory> =
+      Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, component.identity.clazz) || [];
+
     debug('%s basePath for "%s" = "%s"', TAG, o.constructor.name, basePath);
     const props = Object.getOwnPropertyNames(o);
 
@@ -70,15 +73,19 @@ export default function parseController(container: IfIocContainer) {
         const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
         const controllerName = `${component.identity?.clazz?.name}.${p}`;
 
-        const aMiddlewares: Maybe<Array<IMiddlewareFactory>> = Reflect.getMetadata(
-          SYM_CONTROLLER_MIDDLEWARES,
-          o,
-          p,
-        );
+        let aMiddlewares: Array<IMiddlewareFactory> =
+          Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, o, p) || [];
+
+        /**
+         * Concat controller level middlewares with method middlewares
+         * controller middlewares will be first in the array
+         * and will be applied first.
+         */
+        aMiddlewares = constollerMiddlewares.concat(aMiddlewares);
 
         let controllerMiddlewareFactory: IMiddlewareFactory;
 
-        if (Array.isArray(aMiddlewares) && aMiddlewares.length > 0) {
+        if (aMiddlewares.length > 0) {
           /**
            * Create single middleware factory from array of middleware factories
            * Then create a middleware function.

@@ -12,7 +12,7 @@ const debug = require('debug')('promiseoft:decorators');
 
 const TAG = 'MAKE-CONTROLLER-DECORATOR';
 
-const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator => {
+const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator<ControllerFunc> => {
   return function controllerMethodDecorator(
     target: ClassPrototype,
     propertyKey: string,
@@ -46,9 +46,11 @@ const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator 
 };
 
 function makeDecorator(): IMethodDecoratorFactory;
-function makeDecorator(f: IMiddlewareFactory): IMethodDecorator;
-function makeDecorator(f?: IMiddlewareFactory): IMethodDecorator | IMethodDecoratorFactory {
-  let ret: IMethodDecorator | IMethodDecoratorFactory;
+function makeDecorator(f: IMiddlewareFactory): IMethodDecorator<ControllerFunc>;
+function makeDecorator(
+  f?: IMiddlewareFactory,
+): IMethodDecorator<ControllerFunc> | IMethodDecoratorFactory {
+  let ret: IMethodDecorator<ControllerFunc> | IMethodDecoratorFactory;
   if (f) {
     ret = decorateMethod(f);
   } else {

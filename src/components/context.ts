@@ -178,3 +178,4 @@ export default class Context implements IScopedComponentStorage {
 
   controllerArguments: Array<any> = [];
 }
+// /Users/snytkind/projects/bind

@@ -1,16 +1,18 @@
 import 'reflect-metadata';
 import {
-  Constructor,
   ClassPrototype,
   COMPONENT_IDENTITY,
-  EXTRA_DEPENDENCIES,
-  IfIocContainer,
-  IfIocComponent,
   ComponentIdentity,
+  Constructor,
+  EXTRA_DEPENDENCIES,
+  getTargetStereotype,
+  IfIocComponent,
+  IfIocContainer,
+  TargetStereoType,
 } from 'bind';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import { MiddlewareFunc, IMiddlewareFactory, ControllerFunc } from '../types';
+import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
 import Context from '../../components/context';
 
 const debug = require('debug')('promiseoft:decorators');
@@ -52,19 +54,44 @@ export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFact
  * @param middlewares
  * @constructor
  */
-export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
+
+export type ClassOrMethodDecorator<T> = (
+  target: ClassPrototype | Constructor<any>,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<T>,
+) => void;
+
+export function Middlewares(
+  ...middlewares: Array<Constructor<IMiddleware>>
+): ClassOrMethodDecorator<ControllerFunc> {
   return function middlewaresDecorator(
-    target: ClassPrototype,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<ControllerFunc>,
+    target: ClassPrototype | Constructor<any>,
+    propertyKey?: string,
+    descriptor?: TypedPropertyDescriptor<ControllerFunc>,
   ) {
-    debug(
-      '%s defining on controller method="%s.%s" descriptorTime="%s"',
-      TAG,
-      target.constructor?.name,
-      propertyKey,
-      typeof descriptor.value,
-    );
+    const targetStereotype = getTargetStereotype(target);
+
+    switch (targetStereotype) {
+      case TargetStereoType.CONSTRUCTOR:
+        break;
+
+      case TargetStereoType.PROTOTYPE:
+        if (
+          !propertyKey ||
+          !descriptor ||
+          !descriptor.value ||
+          typeof descriptor.value !== 'function'
+        ) {
+          throw new Error(`@Middlewares decorator can be applied only to Class 
+          or controller method.
+          It was upplied to unsupported property of class "${target?.constructor?.name}"`);
+        }
+        break;
+
+      default:
+        throw new Error(`@Middlewares decorator can be applied only to Class 
+        or controller method.`);
+    }
 
     let aMiddlewares: IMiddlewareFactory[] =
       Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, target, propertyKey) || [];
@@ -104,6 +131,10 @@ export function Middlewares(...middlewares: Array<Constructor<IMiddleware>>) {
      * so these middlewares must be set as dependencies of component.
      * When component is added to container these dependencies should be available
      * for extraction as dependencies.
+     *
+     * @todo here  the extraDependencies are defined on target with propertyKey
+     * But I'm not sure that when getting extra dependencies for a component
+     * we look at all property keys, I think we just look at component level.
      */
     Reflect.defineMetadata(EXTRA_DEPENDENCIES, extraDependencies, target, propertyKey);
   };

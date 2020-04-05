@@ -1,8 +1,7 @@
 import { ClassPrototype } from 'bind';
-import { ControllerFunc } from './controllers';
 
-export type IMethodDecorator = (
+export type IMethodDecorator<T> = (
   target: ClassPrototype,
   propertyKey: string,
-  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+  descriptor: TypedPropertyDescriptor<T>,
 ) => void;

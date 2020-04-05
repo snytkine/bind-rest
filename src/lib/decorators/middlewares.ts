@@ -12,7 +12,12 @@ import {
 } from 'bind';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
+import {
+  ClassOrMethodDecorator,
+  ControllerFunc,
+  IMiddlewareFactory,
+  MiddlewareFunc,
+} from '../types';
 import Context from '../../components/context';
 
 const debug = require('debug')('promiseoft:decorators');
@@ -54,12 +59,6 @@ export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFact
  * @param middlewares
  * @constructor
  */
-
-export type ClassOrMethodDecorator<T> = (
-  target: ClassPrototype | Constructor<any>,
-  propertyKey?: string,
-  descriptor?: TypedPropertyDescriptor<T>,
-) => void;
 
 export function Middlewares(
   ...middlewares: Array<Constructor<IMiddleware>>

@@ -1,23 +1,46 @@
-import { ClassPrototype } from 'bind';
+import { ClassPrototype, Constructor, getTargetStereotype, TargetStereoType } from 'bind';
 import {
   IMethodDecorator,
   ControllerFunc,
   IMiddlewareFactory,
   IMethodDecoratorFactory,
+  ClassOrMethodDecorator,
 } from '../../types';
 
 import { SYM_CONTROLLER_MIDDLEWARES } from '../metaprops';
 
-const debug = require('debug')('promiseoft:decorators');
-
-const TAG = 'MAKE-CONTROLLER-DECORATOR';
-
-const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator<ControllerFunc> => {
+const decorateMethod = (
+  decoratorFactory: IMiddlewareFactory,
+): ClassOrMethodDecorator<ControllerFunc> => {
   return function controllerMethodDecorator(
-    target: ClassPrototype,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<ControllerFunc>,
+    target: ClassPrototype | Constructor<any>,
+    propertyKey?: string,
+    descriptor?: TypedPropertyDescriptor<ControllerFunc>,
   ) {
+    const targetStereotype = getTargetStereotype(target);
+
+    switch (targetStereotype) {
+      case TargetStereoType.CONSTRUCTOR:
+        break;
+
+      case TargetStereoType.PROTOTYPE:
+        if (
+          !propertyKey ||
+          !descriptor ||
+          !descriptor.value ||
+          typeof descriptor.value !== 'function'
+        ) {
+          throw new Error(`Custom controller decorator can be applied only to Class 
+          or controller method.
+          It was upplied to unsupported property of class "${target?.constructor?.name}"`);
+        }
+        break;
+
+      default:
+        throw new Error(`Custom controller decorator can be applied only to Class 
+        or controller method.`);
+    }
+
     /**
      * define controller middleware metadata.
      */
@@ -34,22 +57,15 @@ const decorateMethod = (decoratorFactory: IMiddlewareFactory): IMethodDecorator<
      */
     aMiddlewares.push(decoratorFactory);
 
-    /**
-     * Add middlewareFactory as SYM_CONTROLLER_MIDDLEWARES to target, propertyKey
-     */
-    debug(`Adding ${TAG} decorator with ${aMiddlewares.length} middlewares 
-    to '${target.constructor.name}.${propertyKey}' controller.
-    methodType=${typeof descriptor.value}`);
-
     Reflect.defineMetadata(SYM_CONTROLLER_MIDDLEWARES, aMiddlewares, target, propertyKey);
   };
 };
 
 function makeDecorator(): IMethodDecoratorFactory;
-function makeDecorator(f: IMiddlewareFactory): IMethodDecorator<ControllerFunc>;
+function makeDecorator(f: IMiddlewareFactory): ClassOrMethodDecorator<ControllerFunc>;
 function makeDecorator(
   f?: IMiddlewareFactory,
-): IMethodDecorator<ControllerFunc> | IMethodDecoratorFactory {
+): ClassOrMethodDecorator<ControllerFunc> | IMethodDecoratorFactory {
   let ret: IMethodDecorator<ControllerFunc> | IMethodDecoratorFactory;
   if (f) {
     ret = decorateMethod(f);

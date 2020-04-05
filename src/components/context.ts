@@ -45,11 +45,6 @@ export default class Context implements IScopedComponentStorage {
    */
   private query: ParsedUrlQuery;
 
-  /**
-   * Path params injected by router
-   */
-  params: { [key: string]: string };
-
   private requestStartTime: number = 0;
 
   appResponse: IAppResponse;
@@ -141,14 +136,6 @@ export default class Context implements IScopedComponentStorage {
   get requestUrl() {
     return this.reqUrl;
   }
-
-  /*  get request() {
-    return this.req;
-  }
-
-  get response() {
-    return this.res;
-  } */
 
   get parsedUrl(): UrlWithStringQuery {
     if (!this.uriInfo) {

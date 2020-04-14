@@ -1,10 +1,15 @@
-import { ClassPrototype, Constructor, getTargetStereotype, TargetStereoType } from 'bind';
+import {
+  ClassPrototype,
+  Constructor,
+  getTargetStereotype,
+  TargetStereoType,
+  ClassOrMethodDecorator,
+} from 'bind';
 import {
   IMethodDecorator,
   ControllerFunc,
   IMiddlewareFactory,
   IMethodDecoratorFactory,
-  ClassOrMethodDecorator,
 } from '../../types';
 
 import { SYM_CONTROLLER_MIDDLEWARES } from '../metaprops';

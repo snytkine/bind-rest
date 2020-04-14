@@ -1,5 +1,3 @@
-export { default as Environment } from './environment';
-export { default as EnvOverride } from './envoverride';
 export * from './metaprops';
 export * from './middleware';
 export * from './http/requestmethods';

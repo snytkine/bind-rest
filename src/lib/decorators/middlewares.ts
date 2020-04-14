@@ -9,15 +9,11 @@ import {
   IfIocComponent,
   IfIocContainer,
   TargetStereoType,
+  ClassOrMethodDecorator,
 } from 'bind';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
-import {
-  ClassOrMethodDecorator,
-  ControllerFunc,
-  IMiddlewareFactory,
-  MiddlewareFunc,
-} from '../types';
+import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
 import Context from '../../components/context';
 
 const debug = require('debug')('promiseoft:decorators');

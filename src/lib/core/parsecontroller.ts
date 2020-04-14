@@ -59,19 +59,25 @@ export default function parseController(container: IfIocContainer) {
       Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, component.identity.clazz) || [];
 
     debug('%s basePath for "%s" = "%s"', TAG, o.constructor.name, basePath);
-    const props = Object.getOwnPropertyNames(o);
+    const props = Object.getOwnPropertyNames(o).filter((name) => name !== 'constructor');
 
     return props
       .map((p) => {
+        const controllerName = `${component.identity?.clazz?.name}.${p}`;
         let ctrlWithMiddleware: ControllerFunc;
         let controllerMiddleware: MiddlewareFunc;
         const metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
+
+        if (!isDefined(metaMethods)) {
+          debug('%s Method "%s" is NOT a controller. Returning null!!!', TAG, controllerName);
+          return null;
+        }
+
         const metaData: StringToAny = Reflect.getMetadata(COMPONENT_META_DATA, o, p) || {};
         const paramsMeta: Array<IControllerParamMeta> =
           Reflect.getMetadata(SYM_METHOD_PARAMS, o, p) || [];
 
         const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
-        const controllerName = `${component.identity?.clazz?.name}.${p}`;
 
         let aMiddlewares: Array<IMiddlewareFactory> =
           Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, o, p) || [];
@@ -94,10 +100,6 @@ export default function parseController(container: IfIocContainer) {
           controllerMiddleware = controllerMiddlewareFactory(container);
         }
 
-        if (!isDefined(metaMethods)) {
-          debug('%s Method "%s" is NOT a controller. Returning null!!!', TAG, controllerName);
-          return null;
-        }
         const methods: Array<HTTPMethod> = Array.from(metaMethods);
 
         const paramExtractors: Array<ParamExtractor> = paramsMeta.map((meta) => meta.f(container));

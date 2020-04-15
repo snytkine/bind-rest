@@ -1,6 +1,6 @@
 {
   "name": "bind-rest",
-  "version": "0.9.21",
+  "version": "1.0.0",
   "description": "Framework for creating REST API with decorators and dependency injection",
   "private": false,
   "scripts": {

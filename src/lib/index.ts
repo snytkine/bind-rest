@@ -3,5 +3,8 @@ export * from './core';
 export * from './interfaces';
 export * from './decorators';
 export * from './httprequest';
+export * from './httpresponse';
 export * from './consts';
 export * from './utils';
+export * from './errors';
+export * from './types';

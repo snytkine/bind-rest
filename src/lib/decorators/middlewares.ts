@@ -10,7 +10,7 @@ import {
   IfIocContainer,
   TargetStereoType,
   ClassOrMethodDecorator,
-} from 'bind';
+} from 'bind-di';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
 import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';

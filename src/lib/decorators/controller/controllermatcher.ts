@@ -1,4 +1,4 @@
-import { ClassPrototype, COMPONENT_META_DATA, defineMetadata } from 'bind';
+import { ClassPrototype, COMPONENT_META_DATA, defineMetadata } from 'bind-di';
 import { ControllerFunc } from '../../types/controllers';
 import { CONTROLLER_MATCHER } from '../metaprops';
 import ApplicationError from '../../errors/applicationerror';

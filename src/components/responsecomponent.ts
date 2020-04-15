@@ -1,4 +1,4 @@
-import { Component, ComponentScope, Scope } from 'bind';
+import { Component, ComponentScope, Scope } from 'bind-di';
 import { SERVER_RESPONSE } from '../lib/consts';
 import Context from './context';
 

@@ -1,4 +1,4 @@
-import { ClassPrototype } from 'bind';
+import { ClassPrototype } from 'bind-di';
 
 export type IMethodDecorator<T> = (
   target: ClassPrototype,

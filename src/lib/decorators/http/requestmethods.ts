@@ -1,4 +1,4 @@
-import { Target, Maybe, getOrElse } from 'bind';
+import { Target, Maybe, getOrElse } from 'bind-di';
 import HTTPMethod from 'http-method-enum';
 import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
 import { ControllerFunc } from '../../types';

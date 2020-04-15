@@ -1,4 +1,4 @@
-import { Singleton } from 'bind';
+import { Singleton } from 'bind-di';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import Context from './context';
 import { Afterware } from '../lib/decorators';

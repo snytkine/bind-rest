@@ -1,4 +1,4 @@
-import { ClassPrototype } from 'bind';
+import { ClassPrototype } from 'bind-di';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import ControllerParamType from '../../enums/controllerparamtype';
 import { IParamDecoratorFactory } from '../../types/decoratorfactory';

@@ -1,4 +1,4 @@
-import { IfIocContainer, ClassOrMethodDecorator } from 'bind';
+import { IfIocContainer, ClassOrMethodDecorator } from 'bind-di';
 import { MiddlewareFunc } from './middlewarefunc';
 import { ControllerFunc } from './controllers';
 

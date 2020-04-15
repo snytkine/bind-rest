@@ -4,7 +4,7 @@ import {
   isDefined,
   IfIocComponent,
   getComponentNameFromIdentity,
-} from 'bind';
+} from 'bind-di';
 import { MiddlewareFunc } from '../../types/middlewarefunc';
 import {
   MIDDLEWARE_PRIORITY,

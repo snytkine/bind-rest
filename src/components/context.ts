@@ -13,7 +13,7 @@ import {
   Scope,
   StringOrSymbol,
   ComponentIdentity,
-} from 'bind';
+} from 'bind-di';
 import { IUriParams } from 'holiday-router';
 import { IAppResponse } from '../lib/interfaces/appresponse';
 

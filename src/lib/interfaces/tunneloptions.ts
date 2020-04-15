@@ -1,4 +1,4 @@
-import { StringToString } from 'bind';
+import { StringToString } from 'bind-di';
 
 export interface ITunnelProxy {
   host: string;

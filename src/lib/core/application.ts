@@ -9,7 +9,7 @@ import {
   Identity,
   ComponentScope,
   isDefined,
-} from 'bind';
+} from 'bind-di';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';

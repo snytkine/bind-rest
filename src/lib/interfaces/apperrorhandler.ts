@@ -1,4 +1,4 @@
-import { Maybe } from 'bind';
+import { Maybe } from 'bind-di';
 import Context from '../../components/context';
 
 /**

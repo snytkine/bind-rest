@@ -1,4 +1,4 @@
-import { IfIocContainer, Maybe } from 'bind';
+import { IfIocContainer, Maybe } from 'bind-di';
 import Context from '../../components/context';
 
 export type IntoPromise<T> = (val: T) => Promise<T>;

@@ -1,5 +1,5 @@
 import HTTP_STATUS_CODES from 'http-status-enum';
-import { isDefined, Maybe } from 'bind';
+import { isDefined, Maybe } from 'bind-di';
 import { HttpError } from 'http-errors';
 import Context from '../../../components/context';
 import { AppErrorHandlerFunc } from '../../interfaces';

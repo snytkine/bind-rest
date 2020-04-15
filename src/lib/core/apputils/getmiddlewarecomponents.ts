@@ -1,4 +1,4 @@
-import { IfIocContainer, IfIocComponent } from 'bind';
+import { IfIocContainer, IfIocComponent } from 'bind-di';
 import { MIDDLEWARE_PRIORITY } from '../../decorators';
 
 /**

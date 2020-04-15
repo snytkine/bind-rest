@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } from 'bind';
+import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } from 'bind-di';
 import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
 import ControllerParamType from '../../enums/controllerparamtype';

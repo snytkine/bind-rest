@@ -7,7 +7,7 @@ import {
   notEmpty,
   COMPONENT_META_DATA,
   StringToAny,
-} from 'bind';
+} from 'bind-di';
 import HTTPMethod from 'http-method-enum';
 import { IControllerDetails, IControllerParamMeta } from '../interfaces';
 import {

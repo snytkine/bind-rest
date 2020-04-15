@@ -1,4 +1,4 @@
-import { IfIocContainer, IfIocComponent } from 'bind';
+import { IfIocContainer, IfIocComponent } from 'bind-di';
 import { IS_CONTROLLER } from '../../decorators/metaprops';
 
 /**

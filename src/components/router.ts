@@ -1,5 +1,5 @@
 import { HttpRouter } from 'holiday-router';
-import { Component, Singleton, Inject } from 'bind';
+import { Component, Singleton, Inject } from 'bind-di';
 import HTTPMethod from 'http-method-enum';
 import FrameworkController from '../lib/core/frameworkcontroller';
 import { Middleware } from '../lib/decorators';

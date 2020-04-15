@@ -5,7 +5,7 @@ import {
   ComponentScope,
   defineMetadata,
   Constructor,
-} from 'bind';
+} from 'bind-di';
 import { AppErrorHandler } from '../interfaces/apperrorhandler';
 import { IS_ERROR_HANDLER } from './metaprops';
 

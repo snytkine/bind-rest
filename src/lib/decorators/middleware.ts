@@ -6,7 +6,7 @@ import {
   DEFAULT_SCOPE,
   ComponentScope,
   Constructor,
-} from 'bind';
+} from 'bind-di';
 import { MIDDLEWARE_PRIORITY } from './metaprops';
 import { IMiddleware } from '../interfaces/middleware';
 

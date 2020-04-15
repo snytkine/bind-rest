@@ -1,4 +1,4 @@
-import { IfIocContainer } from 'bind';
+import { IfIocContainer } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import Context from '../../../components/context';

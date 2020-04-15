@@ -4,7 +4,7 @@ import {
   getTargetStereotype,
   TargetStereoType,
   ClassOrMethodDecorator,
-} from 'bind';
+} from 'bind-di';
 import {
   IMethodDecorator,
   ControllerFunc,

@@ -1,4 +1,4 @@
-import { Maybe, isDefined } from 'bind';
+import { Maybe, isDefined } from 'bind-di';
 import { IControllerParamMeta } from '../interfaces';
 import {
   PARAM_TYPE_ARRAY,

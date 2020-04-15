@@ -5,7 +5,7 @@ import {
   DEFAULT_SCOPE,
   ComponentScope,
   Constructor,
-} from 'bind';
+} from 'bind-di';
 import { IS_CONTROLLER } from '../metaprops';
 
 const debug = require('debug')('promiseoft:decorators');

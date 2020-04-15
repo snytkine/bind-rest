@@ -1,4 +1,4 @@
-import { IfIocContainer, Maybe, isDefined, getMethodParamName, ClassPrototype } from 'bind';
+import { IfIocContainer, Maybe, isDefined, getMethodParamName, ClassPrototype } from 'bind-di';
 import {
   IParamDecorator,
   AsyncValidator,

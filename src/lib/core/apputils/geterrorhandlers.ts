@@ -1,4 +1,4 @@
-import { IfIocContainer, IfIocComponent, Maybe, isDefined } from 'bind';
+import { IfIocContainer, IfIocComponent, Maybe, isDefined } from 'bind-di';
 import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces/apperrorhandler';
 import { IS_ERROR_HANDLER } from '../../decorators/metaprops';
 import Context from '../../../components/context';

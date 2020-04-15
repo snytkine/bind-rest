@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { getTargetStereotype, Constructor, ClassPrototype, TargetStereoType } from 'bind';
+import { getTargetStereotype, Constructor, ClassPrototype, TargetStereoType } from 'bind-di';
 import { SYM_REQUEST_PATH } from '../metaprops';
 import { ControllerFunc } from '../../types';
 import ApplicationError from '../../errors/applicationerror';

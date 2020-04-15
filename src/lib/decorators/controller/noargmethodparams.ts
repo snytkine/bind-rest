@@ -1,6 +1,6 @@
 import { HttpRouter } from 'holiday-router';
 import HTTP_STATUS_CODES from 'http-status-enum';
-import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind';
+import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
 import RequestContext from '../../../components/context';
 import { PARAM_TYPES, SYM_JSON_SCHEMA } from '../metaprops';

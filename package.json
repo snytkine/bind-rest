@@ -25,7 +25,9 @@
   },
   "typings": "build/types/index.d.ts",
   "files": [
-    "build/"
+    "build/",
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",

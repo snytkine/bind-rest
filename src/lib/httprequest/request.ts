@@ -39,7 +39,7 @@ const TAG = 'makeRequest';
  * @param {Object} headers
  * @returns {ILogger}
  */
-export function requestLogger(logger: ILogger, headers: Object): ILogger {
+export function requestLogger(logger: ILogger, headers: http.IncomingHttpHeaders): ILogger {
   const reqLogger = {
     info(...messages: any[]): ILogger {
       logger.info(...messages, headers);
@@ -58,6 +58,11 @@ export function requestLogger(logger: ILogger, headers: Object): ILogger {
 
     debug(...messages: any[]): ILogger {
       logger.debug(...messages, headers);
+      return this;
+    },
+
+    fatal(...messages: any[]): ILogger {
+      logger.fatal(...messages, headers);
       return this;
     },
   };

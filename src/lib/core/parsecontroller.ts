@@ -49,8 +49,8 @@ export default function parseController(container: IfIocContainer) {
       throw new Error(`Controller class not found for id="${id}"`);
     }
 
-    const o = component.identity.clazz?.prototype;
-    if (!o) {
+    const controllerPrototype = component.identity.clazz?.prototype;
+    if (!controllerPrototype) {
       throw new Error(`Controller class prototype not found for id="${id}"`);
     }
 
@@ -58,29 +58,37 @@ export default function parseController(container: IfIocContainer) {
     const constollerMiddlewares: Array<IMiddlewareFactory> =
       Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, component.identity.clazz) || [];
 
-    debug('%s basePath for "%s" = "%s"', TAG, o.constructor.name, basePath);
-    const props = Object.getOwnPropertyNames(o).filter((name) => name !== 'constructor');
+    debug('%s basePath for "%s" = "%s"', TAG, controllerPrototype.constructor.name, basePath);
+    const props = Object.getOwnPropertyNames(controllerPrototype).filter(
+      (name) => name !== 'constructor',
+    );
 
     return props
       .map((p) => {
         const controllerName = `${component.identity?.clazz?.name}.${p}`;
         let ctrlWithMiddleware: ControllerFunc;
         let controllerMiddleware: MiddlewareFunc;
-        const metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(SYM_REQUEST_METHOD, o, p);
+        const metaMethods: Maybe<Set<HTTPMethod>> = Reflect.getMetadata(
+          SYM_REQUEST_METHOD,
+          controllerPrototype,
+          p,
+        );
 
         if (!isDefined(metaMethods)) {
           debug('%s Method "%s" is NOT a controller. Returning null!!!', TAG, controllerName);
           return null;
         }
 
-        const metaData: StringToAny = Reflect.getMetadata(COMPONENT_META_DATA, o, p) || {};
+        const metaData: StringToAny =
+          Reflect.getMetadata(COMPONENT_META_DATA, controllerPrototype, p) || {};
         const paramsMeta: Array<IControllerParamMeta> =
-          Reflect.getMetadata(SYM_METHOD_PARAMS, o, p) || [];
+          Reflect.getMetadata(SYM_METHOD_PARAMS, controllerPrototype, p) || [];
 
-        const metaPath: string = Reflect.getMetadata(SYM_REQUEST_PATH, o, p) || '';
+        const metaPath: string =
+          Reflect.getMetadata(SYM_REQUEST_PATH, controllerPrototype, p) || '';
 
         let aMiddlewares: Array<IMiddlewareFactory> =
-          Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, o, p) || [];
+          Reflect.getMetadata(SYM_CONTROLLER_MIDDLEWARES, controllerPrototype, p) || [];
 
         /**
          * Concat controller level middlewares with method middlewares

@@ -1,5 +1,6 @@
 import 'reflect-metadata';
 import {
+  ClassOrMethodDecorator,
   ClassPrototype,
   COMPONENT_IDENTITY,
   ComponentIdentity,
@@ -9,7 +10,6 @@ import {
   IfIocComponent,
   IfIocContainer,
   TargetStereoType,
-  ClassOrMethodDecorator,
 } from 'bind-di';
 import { IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
@@ -56,6 +56,18 @@ export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFact
  * @constructor
  */
 
+/**
+ * @todo if applied to controller method need to add EXTRA_DEPENDENCIES to target
+ * If applied to class constructor then need to add EXTRA_DEPENDENCIES to target.prototype
+ *
+ * @todo before adding EXTRA_DEPENDENCIES need to get existing EXTRA_DEPENDENCIES from target
+ * because some other decorator may have already added some extra dependencies.
+ * Then contact possible existing extra dependencies with these dependencies before setting
+ * EXTRA_DEPENDENCIES.
+ *
+ * @param middlewares
+ * @constructor
+ */
 export function Middlewares(
   ...middlewares: Array<Constructor<IMiddleware>>
 ): ClassOrMethodDecorator<ControllerFunc> {
@@ -79,7 +91,7 @@ export function Middlewares(
         ) {
           throw new Error(`@Middlewares decorator can be applied only to Class 
           or controller method.
-          It was upplied to unsupported property of class "${target?.constructor?.name}"`);
+          It was applied to unsupported property of class "${target?.constructor?.name}"`);
         }
         break;
 
@@ -127,10 +139,25 @@ export function Middlewares(
      * When component is added to container these dependencies should be available
      * for extraction as dependencies.
      *
-     * @todo here  the extraDependencies are defined on target with propertyKey
-     * But I'm not sure that when getting extra dependencies for a component
-     * we look at all property keys, I think we just look at component level.
+     * @todo here  the extraDependencies are defined on target with propertyKey (optional)
+     * if target is a constructor should probably also define on .prototype?
+     *
+     * @todo factor out setExtraDependencies function, it will accept deps, target, propKey
+     * it will first get existing extra dependencies for target/propkey and then append
+     * to existing array
+     *
+     * Best it to create method appendMetadata<T>(META_KEY, aValues: Array<T>, target, propKey)
+     * it will first getMetadata or empty array, then concat and then save.
      */
     Reflect.defineMetadata(EXTRA_DEPENDENCIES, extraDependencies, target, propertyKey);
+
+    if (targetStereotype === TargetStereoType.PROTOTYPE) {
+      Reflect.defineMetadata(
+        EXTRA_DEPENDENCIES,
+        extraDependencies,
+        target.constructor,
+        propertyKey,
+      );
+    }
   };
 }

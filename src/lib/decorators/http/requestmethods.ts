@@ -30,15 +30,22 @@ function addMethodAnnotation(
   debug('%s Annotated methods %o', TAG, p);
 
   Reflect.defineMetadata(SYM_REQUEST_METHOD, p, target, propertyKey);
+  /**
+   * @todo
+   * If have PropertyDescriptor then make it enumerable so that
+   * it will show up when iterating using for-in loop on controller prototype
+   * The for-in loop is used in getExtraDependencies
+   * This still has to be decided. Have to decide on special case like this:
+   * A Controller extends another Controller and parent controller has methods
+   * decorated with @GET or @POST - making them http end-points.
+   * Question is - should the child controller also have these end-points from parent?
+   * Most likely not because then both parent and child will be loaded and added as controllers,
+   * resulting in conflicting routing info.
+   *
+   */
 
   return undefined;
 }
-
-/* export type IControllerMethodDecorator = (
- target: ClassPrototype,
- propertyKey: string,
- descriptor: TypedPropertyDescriptor<ControllerFunc>,
- ) => void; */
 
 export const decorate = (
   pathOrTarget: string | ClassPrototype,
@@ -56,7 +63,7 @@ export const decorate = (
       prop: string,
       desc: TypedPropertyDescriptor<ControllerFunc>,
     ) => {
-      addMethodAnnotation(target, prop, method);
+      addMethodAnnotation(target, prop, method, desc);
       /**
        * And now also apply @Path function
        */
@@ -125,4 +132,60 @@ export function DELETE(
   descriptor?: TypedPropertyDescriptor<ControllerFunc>,
 ) {
   return decorate(target, propertyKey, HTTPMethod.DELETE, descriptor);
+}
+
+export function HEAD(target: string): IMethodDecorator<ControllerFunc>;
+export function HEAD(
+  target: ClassPrototype,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+): void;
+export function HEAD(
+  target: string | ClassPrototype,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  return decorate(target, propertyKey, HTTPMethod.HEAD, descriptor);
+}
+
+export function OPTIONS(target: string): IMethodDecorator<ControllerFunc>;
+export function OPTIONS(
+  target: ClassPrototype,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+): void;
+export function OPTIONS(
+  target: string | ClassPrototype,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  return decorate(target, propertyKey, HTTPMethod.OPTIONS, descriptor);
+}
+
+export function PATCH(target: string): IMethodDecorator<ControllerFunc>;
+export function PATCH(
+  target: ClassPrototype,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+): void;
+export function PATCH(
+  target: string | ClassPrototype,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  return decorate(target, propertyKey, HTTPMethod.PATCH, descriptor);
+}
+
+export function TRACE(target: string): IMethodDecorator<ControllerFunc>;
+export function TRACE(
+  target: ClassPrototype,
+  propertyKey: string,
+  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+): void;
+export function TRACE(
+  target: string | ClassPrototype,
+  propertyKey?: string,
+  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+) {
+  return decorate(target, propertyKey, HTTPMethod.TRACE, descriptor);
 }

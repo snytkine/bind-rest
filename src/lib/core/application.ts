@@ -23,7 +23,7 @@ import getErrorHandlers from './apputils/geterrorhandlers';
 import registerProcessEventListeners from './apputils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
 
-const debug = require('debug')('promiseoft:runtime:application');
+const debug = require('debug')('bind:rest:runtime:application');
 
 const TAG = 'APPLICATION';
 const APPLICATION_COMPONENTS_DIR = path.resolve(__dirname, '../../components');

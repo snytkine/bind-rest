@@ -3,7 +3,7 @@ import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces/apperrorh
 import { IS_ERROR_HANDLER } from '../../decorators/metaprops';
 import Context from '../../../components/context';
 
-const debug = require('debug')('promiseoft:init');
+const debug = require('debug')('bind:rest:init');
 
 const TAG = 'GET_ERROR_HANDLERS';
 

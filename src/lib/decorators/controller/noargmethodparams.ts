@@ -8,6 +8,7 @@ import {
   CONTENT_TYPE_JSON,
   PARAM_TYPE_BOOLEAN,
   PARAM_TYPE_NUMBER,
+  PARAM_TYPE_OBJECT,
   PARAM_TYPE_PROMISE,
   PARAM_TYPE_STRING,
 } from '../../consts/controllermethodparams';
@@ -21,7 +22,7 @@ import applyNoParamDecorator from './applysingledecorator';
 import { APPLICATION_COMPONENT } from '../../consts/appcomponents';
 import getParamType from './getparamtype';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = 'NO_ARG_METHOD_DECORATOR';
 
@@ -46,6 +47,7 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
     const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
     const enableSchemaValidation = application?.settings?.validation?.jsonSchema;
 
+    debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
     /**
      * If paramType is component decorated with JsonSchema then validate schema.
      */
@@ -53,9 +55,14 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
       enableSchemaValidation &&
       paramType !== PARAM_TYPE_STRING &&
       paramType !== PARAM_TYPE_BOOLEAN &&
+      paramType !== PARAM_TYPE_OBJECT &&
       paramType !== PARAM_TYPE_NUMBER
     ) {
-      jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
+      try {
+        jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
+      } catch (e) {
+        debug('%s exception from getMetadata of paramType=%o error %o', TAG, paramType, e);
+      }
       debug('%s jsonSchema=%o', TAG, jsonSchema);
     }
 
@@ -63,22 +70,28 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
     /**
      * Use content-type header
      */
+    debug('%s trying to get request content-type', TAG);
     if (
-      context.req.headers['content-type'] &&
+      context.req?.headers?.['content-type'] &&
       typeof context.req.headers['content-type'] === 'string'
     ) {
       contentType = context.req.headers['content-type'].toLowerCase();
     }
 
+    debug('%s in Body parser. contentType=%s', TAG, contentType);
     let parsed: Promise<any>;
 
     if (contentType.startsWith(CONTENT_TYPE_JSON) || jsonSchema) {
+      debug('%s will parseJsonBody', TAG);
       parsed = parseJsonBody(context.req, jsonSchema);
     } else {
+      debug('%s will parse plain body', TAG);
       parsed = parseBody(context.req);
     }
 
     return parsed.catch((e) => {
+      debug('%s ERROR parsing body %o', TAG, e);
+
       throw new HttpError(
         HTTP_STATUS_CODES.BAD_REQUEST,
         `Failed to parse request body.

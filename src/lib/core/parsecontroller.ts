@@ -30,7 +30,7 @@ import Context from '../../components/context';
 import ApplicationError from '../errors/applicationerror';
 import { toMWFuncFactory } from '../decorators/middlewares';
 
-const debug = require('debug')('promiseoft:runtime:controller');
+const debug = require('debug')('bind:rest:runtime:controller');
 
 const TAG = 'ControllerParser';
 
@@ -83,6 +83,8 @@ export default function parseController(container: IfIocContainer) {
           Reflect.getMetadata(COMPONENT_META_DATA, controllerPrototype, p) || {};
         const paramsMeta: Array<IControllerParamMeta> =
           Reflect.getMetadata(SYM_METHOD_PARAMS, controllerPrototype, p) || [];
+
+        debug('%s paramsMeta=%o', TAG, paramsMeta);
 
         const metaPath: string =
           Reflect.getMetadata(SYM_REQUEST_PATH, controllerPrototype, p) || '';
@@ -144,22 +146,35 @@ export default function parseController(container: IfIocContainer) {
           const validateAsync = makeValidateAsync(context, validators, controllerName);
 
           const oCtrl = component.get([context]);
+          debug('%s got oCtrl %o', TAG, oCtrl);
           let futureParams: Promise<Array<any>>;
           if (paramExtractors.length > 0) {
-            futureParams = Promise.all(paramExtractors.map((f) => f(context))).catch((e) => {
-              debug('%s exception from futureParams %o', TAG, e);
+            debug('%s need futureParams', TAG);
+            futureParams = Promise.all(
+              paramExtractors.map((f) => {
+                debug('%s calling paramExtractor func with context', TAG);
+                return f(context);
+              }),
+            )
+              .then((params) => {
+                debug('%s extracted futureParams=%o', TAG, params);
+                return params;
+              })
+              .catch((e) => {
+                debug('%s exception from futureParams %o', TAG, e);
 
-              throw new ApplicationError(
-                `Error Parsing request parameters
+                throw new ApplicationError(
+                  `Error Parsing request parameters
               Controller=${controllerName}
               Error=${e.message}`,
-                e,
-              );
-            });
+                  e,
+                );
+              });
           } else {
             /**
              * For No-Arg controller it is necessary to have this.
              */
+            debug('%s making empty futureParams', TAG);
             futureParams = Promise.resolve([]);
           }
 
@@ -170,6 +185,7 @@ export default function parseController(container: IfIocContainer) {
             .then(validateParams)
             .then(validateAsync)
             .then((validatedParams) => {
+              debug('%s got validatedParams %o', TAG, validatedParams);
               /**
                * @todo here we can join array of controller arguments with
                * controller argument names. This is for logging and debugging only
@@ -178,6 +194,10 @@ export default function parseController(container: IfIocContainer) {
               Reflect.set(context, 'controllerArguments', validatedParams);
 
               return oCtrl[p](...validatedParams);
+            })
+            .catch((e) => {
+              debug('%s Error in Controller chain %o', TAG, e);
+              throw e;
             });
         };
 

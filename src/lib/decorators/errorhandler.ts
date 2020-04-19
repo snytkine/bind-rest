@@ -9,7 +9,7 @@ import {
 import { AppErrorHandler } from '../interfaces/apperrorhandler';
 import { IS_ERROR_HANDLER } from './metaprops';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@ErrorHandler';
 

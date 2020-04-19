@@ -1,7 +1,7 @@
 import { Constructor } from 'bind-di';
 import { SYM_JSON_SCHEMA } from './metaprops';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@JsonSchema';
 

@@ -3,7 +3,7 @@ import { MiddlewareFunc } from '../types';
 import { contextToParam } from '../types/controllers';
 import Context from '../../components/context';
 
-const debug = require('debug')('promiseoft:middleware');
+const debug = require('debug')('bind:rest:middleware');
 
 const TAG = 'CONTROLLER-ARGUMENTS-FACTORY';
 

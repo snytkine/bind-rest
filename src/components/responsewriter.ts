@@ -5,7 +5,7 @@ import { Afterware } from '../lib/decorators';
 import HttpError from '../lib/errors/http';
 import { PRIORITY_RESPONSE_WRITER } from '../lib/consts';
 
-const debug = require('debug')('promiseoft:runtime:responsewriter');
+const debug = require('debug')('bind:rest:runtime:responsewriter');
 
 const TAG = 'DEFAULT-RESPONSE-WRITER';
 

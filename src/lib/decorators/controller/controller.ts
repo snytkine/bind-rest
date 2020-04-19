@@ -8,7 +8,7 @@ import {
 } from 'bind-di';
 import { IS_CONTROLLER } from '../metaprops';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@Controller';
 

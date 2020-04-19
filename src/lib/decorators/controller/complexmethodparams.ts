@@ -7,7 +7,7 @@ import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
 import getParamType from './getparamtype';
 import makeParamExtractorFactory from './makeparamextractorfactory';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = 'METHOD-ARGUMENTS';
 

@@ -4,7 +4,7 @@ import { ParamExtractorFactory } from '../../types/controllerparamextractor';
 import Context from '../../../components/context';
 import SystemError from '../../errors/systemerror';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = 'MAKE-PARAMS-EXTRACTOR';
 

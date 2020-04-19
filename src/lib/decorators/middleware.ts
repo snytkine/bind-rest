@@ -10,7 +10,7 @@ import {
 import { MIDDLEWARE_PRIORITY } from './metaprops';
 import { IMiddleware } from '../interfaces/middleware';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = 'Middleware';
 

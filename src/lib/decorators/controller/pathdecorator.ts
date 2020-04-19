@@ -4,7 +4,7 @@ import { SYM_REQUEST_PATH } from '../metaprops';
 import { ControllerFunc } from '../../types';
 import ApplicationError from '../../errors/applicationerror';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@Path';
 

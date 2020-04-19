@@ -6,7 +6,7 @@ import { IControllerDetails } from '../../interfaces/controller';
 import ApplicationError from '../../errors/applicationerror';
 import FrameworkController from '../frameworkcontroller';
 
-const debug = require('debug')('promiseoft:context');
+const debug = require('debug')('bind:rest:context');
 
 const TAG = 'SetupRoutes';
 

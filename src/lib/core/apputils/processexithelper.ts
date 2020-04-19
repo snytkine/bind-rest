@@ -1,6 +1,6 @@
 import { IExitHandler } from '../../interfaces/exithandler';
 
-const debug = require('debug')('promiseoft:core');
+const debug = require('debug')('bind:rest:core');
 
 const TAG = 'PROCESS-EVENTS-HANDLER';
 

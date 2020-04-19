@@ -3,7 +3,7 @@ import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
 import HttpResponse from './httpresponse';
 import HttpStringResponse from './stringresponse';
 
-const debug = require('debug')('promiseoft:httprequest');
+const debug = require('debug')('bind:rest:httprequest');
 
 /**
  * Function to convert stream in the Http Response into string body

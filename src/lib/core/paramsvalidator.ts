@@ -18,7 +18,7 @@ import {
 import Context from '../../components/context';
 import { DOTTED_LINE } from '../consts/dottedline';
 
-const debug = require('debug')('promiseoft:runtime:validation');
+const debug = require('debug')('bind:rest:runtime:validation');
 
 const TAG = 'ParamsValidator';
 
@@ -254,6 +254,13 @@ export function setParamType(o: ParamsWithMeta): ParamsWithMeta {
 
 function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: string) {
   return function paramsValidator(params: Array<any>): Array<any> {
+    debug(
+      '%s entered paramsValidator for controller=%s with meta=%o params=%o',
+      TAG,
+      controllerName,
+      meta,
+      params,
+    );
     const res = [validateRequired, setParamType].reduce(
       (acc, next) => {
         return next(acc);
@@ -267,8 +274,12 @@ function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: 
       /**
        *
        */
+      debug('%s have ValidationErrors %s', TAG, message);
+
       throw new ValidationError(`Controller="${controllerName}"\nErrors:\n${message}`);
     }
+
+    debug('%s paramsValidator returning params %o', TAG, res.params);
 
     return res.params;
   };
@@ -305,7 +316,7 @@ function makeValidateAsync(
        * Else return params from here (original array of params)
        * this way the return of validateParamsAsync will be Promise<original params>
        */
-
+      debug('%s All validationResults are resolved %o', TAG, results);
       const errors: string[] = results.reduce((acc, next: Maybe<Error>) => {
         if (isDefined(next)) {
           acc.push(next.message);
@@ -315,8 +326,10 @@ function makeValidateAsync(
       }, []);
 
       if (errors.length > 0) {
+        debug('%s have asyncValidation errors %o', TAG, errors);
         throw new ValidationError(`Controller=${controllerName}\n${errors.join(DOTTED_LINE)}`);
       } else {
+        debug('%s no async validation errors. params=%o', TAG, params);
         return params;
       }
     });

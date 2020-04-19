@@ -73,6 +73,7 @@ class RouterMiddleware {
     Reflect.set(context, 'routeParams', routeMatch?.params);
 
     return ctrlContainer.controller(context).then((response) => {
+      debug('%s got appResponse %o', TAG, response);
       Reflect.set(context, 'appResponse', response);
 
       return context;

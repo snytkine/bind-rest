@@ -1,4 +1,4 @@
-const debug = require('debug')('promiseoft:util');
+const debug = require('debug')('bind:rest:util');
 
 export default function copyHeaders(
   headers: { [key: string]: any },

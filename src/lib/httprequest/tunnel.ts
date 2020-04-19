@@ -1,7 +1,7 @@
 import tunnel from 'tunnel';
 import { IHttpRequestOptions, ITunnelOptions } from '../interfaces';
 // const tunnel = require('tunnel');
-const debug = require('debug')('promiseoft:httprequest');
+const debug = require('debug')('bind:rest:httprequest');
 
 const TAG = 'TUNNEL';
 

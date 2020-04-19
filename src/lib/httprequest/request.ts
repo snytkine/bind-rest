@@ -13,7 +13,7 @@ import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
 import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
 import ApplicationError from '../errors/applicationerror';
 
-const debug = require('debug')('promiseoft:request');
+const debug = require('debug')('bind:rest:request');
 
 const REQUEST_ID = 'requestID';
 const STATUS_CODE = 'statusCode';

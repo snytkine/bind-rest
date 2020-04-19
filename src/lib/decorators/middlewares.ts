@@ -16,7 +16,7 @@ import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
 import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
 import Context from '../../components/context';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@Middlewares';
 

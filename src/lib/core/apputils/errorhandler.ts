@@ -4,7 +4,7 @@ import { HttpError } from 'http-errors';
 import Context from '../../../components/context';
 import { AppErrorHandlerFunc } from '../../interfaces';
 
-const debug = require('debug')('promiseoft:runtime:errorhandler');
+const debug = require('debug')('bind:rest:runtime:errorhandler');
 
 const TAG = 'DEFAULT-ERROR-HANDLER';
 

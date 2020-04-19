@@ -17,7 +17,7 @@ import {
 import { IUriParams } from 'holiday-router';
 import { IAppResponse } from '../lib/interfaces/appresponse';
 
-const debug = require('debug')('promiseoft:context');
+const debug = require('debug')('bind:rest:context');
 
 const TAG = 'ContextClass';
 

@@ -4,7 +4,7 @@ import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
 import { ControllerFunc, IMethodDecorator } from '../../types';
 import Path from '../controller/pathdecorator';
 
-const debug = require('debug')('promiseoft:decorators');
+const debug = require('debug')('bind:rest:decorators');
 
 const TAG = 'ADD_METHOD_ANNOTATION';
 

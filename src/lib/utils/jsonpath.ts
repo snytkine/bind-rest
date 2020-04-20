@@ -18,7 +18,7 @@ export default function JSONPath(q: string): ParamExtractorFactory {
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (c: IfIocContainer) => (ctx: Context) => {
-    return parseJsonBody(ctx.req).then((body) => {
+    return parseJsonBody(ctx).then((body) => {
       try {
         return value(body, q);
       } catch (e) {

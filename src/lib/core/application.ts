@@ -106,6 +106,17 @@ export class Application {
      */
     try {
       await container.initialize();
+
+      /**
+       * registerApplicationComponent must be called first, before
+       * parsing controllers and middlewares because
+       * controller middlewares may be using custom middleware functions
+       * that receive container and return MiddlewareFunc
+       * before returning MiddlewareFunc these factories may need to get
+       * Application component from container in order to get some settings.
+       */
+      this.registerApplicationComponent(container);
+
       /**
        * All components are loaded into container
        * Now parse all controllers and add routes to router
@@ -122,7 +133,6 @@ export class Application {
       this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
       debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
-      this.registerApplicationComponent(container);
       const previousContainer = this.bindContainer;
       this.bindContainer = container;
 

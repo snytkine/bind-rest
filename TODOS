@@ -17,3 +17,13 @@ allow array of validators per param.
 Then run each param validator as Promise.all(validators.map(v => v(param)).then(a => a.find(a instanceof Error))...
 Having option to do async validation will open up possibility to use db calls or any network calls for validation
 
+- Make FutureParam a generic function.
+export type FutureParam<T> = (context: Context) => T;
+This way IParamDecoratorFactory can also become generic
+and them makeParamDecorator can also become generic.
+This way a custom param decorator make be created using
+MyCustom = makeParamDecorator<Animal>()
+so the end result should be that when decorating param
+with @MyCustom(somFunc) it will enforce that someFunc is actually a factory
+that returns a function that returns "Animal" instance or interface
+

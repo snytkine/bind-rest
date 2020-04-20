@@ -3,6 +3,7 @@ import inflate from 'inflation';
 import raw from 'raw-body';
 import { Validator } from 'jsonschema';
 import SchemaValidationError from '../errors/schemavalidationerror';
+import Context from '../../components/context';
 
 const debug = require('debug')('bind:rest:runtime:parseBody');
 
@@ -49,9 +50,13 @@ export function parseBody(req: http.IncomingMessage): Promise<string> {
  *
  * @return Promise<Object>
  */
-export function parseJsonBody(req: http.IncomingMessage, schema?: Object): Promise<Object> {
+export function parseJsonBody(ctx: Context, schema?: Object): Promise<Object> {
   debug('%s Entered parseJsonBody', TAG);
-  return parseBody(req)
+  if (ctx.parsedBody) {
+    debug('%s returning cached parsedBody %o', TAG, ctx.parsedBody);
+    return Promise.resolve(ctx.parsedBody);
+  }
+  return parseBody(ctx.req)
     .then((body) => {
       const ret = JSON.parse(body);
       debug('%s parsed body as json %o', TAG, ret);
@@ -69,6 +74,8 @@ export function parseJsonBody(req: http.IncomingMessage, schema?: Object): Promi
           throw new SchemaValidationError(`Schema Validation Error="${res.toString()}"`);
         }
       }
+
+      Reflect.set(ctx, 'parsedBody', obj);
 
       return obj;
     });

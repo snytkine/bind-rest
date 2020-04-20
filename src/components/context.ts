@@ -181,5 +181,15 @@ export default class Context implements IScopedComponentStorage {
   }
 
   controllerArguments: Array<any> = [];
+
+  /**
+   * Request body parsed as Json
+   * The result is cached in the variable.
+   * This way multiple call to parse body as json can be
+   * made safely.
+   * The BodyParam decorator may be used multiple times in the same
+   * controller and each one will be calling the parseJsonBody.
+   *
+   */
+  parsedBody: any;
 }
-// /Users/snytkind/projects/bind

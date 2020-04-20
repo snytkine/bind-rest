@@ -13,9 +13,11 @@ import {
   Scope,
   StringOrSymbol,
   ComponentIdentity,
+  Maybe,
 } from 'bind-di';
 import { IUriParams } from 'holiday-router';
 import { IAppResponse } from '../lib/interfaces/appresponse';
+import { IStoredComponent } from '../lib/interfaces/storedcomponent';
 
 const debug = require('debug')('bind:rest:context');
 
@@ -49,7 +51,7 @@ export default class Context implements IScopedComponentStorage {
 
   appResponse: IAppResponse;
 
-  private scopedComponents: Array<[ComponentIdentity, any]> = [];
+  private scopedComponents: Array<IStoredComponent> = [];
 
   /**
    * Storage container for anything
@@ -71,7 +73,7 @@ export default class Context implements IScopedComponentStorage {
     return this.requestStartTime;
   }
 
-  getComponent(id: ComponentIdentity) {
+  getComponent(id: ComponentIdentity): Maybe<Object> {
     /**
      * Special case if looking for instance of Context (this object)
      * then just return this
@@ -83,15 +85,17 @@ export default class Context implements IScopedComponentStorage {
       return this;
     }
 
-    return this.scopedComponents.find((component) => isSameIdentity(component[0], id));
+    const res = this.scopedComponents.find((component) => isSameIdentity(component.identity, id));
+
+    return res?.component;
   }
 
-  setComponent(id: ComponentIdentity, component: any): void {
+  setComponent(identity: ComponentIdentity, component: any): void {
     /**
      * Special case do not set Context instance (instance of this class)
      * into storage
      */
-    if (!isSameIdentity(id, Context.id)) {
+    if (!isSameIdentity(identity, Context.id)) {
       /**
        * Not testing if component with same identity
        * already exists before adding it. The consumer of this method
@@ -99,7 +103,7 @@ export default class Context implements IScopedComponentStorage {
        * component exists in scoped storage and only adds new object
        * into scoped storage if component is not found in storage
        */
-      this.scopedComponents.push([id, component]);
+      this.scopedComponents.push({ identity, component });
     }
   }
 

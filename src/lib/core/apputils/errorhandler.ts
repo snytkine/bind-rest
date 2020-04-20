@@ -12,6 +12,7 @@ const errorHandler: AppErrorHandlerFunc = (ctx: Context) => {
   let responseTime: number = 0;
   let end: number;
   let httpCode: HTTP_STATUS_CODES = HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR;
+
   return function defaultErrorHandler(e: Maybe<Error>) {
     let errorMessage: string = 'Internal Server Error';
 

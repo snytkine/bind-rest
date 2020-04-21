@@ -44,9 +44,9 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
 
   const paramFactory = (c: IfIocContainer) => {
     const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
-    const enableSchemaValidation = application?.settings?.validation?.jsonSchema;
 
     return function BodyExtractor(context: RequestContext) {
+      const enableSchemaValidation = application.settings?.validation?.jsonSchema;
       let jsonSchema;
 
       debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);

@@ -17,18 +17,36 @@ import { DOTTED_LINE } from '../../consts';
  * the AsyncValidator signature and can be used anywhere the AsyncValidator is expected.
  * @param validator
  */
-const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
+export const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (c: IfIocContainer) => (ctx: Context) => validator;
 };
 
-export function ValidateAsync(...validators: AsyncValidator[]): IParamDecorator {
+/**
+ *
+ * @param validators array of functions with signature of AsyncValidator
+ * which is container => context => param => Maybe<Error> | Promise<Maybe<Error>>
+ * @constructor
+ */
+export function Validate(...validators: AsyncValidator[]): IParamDecorator {
   return (target: ClassPrototype, propertyKey: string, index: number): void => {
     const paramName = getMethodParamName(target, propertyKey, index);
     /**
      * Generate single function from array of paramvalidator functions;
      */
     const validatorFunc: AsyncValidator = function paramValidator(container: IfIocContainer) {
+      /**
+       * @todo run the first .map on validators here so that
+       * individual validators can use the container param.
+       * The result will be an array of AsyncContextParamValidator
+       * Running the first map here makes is possible to catch
+       * dependency problems early, at initialization.
+       *
+       * If validator function has dependency that is Singleton or NewInstance (not RequestScope)
+       * then it can get dependency on the first loop.
+       * if it has RequestScope dependency it can at least get ComponentDetails
+       * and then get actual dependency when it gets the context.
+       */
       return function paramValidator2(ctx: Context) {
         return function paramValidator3(param: any): Promise<Maybe<Error>> {
           const validationResults: Array<Maybe<Error> | Promise<Maybe<Error>>> = validators
@@ -99,8 +117,9 @@ export function ValidateAsync(...validators: AsyncValidator[]): IParamDecorator 
   };
 }
 
+/*
 export function Validate(...validators: Array<ParamValidator>): IParamDecorator {
   const asyncValidators = validators.map(toAsyncValidator);
 
   return ValidateAsync(...asyncValidators);
-}
+} */

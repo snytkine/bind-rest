@@ -4,7 +4,7 @@ import Context from './context';
 
 @Component(SERVER_RESPONSE)
 @Scope(ComponentScope.REQUEST)
-export default class RequestComponent {
+export default class ResponseComponent {
   /**
    * When JavaScript constructor returns a value that value
    * will be returned as instance of constructed class

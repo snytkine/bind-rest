@@ -151,12 +151,28 @@ export default function parseController(container: IfIocContainer) {
           if (paramExtractors.length > 0) {
             debug('%s need futureParams', TAG);
             futureParams = Promise.all(
-              paramExtractors.map((f) => {
+              paramExtractors.map((f, i) => {
                 debug('%s calling paramExtractor func with context', TAG);
-                return f(context);
+                try {
+                  return f(context);
+                } catch (e) {
+                  throw new ApplicationError(`Error parsing controller parameters
+                  Controller=${controllerName}
+                  parameterIndex=${i}
+                  Error=${e.message}`);
+                }
               }),
             )
               .then((params) => {
+                /**
+                 * @todo create function validateExtractedParams
+                 * it will loop over params and for every param that is instance of Error
+                 * it will create an error message pointing to problem with param at index
+                 * and an error and then will throw the Error. The Error will be caught by .catch
+                 * in this promise and will create ApplicationError with name of controller
+                 * but it will have details about which parameter could not be extracted, at least
+                 * by parameter index.
+                 */
                 debug('%s extracted futureParams=%o', TAG, params);
                 return params;
               })

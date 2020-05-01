@@ -30,12 +30,6 @@ export default class ResponseWriter {
             });
           }
 
-          /* for (const h in ctx.appResponse.headers) {
-            if (Object.prototype.hasOwnProperty.call(ctx.appResponse.headers, h)) {
-              ctx.res.setHeader(h, ctx.appResponse.headers[h]);
-            }
-          } */
-
           /**
            * @todo when appResponse has support for cookies
            * also check if ctx.appResponse.cookies, then use cookie module

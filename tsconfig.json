@@ -16,14 +16,11 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true
   },
   "exclude": [
     "node_modules",
-    "__node_modules__",
-    "build",
-    "src/lib/core",
-    "lib/core/application.ts",
-    "*.js"
+    "build"
   ]
 }

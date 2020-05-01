@@ -96,9 +96,11 @@ export class Application {
    * @param container
    */
   public async setContainer(container: IfIocContainer): Promise<Maybe<IfIocContainer>> {
-    load(container, [...this.configOptions.componentDirs, APPLICATION_COMPONENTS_DIR], {
-      envFilterName: this.settings.envOverrideVar,
-    });
+    load(
+      container,
+      [...this.configOptions.componentDirs, APPLICATION_COMPONENTS_DIR],
+      this.settings.envOverrideVar,
+    );
     /**
      * @todo add extra components here, before parsing controllers because
      * extra components may container controllers and middlewares

@@ -1,7 +1,7 @@
-import charSet from 'charset';
-import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
 import HttpResponse from './httpresponse';
 import HttpStringResponse from './stringresponse';
+import getCharset from '../utils/getcharset';
+import { Maybe } from 'bind-di';
 
 const debug = require('debug')('bind:rest:httprequest');
 
@@ -19,29 +19,13 @@ const debug = require('debug')('bind:rest:httprequest');
  */
 export default function stringifyBody(resp: HttpResponse): Promise<HttpStringResponse> {
   const is = resp.getReadStream();
-  let cs: string;
-  if (resp.headers && resp.headers['content-type']) {
-    debug('Have content-type header in response: %s', resp.headers['content-type']);
-    cs = charSet(resp.headers['content-type']);
-    cs = cs && cs.toLocaleLowerCase();
-    debug(`Charset from response: %s`, cs);
-    /**
-     * Node.js stream supports latin1 but not iso-8859-1 (these are the same, but node.js only
-     * supports it by 'latin1' name
-     * win-1252 is not supported
-     */
-    if (cs === 'iso-8859-1' || cs === 'iso8859-1' || cs === 'latin-1' || cs === 'iso88591') {
-      debug('Changed charset to latin1');
-      cs = 'latin1';
-    }
-  }
+  let cs: Maybe<string> = getCharset(resp.headers);
 
   if (cs) {
-    if (!SUPPORTED_ENCODINGS.includes(cs)) {
-      debug('Unknown encoding: ', cs);
-    } else {
-      is.setEncoding(cs);
-    }
+    debug('stringifyBody setEncoding="%s"', cs);
+    is.setEncoding(cs);
+  } else {
+    debug('stringifyBody charset UNKNOWN');
   }
 
   return new Promise(function stringifyResolver(resolve, reject) {

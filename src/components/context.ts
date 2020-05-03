@@ -49,7 +49,7 @@ export default class Context implements IScopedComponentStorage {
 
   private requestStartTime: number = 0;
 
-  appResponse: IAppResponse;
+  appResponse: IAppResponse<any>;
 
   private scopedComponents: Array<IStoredComponent> = [];
 

@@ -2,7 +2,7 @@ import { JsonResponse } from '../core/appresponse';
 import HttpStringResponse from './stringresponse';
 import ApplicationError from '../errors/applicationerror';
 
-export default function jsonParseBody(resp: HttpStringResponse): Promise<JsonResponse> {
+export default function jsonParseBody(resp: HttpStringResponse): Promise<JsonResponse<{}>> {
   return new Promise((resolve, reject) => {
     const { body } = resp;
     const contentType = resp.headers['content-type'] || '';

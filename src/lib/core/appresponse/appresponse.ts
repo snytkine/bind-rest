@@ -1,22 +1,33 @@
 import HttpResponseCode from 'http-status-enum';
 import stream from 'stream';
-import { IAppResponse } from '../../interfaces';
-import { ResponseHeaders } from '../../types/responseheaders';
+import { IAppResponse, IResponseHeaders } from '../../interfaces';
+import getCharset from '../../utils/getcharset';
+import ContentType from '../../consts/contenttypes';
+import { IncomingHttpHeaders } from 'http';
 
-export default class AppResponse implements IAppResponse {
-  protected readonly responseBody: string;
+export default class AppResponse implements IAppResponse<any> {
+
+  protected charset;
 
   constructor(
-    b: string = '',
+    public readonly responseBody = '',
     public statusCode: number = HttpResponseCode.OK,
-    readonly headers: ResponseHeaders = { 'content-type': 'text/plain' },
+    private readonly hdrs: IncomingHttpHeaders,
   ) {
-    this.responseBody = b;
+    this.charset = getCharset(hdrs);
+  }
+
+  get headers(): IResponseHeaders<any> {
+    if (!this.hdrs['content-type']) {
+      return { ...this.headers, ['content-type']: ContentType.PLAIN_TEXT };
+    } else {
+      return this.hdrs as IResponseHeaders<any>;
+    }
   }
 
   getReadStream() {
     const bufferStream = new stream.PassThrough();
-    bufferStream.end(this.responseBody);
+    bufferStream.end(this.responseBody, this.charset);
     return bufferStream;
   }
 }

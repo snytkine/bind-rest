@@ -6,6 +6,6 @@ export default class RedirectResponse extends AppResponse {
     public readonly redirectUrl: string,
     responseCode: number = HttpResponseCode.MOVED_PERMANENTLY,
   ) {
-    super('', responseCode, { Location: redirectUrl });
+    super('', responseCode, { Location: redirectUrl, 'content-type': 'text/plain' });
   }
 }

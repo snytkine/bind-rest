@@ -1,11 +1,13 @@
-import * as stream from 'stream';
+import stream from 'stream';
+import HttpStatusCode from 'http-status-enum';
 import HttpResponse from './httpresponse';
+import { IncomingHttpHeaders } from 'http';
 
 export default class HttpErrorResponse extends HttpResponse {
   constructor(
-    statusCode: number,
+    statusCode: HttpStatusCode,
     error: string = '',
-    headers: { [key: string]: any } = {},
+    headers: IncomingHttpHeaders,
     requestID: string = '-',
   ) {
     const bufferStream = new stream.PassThrough();

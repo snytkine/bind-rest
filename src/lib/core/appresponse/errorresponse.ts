@@ -1,13 +1,14 @@
 import HttpResponseCode from 'http-status-enum';
-import { ResponseHeaders } from '../../types';
 import AppResponse from './appresponse';
+import { IResponseHeaders } from '../../interfaces';
+import ContentType from '../../consts/contenttypes';
 
 export default class ErrorResponse extends AppResponse {
   constructor(
-    responseCode: HttpResponseCode,
-    message: string = 'Internal Application Error',
-    readonly headers: ResponseHeaders = { 'content-type': 'text/plain' },
+    responseCode: HttpResponseCode = HttpResponseCode.INTERNAL_SERVER_ERROR,
+    message: string = 'Application Error',
+    headers: IResponseHeaders<ContentType.PLAIN_TEXT> = { 'content-type': ContentType.PLAIN_TEXT },
   ) {
-    super(message, responseCode);
+    super(message, responseCode, headers);
   }
 }

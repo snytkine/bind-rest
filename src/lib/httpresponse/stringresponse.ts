@@ -1,12 +1,12 @@
 import { AppResponse } from '../core/appresponse';
-import { IAppResponse } from '../interfaces';
+import HttpResponseCode from 'http-status-enum';
+import { IncomingHttpHeaders } from 'http';
 
-export default class HttpStringResponse extends AppResponse implements IAppResponse {
-  constructor(
-    b: string = '',
-    public statusCode: number,
-    readonly headers: { [key: string]: string },
-  ) {
+export default class HttpStringResponse extends AppResponse {
+
+  constructor(b: string = '',
+              public statusCode: HttpResponseCode,
+              headers: IncomingHttpHeaders) {
     super(b, statusCode, headers);
   }
 

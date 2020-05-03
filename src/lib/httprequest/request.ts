@@ -10,7 +10,7 @@ import isStream from 'is-stream';
 import { ILogger } from '../interfaces/logger';
 import { HttpResponse, HttpErrorResponse, stringifyBody } from '../httpresponse';
 import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
-import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
+import { IHttpRequestOptions, INormalizedRequestOptions, IResponseHeaders } from '../interfaces';
 import ApplicationError from '../errors/applicationerror';
 
 const debug = require('debug')('bind:rest:request');
@@ -400,7 +400,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
               new HttpErrorResponse(
                 HttpStatusCode.GATEWAY_TIMEOUT,
                 `The request has taken longer than the allotted ${options.timeout} milliseconds`,
-                {},
+                { 'content-type': 'text/plain' },
                 requestID,
               ),
             );
@@ -434,7 +434,14 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
 
         if (!resolved) {
           resolved = true;
-          resolve(new HttpResponse(response.statusCode, response.headers, response, requestID));
+          resolve(
+            new HttpResponse(
+              response.statusCode,
+              response.headers,
+              response,
+              requestID,
+            ),
+          );
         }
       });
 

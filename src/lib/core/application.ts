@@ -103,7 +103,7 @@ export class Application {
     );
     /**
      * @todo add extra components here, before parsing controllers because
-     * extra components may container controllers and middlewares
+     * extra components may contain controllers and middlewares
      *
      */
     try {

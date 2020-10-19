@@ -33,7 +33,7 @@ function decorateMiddleware(
   priority?: number,
   decoratorName?: string,
 ) {
-  debug('Defining %s for constructor %s. decoratorName=', TAG, target.name, decoratorName);
+  debug('Defining %s for constructor %s. decoratorName=%s', TAG, target.name, decoratorName);
   Component(target);
   /**
    * Need to set DEFAULT_SCOPE for Middleware component

@@ -43,7 +43,7 @@ class RouterMiddleware {
     debug('%s parsedUrl="%o"', TAG, parsedUrl);
     const routeMatch = this.router.getRouteMatch(httpMethod, parsedUrl.pathname);
     if (!routeMatch) {
-      debug('%s NO patch for method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
+      debug('%s NO match for method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
 
       return Promise.reject(
         new NotFoundError(`

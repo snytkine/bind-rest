@@ -12,7 +12,7 @@ const TAG = 'SetupRoutes';
 
 export default function setupRoutes(container: IfIocContainer) {
   const controllerComponents = getControllerComponents(container);
-  debug('% Found %d controller components', TAG, controllerComponents.length);
+  debug('%s Found %d controller components', TAG, controllerComponents.length);
 
   const parsedControllers: Array<IControllerDetails> = controllerComponents
     .map((c) => {

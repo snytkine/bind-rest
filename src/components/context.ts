@@ -58,6 +58,15 @@ export default class Context implements IScopedComponentStorage {
    */
   readonly storage: Map<StringOrSymbol, any>;
 
+  /**
+   * Sometimes Errors that are not critical should not cause
+   * request to fail, but we also don't want to ignore errors
+   * One way to preserve errors is to add then to this array
+   * so that after the response is sent a custom logger afterware may be used
+   * to log these errors
+   */
+  readonly errors: Array<Error> = [];
+
   readonly scope = ComponentScope.REQUEST;
 
   init(req: http.IncomingMessage, res: http.ServerResponse): Context {

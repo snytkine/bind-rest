@@ -1,9 +1,10 @@
-import { Singleton } from 'bind-di';
+import { Inject, isDefined, Singleton } from 'bind-di';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import Context from './context';
 import { Afterware } from '../lib/decorators';
 import HttpError from '../lib/errors/http';
-import { PRIORITY_RESPONSE_WRITER } from '../lib/consts';
+import { PRIORITY_RESPONSE_WRITER, RESPONSE_COOKIES_WRITER } from '../lib/consts';
+import { IResponseCookieWriter } from '../lib/interfaces/responsecookiewriter';
 
 const debug = require('debug')('bind:rest:runtime:responsewriter');
 
@@ -17,7 +18,9 @@ const TAG = 'DEFAULT-RESPONSE-WRITER';
 @Afterware(PRIORITY_RESPONSE_WRITER)
 @Singleton
 export default class ResponseWriter {
-  // eslint-disable-next-line class-methods-use-this
+  @Inject(RESPONSE_COOKIES_WRITER)
+  responseCookieWriter: IResponseCookieWriter;
+
   doFilter(ctx: Context): Promise<Context> {
     debug('%s Entered defaultResponseWriter', TAG);
     let ret: Promise<Context>;
@@ -25,21 +28,32 @@ export default class ResponseWriter {
     if (!ctx.res.writableFinished) {
       ret = new Promise((resolve, reject) => {
         if (!ctx.res.headersSent) {
-          debug('%s Getting appResponse statusCode', TAG);
-          ctx.res.statusCode = ctx.appResponse.statusCode;
+          debug('%s sending response headers', TAG);
 
-          if (ctx.appResponse.headers) {
-            const hdrs = Object.entries(ctx.appResponse.headers);
-            hdrs.forEach(([key, val]) => {
-              ctx.res.setHeader(key, val);
-            });
+          const cookieErrors = this.responseCookieWriter.sendCookies(ctx);
+          if (isDefined(cookieErrors)) {
+            cookieErrors.forEach((error) => ctx.errors.push(error));
           }
 
           /**
-           * @todo when appResponse has support for cookies
-           * also check if ctx.appResponse.cookies, then use cookie module
-           * to generate cookie string and send it as cookie header
+           * This check is not necessary because IAppResponse is required to have headers object
+           * even if an empty object.
+           * We may need to check that object has any own properties but not sure
+           * if that is necessary.
            */
+          if (ctx.appResponse.headers) {
+            /**
+             * writeHead does not actually write any data to socket.
+             * if setHeader has been called prior to writeHead then writeHead
+             * will merge header values with already set response headers object
+             * if setHeader has not been called then it will set internal headers object
+             * to this passed in headers. There are still many validations node.js does for
+             * these headers and may throw if headers contain invalid chars (for example)
+             */
+            ctx.res.writeHead(ctx.appResponse.statusCode, ctx.appResponse.headers);
+          } else {
+            ctx.res.statusCode = ctx.appResponse.statusCode;
+          }
 
           const rs = ctx.appResponse.getReadStream();
           debug('%s about to start writing response', TAG);

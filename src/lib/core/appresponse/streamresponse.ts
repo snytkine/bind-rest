@@ -1,16 +1,18 @@
 import HttpResponseCode from 'http-status-enum';
 import { IAppResponse } from '../../interfaces';
-import { ResponseHeaders } from '../../types';
+import { IResponseHeaders } from '../../types/responseheaders';
+import { IResponseCookie } from '../../interfaces/responsecookie';
 
 export default class StreamResponse implements IAppResponse {
-  private rs: NodeJS.ReadableStream;
+  public readonly headers;
 
   constructor(
-    rs: NodeJS.ReadableStream,
+    private rs: NodeJS.ReadableStream,
     public statusCode: HttpResponseCode = HttpResponseCode.OK,
-    public headers: ResponseHeaders = {},
+    readonly hdrs?: IResponseHeaders,
+    public cookies?: Array<IResponseCookie>,
   ) {
-    this.rs = rs;
+    this.headers = hdrs || {};
   }
 
   public getReadStream() {

@@ -1,4 +1,6 @@
 import HttpStatusCode from 'http-status-enum';
+import { IResponseCookie } from './responsecookie';
+import { IResponseHeaders } from '../types/responseheaders';
 
 import ReadableStream = NodeJS.ReadableStream;
 
@@ -7,10 +9,11 @@ import ReadableStream = NodeJS.ReadableStream;
  */
 export interface IAppResponse {
   statusCode: HttpStatusCode;
-  headers: { [key: string]: string };
+  headers: IResponseHeaders;
+  cookies?: Array<IResponseCookie>;
   readonly getReadStream: () => ReadableStream;
 }
 
-export interface IJsonResponse<T> extends IAppResponse {
-  jsonObj: T;
+export interface IJsonResponse<T extends {}> extends IAppResponse {
+  json: T;
 }

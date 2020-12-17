@@ -4,7 +4,6 @@
   "description": "Framework for creating REST API with decorators and dependency injection",
   "private": false,
   "scripts": {
-    "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
     "version": "npm run format && git add -A src",
@@ -31,11 +30,11 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://bitbucket.es.ad.adp.com/projects/ISSP/repos/promiseoft"
+    "url": "https://github.com/snytkine/bind-rest.git"
   },
   "author": {
     "name": "Dmitri Snytkine",
-    "email": "dmitri.snytkine@adp.com"
+    "email": "d.snytkine@gmail.com"
   },
   "dependencies": {
     "@types/decompress-response": "^3.3.1",

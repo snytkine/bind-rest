@@ -4,6 +4,7 @@ export enum ErrorType {
   AppError,
   AppTimeout,
   AuthorizationError,
+  HttpRequest,
 }
 
 export enum ErrorCategory {

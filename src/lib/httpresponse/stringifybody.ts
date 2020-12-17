@@ -2,6 +2,9 @@ import charSet from 'charset';
 import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
 import HttpResponse from './httpresponse';
 import HttpStringResponse from './stringresponse';
+import decompressResponse from 'decompress-response';
+import * as http from "http";
+import {IAppResponse} from "../interfaces";
 
 const debug = require('debug')('bind:rest:httprequest');
 
@@ -14,12 +17,24 @@ const debug = require('debug')('bind:rest:httprequest');
  *
  * Example promiseHttpResponse.then(stringifyBody).then(resp => JSON.parse(resp.body))
  *
+ * @TODO response stream may be gzip encoded (this is common for http responses)
+ * We need to convert this readable stream into uncompressed stream first.
+ *
  * @param resp: HttpResponse
  * @returns {Promise<HttpStringResponse>}
  */
-export default function stringifyBody(resp: HttpResponse): Promise<HttpStringResponse> {
+export default function stringifyBody(resp: IAppResponse): Promise<HttpStringResponse> {
   const is = resp.getReadStream();
+
+  /**
+   * Response may be in compressed format.
+   * Important to first uncompress the response
+   */
   let cs: string;
+
+  /**
+   * Determine content-type
+   */
   if (resp.headers && resp.headers['content-type']) {
     debug('Have content-type header in response: %s', resp.headers['content-type']);
     cs = charSet(resp.headers['content-type']);

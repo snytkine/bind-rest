@@ -16,12 +16,13 @@ import { MiddlewareFunc } from '../types/middlewarefunc';
 import rejectLater from './apputils/rejectlater';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
-import { APPLICATION_COMPONENT } from '../consts/appcomponents';
+import { APPLICATION_COMPONENT, CONFIGURATION_COMPONENT } from '../consts/appcomponents';
 import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
 import errorHandler from './apputils/errorhandler';
 import getErrorHandlers from './apputils/geterrorhandlers';
 import registerProcessEventListeners from './apputils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
+import { IExitHandler } from '../interfaces';
 
 const debug = require('debug')('bind:rest:runtime:application');
 
@@ -44,7 +45,7 @@ export const validateOptions = (options: ApplicationOptions): void => {
   }
 };
 
-export class Application {
+export class Application implements IExitHandler {
   private middlewares: Array<MiddlewareFunc> = [];
 
   private errHandlers: Array<AppErrorHandlerFunc> = [errorHandler];
@@ -117,7 +118,7 @@ export class Application {
        * before returning MiddlewareFunc these factories may need to get
        * Application component from container in order to get some settings.
        */
-      this.registerApplicationComponent(container);
+      // this.registerApplicationComponent(container);
 
       /**
        * All components are loaded into container
@@ -135,25 +136,43 @@ export class Application {
       this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
       debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
-      const previousContainer = this.bindContainer;
+      /**
+       * @todo using previous container was a way to redefine
+       * the this.bindContainer, make it possible to replace
+       * the IocContainer in the running application
+       * This was just an experiment and for the time being
+       * was decided not to use this feature.
+       */
+      //const previousContainer = this.bindContainer;
       this.bindContainer = container;
-
-      return previousContainer;
+      return this.bindContainer;
     } catch (e) {
       throw new ApplicationError(`Failed to initialize container Error=${e.message}`, e);
     }
   }
 
-  registerApplicationComponent(container: IfIocContainer) {
-    container.addComponent({
-      identity: Identity(APPLICATION_COMPONENT),
-      propDependencies: [],
-      constructorDependencies: [],
-      extraDependencies: [],
-      scope: ComponentScope.SINGLETON,
-      get: () => this,
-    });
-  }
+  /*registerApplicationComponent(container: IfIocContainer) {
+   container.addComponent({
+   identity: Identity(APPLICATION_COMPONENT),
+   propDependencies: [],
+   constructorDependencies: [],
+   extraDependencies: [],
+   scope: ComponentScope.SINGLETON,
+   get: () => this,
+   });
+   }*/
+
+
+  /* registerConfigurationComponent(container: IfIocContainer) {
+   container.addComponent({
+   identity: Identity(CONFIGURATION_COMPONENT),
+   propDependencies: [],
+   constructorDependencies: [],
+   extraDependencies: [],
+   scope: ComponentScope.SINGLETON,
+   get: () => this,
+   });
+   }*/
 
   onExit(exitCode: number): Promise<number> {
     debug('%s %s onExit called with code=%d', TAG, this.toString(), exitCode);
@@ -183,6 +202,19 @@ export class Application {
       runners.push(rejectLater(Math.floor(Math.abs(this.configOptions.timeout))));
     }
 
+    /**
+     * @todo
+     * it may be a better idea to not use this .race logic in the handler
+     * instead let individual controller have this logic, getting timeout value from
+     * own "Settings" object
+     * Also application may define own middleware to handle the timeout for all requests
+     * just start a timer in the middleware and have a function to check that response object has not been
+     * set yet and/or that response has not been sent yet and then set own appResponse object.
+     * A context object may also have a storage for all outgoing requests and other cancellable
+     * objects that initiated in the same request context. This way a function defined in timeout
+     * may be able to cancel all outgoing requests, database connections, ldap requests,
+     * close sockets, etc. in case a timeout for a request was reached.
+     */
     Promise.race(runners).catch((e) => {
       return this.errHandlers
         .map((eh) => eh(ctx))

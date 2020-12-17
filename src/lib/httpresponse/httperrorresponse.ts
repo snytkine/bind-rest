@@ -1,7 +1,9 @@
 import * as stream from 'stream';
 import HttpResponse from './httpresponse';
+import {StreamResponse} from "../core";
+import {IHttpClientResponse} from "../interfaces/httpclientreponse";
 
-export default class HttpErrorResponse extends HttpResponse {
+export default class HttpErrorResponse extends StreamResponse implements IHttpClientResponse {
   constructor(
     statusCode: number,
     error: string = '',
@@ -10,6 +12,6 @@ export default class HttpErrorResponse extends HttpResponse {
   ) {
     const bufferStream = new stream.PassThrough();
     bufferStream.end(error);
-    super(statusCode, headers, bufferStream, requestID);
+    super(bufferStream, statusCode, headers);
   }
 }

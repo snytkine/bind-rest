@@ -10,8 +10,9 @@ import isStream from 'is-stream';
 import { ILogger } from '../interfaces/logger';
 import { HttpResponse, HttpErrorResponse, stringifyBody } from '../httpresponse';
 import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
-import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
+import {IAppResponse, IHttpRequestOptions, INormalizedRequestOptions} from '../interfaces';
 import ApplicationError from '../errors/applicationerror';
+import IncomingMessageResponse from "../httpresponse/IncomingMessageResponse";
 
 const debug = require('debug')('bind:rest:request');
 
@@ -73,6 +74,10 @@ export function requestLogger(logger: ILogger, headers: http.IncomingHttpHeaders
 /* eslint-disable no-param-reassign */
 function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOptions {
   debug(TAG, 'Entered setServiceOptions with options: ', options);
+
+  if(!options.requestId) {
+    options.requestId = uuid();
+  }
 
   if (!options.requestOptions.method) {
     debug(TAG, "Missing requestOptions.method  Setting default method 'GET'");
@@ -173,7 +178,8 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
  * This is necessary to pass any https keys like ca, key, cert, pfx etc as described here
  * https://nodejs.org/api/https.html#https_https_request_options_callback
  */
-export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse> {
+export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse> {
+
   let ClientRequestorObject;
   let timeout = DEFAULT_TIMEOUT;
 
@@ -188,6 +194,8 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
 
   debug('^^^^^ options after setServiceOptions: ', options);
 
+  const requestID = options.requestId;
+
   if (options.requestOptions.protocol === 'https:') {
     ClientRequestorObject = https;
     debug('@@@@@@@@@@@ USING HTTPS @@@@@@@@@@@@@');
@@ -196,7 +204,6 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
     debug('@@@@@@@@@@@ USING HTTP @@@@@@@@@@@@@');
   }
 
-  const requestID = uuid();
   let startTime;
 
   if (options.timeout) {
@@ -216,7 +223,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
   const myport = options.requestOptions.port ? `:${options.requestOptions.port}` : '';
   const myuri = `${options.requestOptions.protocol}//${options.requestOptions.hostname}${myport}${options.requestOptions.path}`;
 
-  return new Promise<HttpResponse>((resolve, reject) => {
+  return new Promise<IAppResponse>((resolve, reject) => {
     let request: http.ClientRequest;
     let resolved;
     let timeoutOccured = false;
@@ -250,14 +257,6 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
     const timeoutId = setTimeout(() => {
       timeoutOccured = true;
       try {
-        /*
-         * If timeout is reached ty to abort request and close socket
-         */
-        if (options.logger) {
-          options.logger.error(
-            `${TAG}=TimeoutReached for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
-          );
-        }
         if (request) {
           request.abort();
         }
@@ -316,7 +315,9 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
               e,
             );
           }
-
+          /**
+           * @todo use HttpRequestError
+           */
           reject(new Error(`There is an error in the get request ${util.inspect(e)}`));
         } else {
           debug(TAG, ' HTTP REQUEST ERROR ', e.message);
@@ -434,7 +435,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
 
         if (!resolved) {
           resolved = true;
-          resolve(new HttpResponse(response.statusCode, response.headers, response, requestID));
+          resolve(new IncomingMessageResponse(response, options.requestId));
         }
       });
 
@@ -485,6 +486,10 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
                 options.requestOptions.headers,
               );
             }
+            /**
+             * @todo check that request is actually is stream.
+             * Use some type of utility function that checks isStream
+             */
             debug(TAG, 'Request payload is a stream');
             options.payload.pipe(request);
             payloadPiped = true;
@@ -505,6 +510,10 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
         );
       }
 
+      /**
+       * @todo Do not use ApplicationError
+       * Use only HttpRequestError
+       */
       reject(new ApplicationError(`${TAG} request object ${REQUEST_ERROR}="${ex.message}"`));
     }
   })
@@ -524,30 +533,6 @@ export function makeRequest(options: IHttpRequestOptions): Promise<HttpResponse>
       );
 
       if (options.logger) {
-        /**
-         * Automatically log response body of error responses
-         */
-        if (resp.statusCode >= 400) {
-          /**
-           * Also log response headers
-           */
-          options.logger.error(
-            `${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_HEADERS}=`,
-            resp.headers,
-          );
-          return stringifyBody(resp).then((sresp) => {
-            const errorBody = sresp.body;
-            options.logger.error(
-              `${TAG}=HttpErrorResponse. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${ELAPSED_TIME}=${elapsedTime} milliseconds. ${RESPONSE_ERROR}=${errorBody}`,
-            );
-            // Now we have stringBody response
-            // we need to convert it back to readable stream so we can return correct type
-            const bufferStream = new stream.PassThrough();
-            bufferStream.end(errorBody);
-
-            return new HttpResponse(resp.statusCode, resp.headers, bufferStream, resp.requestID);
-          });
-        }
         options.logger.info(
           `${TAG}=OK Request complete. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${RESPONSE_HEADERS}=`,
           resp.headers,

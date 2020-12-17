@@ -14,7 +14,6 @@ import {
 } from '../../consts/controllermethodparams';
 import FrameworkController from '../../core/frameworkcontroller';
 import HttpError from '../../errors/http';
-import { Application } from '../../core/application';
 
 import { parseBody, parseJsonBody } from '../../utils/parsebody';
 import makeParamDecorator from './makeparamdecorator';
@@ -43,13 +42,21 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
   }
 
   const paramFactory = (c: IfIocContainer) => {
-    const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
+    const enableSchemaValidation = true;
+    //const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
 
     return function BodyExtractor(context: RequestContext) {
-      const enableSchemaValidation = application.settings?.validation?.jsonSchema;
+      /**
+       * @todo this was supposed to be a way to turn off schema validation
+       * in a running application, even if @Body type of request param
+       * already had object with @JsonSchema decoration.
+       *
+       *
+       */
+      //const enableSchemaValidation = application.settings?.validation?.jsonSchema;
       let jsonSchema;
 
-      debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
+      //debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
       /**
        * If paramType is component decorated with JsonSchema then validate schema.
        */

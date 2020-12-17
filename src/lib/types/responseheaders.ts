@@ -1,3 +1,3 @@
-import { StringToString } from 'bind-di';
+import * as http from "http";
 
-export type IResponseHeaders = StringToString;
+export type IResponseHeaders = http.IncomingHttpHeaders;

@@ -9,7 +9,7 @@ import {
 } from '../consts/controllermethodparams';
 
 import ControllerParamType from '../enums/controllerparamtype';
-import ValidationError from '../errors/validationerror';
+import ValidationError from '../errors/validation/inputvalidationerror';
 import {
   AsyncContextParamValidator,
   AsyncParamValidator,

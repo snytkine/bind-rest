@@ -1,13 +1,17 @@
 export enum ErrorType {
   InputValidation = 3001,
+  TypeValidation,
+  SystemError,
   SchemaValidation,
   AppError,
   AppTimeout,
+  AuthenticationError,
   AuthorizationError,
-  HttpRequest,
+  HttpRequestError,
+  HttpResponseError,
 }
 
 export enum ErrorCategory {
   SystemError = 4001,
-  AppError,
+  ApplicationError,
 }

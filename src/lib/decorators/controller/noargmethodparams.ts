@@ -1,5 +1,4 @@
 import { HttpRouter } from 'holiday-router';
-import HTTP_STATUS_CODES from 'http-status-enum';
 import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
 import RequestContext from '../../../components/context';
@@ -13,13 +12,12 @@ import {
   PARAM_TYPE_STRING,
 } from '../../consts/controllermethodparams';
 import FrameworkController from '../../core/frameworkcontroller';
-import HttpError from '../../errors/http';
 
 import { parseBody, parseJsonBody } from '../../utils/parsebody';
 import makeParamDecorator from './makeparamdecorator';
 import applyNoParamDecorator from './applysingledecorator';
-import { APPLICATION_COMPONENT } from '../../consts/appcomponents';
 import getParamType from './getparamtype';
+import BadRequestError from '../../errors/http/badrequest';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -41,9 +39,10 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         @Body param cannot be of type Promise.`);
   }
 
+  /* eslint-disable  @typescript-eslint/no-unused-vars */
   const paramFactory = (c: IfIocContainer) => {
     const enableSchemaValidation = true;
-    //const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
+    // const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
 
     return function BodyExtractor(context: RequestContext) {
       /**
@@ -53,10 +52,10 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
        *
        *
        */
-      //const enableSchemaValidation = application.settings?.validation?.jsonSchema;
+      // const enableSchemaValidation = application.settings?.validation?.jsonSchema;
       let jsonSchema;
 
-      //debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
+      // debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
       /**
        * If paramType is component decorated with JsonSchema then validate schema.
        */
@@ -98,16 +97,16 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         parsed = parseBody(context.req);
       }
 
-      return parsed.catch((e) => {
-        debug('%s ERROR parsing body %o', TAG, e);
+      return parsed.catch((err) => {
+        debug('%s ERROR parsing body %o', TAG, err);
 
-        throw new HttpError(
-          HTTP_STATUS_CODES.BAD_REQUEST,
+        throw new BadRequestError(
           `Failed to parse request body.
         Controller="${controllerName}" 
         Parameter="${paramName}" (argument ${parameterIndex})
-        Error=${e.message}
+        Error=${err.message}
         `,
+          err,
         );
       });
     };

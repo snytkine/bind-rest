@@ -1,16 +1,12 @@
-import {IAppResponse} from "../interfaces";
-import http from "http";
-import HTTP_STATUS_CODES from "http-status-enum";
-import {IResponseHeaders} from "../types";
-import {IHttpClientResponse} from "../interfaces/httpclientreponse";
+import http from 'http';
+import HTTP_STATUS_CODES from 'http-status-enum';
+import { IResponseHeaders } from '../types';
+import { IHttpIncomingMessageResponse } from '../interfaces/httpclientreponse';
 
+export default class IncomingMessageResponse implements IHttpIncomingMessageResponse {
+  constructor(private im: http.IncomingMessage, public readonly requestID: string = '-') {}
 
-export default class IncomingMessageResponse implements IHttpClientResponse {
-
-  constructor(private im: http.IncomingMessage, public readonly requestId: string = '-') {
-  }
-
-  public getReadStream(): NodeJS.ReadableStream {
+  public getReadStream(): http.IncomingMessage {
     return this.im;
   }
 
@@ -21,5 +17,4 @@ export default class IncomingMessageResponse implements IHttpClientResponse {
   get statusCode(): HTTP_STATUS_CODES {
     return this.im.statusCode;
   }
-
 }

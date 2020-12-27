@@ -1,6 +1,6 @@
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
-import { ControllerParamType } from '../enums';
-import { AsyncValidator } from '../types';
+import ControllerParamType from '../enums/controllerparamtype';
+import { AsyncValidator } from '../types/paramvalidatorfunc';
 
 /**
  * @todo make validator an Array of AsyncValidators

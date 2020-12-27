@@ -1,22 +1,12 @@
 import http from 'http';
 import path from 'path';
-import {
-  IfIocContainer,
-  Container,
-  load,
-  Maybe,
-  notEmpty,
-  Identity,
-  ComponentScope,
-  isDefined,
-} from 'bind-di';
+import { IfIocContainer, Container, load, Maybe, notEmpty, isDefined } from 'bind-di';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
 import rejectLater from './apputils/rejectlater';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
-import { APPLICATION_COMPONENT, CONFIGURATION_COMPONENT } from '../consts/appcomponents';
 import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
 import errorHandler from './apputils/errorhandler';
 import getErrorHandlers from './apputils/geterrorhandlers';
@@ -143,7 +133,7 @@ export class Application implements IExitHandler {
        * This was just an experiment and for the time being
        * was decided not to use this feature.
        */
-      //const previousContainer = this.bindContainer;
+      // const previousContainer = this.bindContainer;
       this.bindContainer = container;
       return this.bindContainer;
     } catch (e) {
@@ -151,7 +141,7 @@ export class Application implements IExitHandler {
     }
   }
 
-  /*registerApplicationComponent(container: IfIocContainer) {
+  /* registerApplicationComponent(container: IfIocContainer) {
    container.addComponent({
    identity: Identity(APPLICATION_COMPONENT),
    propDependencies: [],
@@ -160,8 +150,7 @@ export class Application implements IExitHandler {
    scope: ComponentScope.SINGLETON,
    get: () => this,
    });
-   }*/
-
+   } */
 
   /* registerConfigurationComponent(container: IfIocContainer) {
    container.addComponent({
@@ -172,7 +161,7 @@ export class Application implements IExitHandler {
    scope: ComponentScope.SINGLETON,
    get: () => this,
    });
-   }*/
+   } */
 
   onExit(exitCode: number): Promise<number> {
     debug('%s %s onExit called with code=%d', TAG, this.toString(), exitCode);

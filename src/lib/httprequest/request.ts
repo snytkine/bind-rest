@@ -3,16 +3,14 @@ import https from 'https';
 import { clearTimeout } from 'timers';
 import util from 'util';
 import uuid from 'uuid/v4';
-import HttpStatusCode from 'http-status-enum';
-import stream from 'stream';
 import querystring from 'querystring';
 import isStream from 'is-stream';
-import { ILogger } from '../interfaces/logger';
-import { HttpResponse, HttpErrorResponse, stringifyBody } from '../httpresponse';
 import { getHTTPSOverHTTPTunnel, getHTTPOverHTTPTunnel } from './tunnel';
-import {IAppResponse, IHttpRequestOptions, INormalizedRequestOptions} from '../interfaces';
+import { IHttpRequestOptions, INormalizedRequestOptions } from '../interfaces';
 import ApplicationError from '../errors/applicationerror';
-import IncomingMessageResponse from "../httpresponse/IncomingMessageResponse";
+import IncomingMessageResponse from '../httpresponse/IncomingMessageResponse';
+import { IHttpIncomingMessageResponse } from '../interfaces/httpclientreponse';
+import ResponseTimeoutError from '../errors/http/reponsetimeout';
 
 const debug = require('debug')('bind:rest:request');
 
@@ -22,7 +20,6 @@ const REQUEST_HOST = 'requestHost';
 const REQUEST_URI = 'requestURI';
 const TIMEOUT_VALUE = 'timeoutValue';
 const REQUEST_ERROR = 'RequestError';
-const RESPONSE_ERROR = 'responseError';
 const REQUEST_METHOD = 'requestMethod';
 const ELAPSED_TIME = 'elapsedTime';
 const RESPONSE_HEADERS = 'responseHeaders';
@@ -30,53 +27,12 @@ const RESPONSE_HEADERS = 'responseHeaders';
 const DEFAULT_TIMEOUT = 5000;
 const TAG = 'makeRequest';
 
-/**
- * Wrapper helper function to create custom
- * version of Logger that has instance of headers
- * available to logging calls, so there is no need
- * to pass headers as last param to every logging calls
- *
- * @param {ILogger} logger
- * @param {Object} headers
- * @returns {ILogger}
- */
-export function requestLogger(logger: ILogger, headers: http.IncomingHttpHeaders): ILogger {
-  const reqLogger = {
-    info(...messages: any[]): ILogger {
-      logger.info(...messages, headers);
-      return this;
-    },
-
-    error(...messages: any[]): ILogger {
-      logger.error(...messages, headers);
-      return this;
-    },
-
-    warn(...messages: any[]): ILogger {
-      logger.warn(...messages, headers);
-      return this;
-    },
-
-    debug(...messages: any[]): ILogger {
-      logger.debug(...messages, headers);
-      return this;
-    },
-
-    fatal(...messages: any[]): ILogger {
-      logger.fatal(...messages, headers);
-      return this;
-    },
-  };
-
-  return reqLogger;
-}
-
 /* eslint-disable no-param-reassign */
-function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOptions {
+export function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOptions {
   debug(TAG, 'Entered setServiceOptions with options: ', options);
 
-  if(!options.requestId) {
-    options.requestId = uuid();
+  if (!options.requestID) {
+    options.requestID = uuid();
   }
 
   if (!options.requestOptions.method) {
@@ -177,24 +133,28 @@ function setServiceOptions(options: IHttpRequestOptions): INormalizedRequestOpti
  * If https create new agent.
  * This is necessary to pass any https keys like ca, key, cert, pfx etc as described here
  * https://nodejs.org/api/https.html#https_https_request_options_callback
+ *
+ * @todo what if we return Promise<Try<IHttpClientResponse>>? This would mean
+ *   that Promise may resolve with Response object OR with Error
+ * The upside is that Error may be a typed Error
+ * Downside is that because its a promise it may still return rejected Promise
  */
-export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse> {
-
+export function makeRequest(
+  requestOptions: IHttpRequestOptions,
+): Promise<IHttpIncomingMessageResponse> {
   let ClientRequestorObject;
   let timeout = DEFAULT_TIMEOUT;
-
+  let options: IHttpRequestOptions;
   try {
-    options = setServiceOptions(options);
+    options = setServiceOptions(requestOptions);
   } catch (e) {
-    if (options.logger) {
-      options.logger.error(TAG, 'Failed to setServiceOptions', e);
+    if (requestOptions.logger) {
+      requestOptions.logger.error(TAG, 'Failed to setServiceOptions', e);
     }
     return Promise.reject(e);
   }
 
   debug('^^^^^ options after setServiceOptions: ', options);
-
-  const requestID = options.requestId;
 
   if (options.requestOptions.protocol === 'https:') {
     ClientRequestorObject = https;
@@ -223,7 +183,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
   const myport = options.requestOptions.port ? `:${options.requestOptions.port}` : '';
   const myuri = `${options.requestOptions.protocol}//${options.requestOptions.hostname}${myport}${options.requestOptions.path}`;
 
-  return new Promise<IAppResponse>((resolve, reject) => {
+  return new Promise<IHttpIncomingMessageResponse>((resolve, reject) => {
     let request: http.ClientRequest;
     let resolved;
     let timeoutOccured = false;
@@ -267,7 +227,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         debug(TAG, ' Failed to abort request: %o', e);
         if (options.logger) {
           options.logger.error(
-            `${TAG}=Failed to abort request. ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}=`,
+            `${TAG}=Failed to abort request. ${REQUEST_ID}=${options.requestID} ${REQUEST_ERROR}=`,
             e,
           );
         }
@@ -282,10 +242,10 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
     try {
       if (options.logger) {
         options.logger.info(
-          `${TAG}=Start ${TIMEOUT_VALUE}=${timeout} milliseconds. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+          `${TAG}=Start ${TIMEOUT_VALUE}=${timeout} milliseconds. ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
         );
         options.logger.debug(
-          `${TAG}=Start ${REQUEST_ID}=${requestID} RequestHeaders:`,
+          `${TAG}=Start ${REQUEST_ID}=${options.requestID} RequestHeaders:`,
           options.requestOptions.headers,
         );
       }
@@ -304,14 +264,14 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         } catch (ex) {
           if (options.logger) {
             options.logger.error(
-              `${TAG}=clearTimeoutFailed on error for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+              `${TAG}=clearTimeoutFailed on error for ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
             );
           }
         }
         if (!timeoutOccured) {
           if (options.logger) {
             options.logger.error(
-              `${TAG}=ErrorEvent ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname}" ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
+              `${TAG}=ErrorEvent ${REQUEST_ID}=${options.requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname}" ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
               e,
             );
           }
@@ -323,7 +283,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
           debug(TAG, ' HTTP REQUEST ERROR ', e.message);
           if (options.logger) {
             options.logger.error(
-              `${TAG}=ErrorEvent with timeout. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
+              `${TAG}=ErrorEvent with timeout. ${REQUEST_ID}=${options.requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=`,
               e,
             );
           }
@@ -338,7 +298,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
             if (options.logger) {
               options.logger.debug(
                 TAG,
-                `error but already resolved. ${REQUEST_ID}=${requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+                `error but already resolved. ${REQUEST_ID}=${options.requestID}  ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
               );
             }
           }
@@ -360,7 +320,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         } catch (e) {
           if (options.logger) {
             options.logger.error(
-              `${TAG}=clearTimeoutFailed on abort event for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+              `${TAG}=clearTimeoutFailed on abort event for ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}="${options.requestOptions.method}" error=${e.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
             );
           }
         }
@@ -370,7 +330,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
           options.logger.debug(
             TAG,
             'request aborted for requestID=',
-            requestID,
+            options.requestID,
             ' REQUEST_HOST=',
             options.requestOptions.hostname,
             ' requestURI="',
@@ -384,7 +344,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         }
         /**
          *
-         * If timeoutOccured then
+         * If timeoutOccurred then
          * resolve with timeout http status
          * log the value of request.aborted (should be value in milliseconds)
          * otherwise reject
@@ -392,17 +352,16 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         if (timeoutOccured) {
           if (options.logger) {
             options.logger.debug(
-              `${TAG}=debug resolving timed-out request. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+              `${TAG}=debug resolving timed-out request. ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
             );
           }
           if (!resolved) {
             resolved = true;
-            resolve(
-              new HttpErrorResponse(
-                HttpStatusCode.GATEWAY_TIMEOUT,
+
+            reject(
+              new ResponseTimeoutError(
                 `The request has taken longer than the allotted ${options.timeout} milliseconds`,
-                {},
-                requestID,
+                options,
               ),
             );
           }
@@ -421,21 +380,21 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         } catch (ex) {
           if (options.logger) {
             options.logger.error(
-              `${TAG}=clearTimeoutFailed for ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${REQUEST_ERROR}=${ex.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
+              `${TAG}=clearTimeoutFailed for ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${REQUEST_ERROR}=${ex.message} ${TIMEOUT_VALUE}=${timeout} milliseconds`,
             );
           }
         }
 
         if (options.logger) {
           options.logger.debug(
-            `${TAG}=onresponse ${REQUEST_ID}=${requestID} ${STATUS_CODE}=${response.statusCode} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+            `${TAG}=onresponse ${REQUEST_ID}=${options.requestID} ${STATUS_CODE}=${response.statusCode} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
           );
         }
         debug('%s onResponse called with statusCode=%s', TAG, response.statusCode);
 
         if (!resolved) {
           resolved = true;
-          resolve(new IncomingMessageResponse(response, options.requestId));
+          resolve(new IncomingMessageResponse(response, options.requestID));
         }
       });
 
@@ -443,7 +402,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         debug('ON-END CALLED with response="%s"', !!response);
         if (options.logger) {
           options.logger.info(
-            `${TAG}=end ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+            `${TAG}=end ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
           );
         }
       });
@@ -452,7 +411,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         debug('ON-UPGRADE CALLED with resonse="%s"', !!response);
         if (options.logger) {
           options.logger.info(
-            `${TAG}=upgrade ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
+            `${TAG}=upgrade ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method}`,
           );
         }
       });
@@ -506,7 +465,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
     } catch (ex) {
       if (options.logger) {
         options.logger.error(
-          `${TAG}=Failed to create request object ${REQUEST_ID}=${requestID} ${REQUEST_ERROR}="${ex.message}"`,
+          `${TAG}=Failed to create request object ${REQUEST_ID}=${options.requestID} ${REQUEST_ERROR}="${ex.message}"`,
         );
       }
 
@@ -525,7 +484,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         '%s Request completed for %s=%s %s=%s %s=%s',
         TAG,
         REQUEST_ID,
-        requestID,
+        options.requestID,
         ELAPSED_TIME,
         elapsedTime,
         STATUS_CODE,
@@ -534,7 +493,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
 
       if (options.logger) {
         options.logger.info(
-          `${TAG}=OK Request complete. ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${RESPONSE_HEADERS}=`,
+          `${TAG}=OK Request complete. ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} ${STATUS_CODE}=${resp.statusCode} ${RESPONSE_HEADERS}=`,
           resp.headers,
           `${ELAPSED_TIME}=${elapsedTime} milliseconds`,
         );
@@ -550,7 +509,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
         '%s Request FAILED for %s=%s %s=%s %s=%o',
         TAG,
         REQUEST_ID,
-        requestID,
+        options.requestID,
         ELAPSED_TIME,
         elapsedTime,
         REQUEST_ERROR,
@@ -558,7 +517,7 @@ export function makeRequest(options: IHttpRequestOptions): Promise<IAppResponse>
       );
       if (options.logger) {
         options.logger.error(
-          `${TAG}=Exception  ${REQUEST_ID}=${requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} Error="${e.message}" ${ELAPSED_TIME}=${elapsedTime} milliseconds. Exception=`,
+          `${TAG}=Exception  ${REQUEST_ID}=${options.requestID} ${REQUEST_HOST}=${options.requestOptions.hostname} ${REQUEST_URI}="${myuri}" ${REQUEST_METHOD}=${options.requestOptions.method} Error="${e.message}" ${ELAPSED_TIME}=${elapsedTime} milliseconds. Exception=`,
           e,
         );
       }

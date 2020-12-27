@@ -2,7 +2,7 @@ import * as http from 'http';
 import inflate from 'inflation';
 import raw from 'raw-body';
 import { Validator } from 'jsonschema';
-import SchemaValidationError from '../errors/schemavalidationerror';
+import SchemaValidationError from '../errors/validation/schemavalidationerror';
 import Context from '../../components/context';
 
 const debug = require('debug')('bind:rest:runtime:parseBody');
@@ -10,6 +10,12 @@ const debug = require('debug')('bind:rest:runtime:parseBody');
 const TAG = 'PARSE-BODY';
 
 /**
+ * @todo instead of this use uncompress util becaues we already
+ * using it in other place
+ *
+ * @todo also make sure to use charset from req header and pass it as option
+ * for converting Buffer to string
+ *
  * Convert incoming request into a string
  * @param req node's request http.IncomingMessage
  * @return Promise<string>
@@ -24,13 +30,11 @@ export function parseBody(req: http.IncomingMessage): Promise<string> {
   }
 
   const ret: Promise<string> = raw(inflate(req))
-    .then(
-      (rawBody): String => {
-        const res = String(rawBody);
-        debug('%s returning rawBody as String %s', TAG, res);
-        return res;
-      },
-    )
+    .then((rawBody): string => {
+      const res = String(rawBody);
+      debug('%s returning rawBody as String %s', TAG, res);
+      return res.valueOf();
+    })
     .catch((e) => {
       debug('%s ERROR parsing body %o', TAG, e);
       return Promise.reject(e);
@@ -47,6 +51,8 @@ export function parseBody(req: http.IncomingMessage): Promise<string> {
  *
  * @param req node's http.IncomingMessage
  * @param schema
+ *
+ * @todo use uncompressResponse then stringifyBody then JSON.parse
  *
  * @return Promise<Object>
  */

@@ -1,10 +1,8 @@
 import charSet from 'charset';
+// import decompressResponse from 'decompress-response';
 import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
-import HttpResponse from './httpresponse';
 import HttpStringResponse from './stringresponse';
-import decompressResponse from 'decompress-response';
-import * as http from "http";
-import {IAppResponse} from "../interfaces";
+import { IAppResponse } from '../interfaces';
 
 const debug = require('debug')('bind:rest:httprequest');
 

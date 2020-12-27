@@ -2,9 +2,9 @@ import { Inject, isDefined, Singleton } from 'bind-di';
 import HTTP_STATUS_CODES from 'http-status-enum';
 import Context from './context';
 import { Afterware } from '../lib/decorators';
-import HttpError from '../lib/errors/http';
 import { PRIORITY_RESPONSE_WRITER, RESPONSE_COOKIES_WRITER } from '../lib/consts';
 import { IResponseCookieWriter } from '../lib/interfaces/responsecookiewriter';
+import HttpResponseError from '../lib/errors/http/responseerror';
 
 const debug = require('debug')('bind:rest:runtime:responsewriter');
 
@@ -66,11 +66,14 @@ export default class ResponseWriter {
            * started writing the only solution would be to close the response stream
            * and log error
            */
-          ctx.res.on('error', function onResponseStreamError(e) {
+          ctx.res.on('error', function onResponseStreamError(err) {
             reject(
-              new HttpError(
+              new HttpResponseError(
+                `Error while sending response ${err.message}`,
                 HTTP_STATUS_CODES.SERVICE_UNAVAILABLE,
-                `Error while sending response ${e.message}`,
+                undefined,
+                undefined,
+                err,
               ),
             ); // '%s res on error  %o', TAG, e);
           });

@@ -1,5 +1,4 @@
 import SystemError from '../../errors/systemerror';
-import { ErrorType } from '../../enums/errors';
 /**
  * Helper function that returns promise that rejects after number of milliseconds
  *
@@ -9,13 +8,7 @@ import { ErrorType } from '../../enums/errors';
 export default function rejectLater(milliseconds: number): Promise<never> {
   return new Promise((_, reject) => {
     setTimeout(
-      () =>
-        reject(
-          new SystemError(
-            `Response timed out after ${milliseconds} milliseconds`,
-            ErrorType.AppTimeout,
-          ),
-        ),
+      () => reject(new SystemError(`method timed out after ${milliseconds} milliseconds`)),
       milliseconds,
     );
   });

@@ -1,9 +1,9 @@
 export { default as HttpError } from './http';
-export { default as NotFoundError } from './notfound';
-export { default as BadRequest } from './badrequest';
-export { default as SchemaValidationError } from './schemavalidationerror';
+export { default as NotFoundError } from './http/notfound';
+export { default as BadRequest } from './http/badrequest';
+export { default as SchemaValidationError } from './validation/schemavalidationerror';
 export { default as SystemError } from './systemerror';
-export { default as TypeValidationError } from './typevalidationerror';
-export { default as ValidationError } from './validationerror';
+export { default as TypeValidationError } from './validation/typevalidationerror';
+export { default as ValidationError } from './validation/inputvalidationerror';
 export { default as BindRestError } from './bindrest';
 export { default as ApplicationError } from './applicationerror';

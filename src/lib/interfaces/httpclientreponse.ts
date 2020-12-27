@@ -1,5 +1,10 @@
-import {IAppResponse} from "./appresponse";
+import http from 'http';
+import { IAppResponse } from './appresponse';
 
 export interface IHttpClientResponse extends IAppResponse {
-  requetId?: string;
+  requestID: string;
+}
+
+export interface IHttpIncomingMessageResponse extends IHttpClientResponse {
+  readonly getReadStream: () => http.IncomingMessage;
 }

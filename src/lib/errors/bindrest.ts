@@ -1,12 +1,11 @@
-import { ErrorCategory, ErrorType } from '../enums/errors';
+import { ErrorType } from '../enums/errors';
+import ERROR_TYPE from '../consts/bindresterror';
 
 export default class BindRestError extends Error {
-  constructor(
-    public message: string,
-    public readonly type: ErrorType,
-    public readonly category: ErrorCategory,
-    public readonly parentError?: Error,
-  ) {
+  public readonly [ERROR_TYPE];
+
+  constructor(public message: string, errorType: ErrorType, public readonly innerError?: Error) {
     super(message);
+    this[ERROR_TYPE] = errorType;
   }
 }

@@ -31,7 +31,7 @@ export interface IRequestOptions {
 }
 
 export interface IHttpRequestOptions {
-  requestId?: string
+  requestID?: string;
   timeout?: string | number;
   requestOptions: IRequestOptions;
   payload?: string | NodeJS.ReadableStream;
@@ -47,7 +47,7 @@ export interface IHttpRequestOptions {
 }
 
 export interface INormalizedRequestOptions {
-  requestId: string
+  requestId: string;
   timeout?: string | number;
   requestOptions: http.RequestOptions;
   payload?: string | NodeJS.ReadableStream;
@@ -61,4 +61,3 @@ export interface INormalizedRequestOptions {
   basicAuth?: UserPassword;
   logger?: ILogger;
 }
-

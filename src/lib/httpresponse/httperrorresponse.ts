@@ -1,6 +1,7 @@
 import * as stream from 'stream';
 import { StreamResponse } from '../core';
 import { IHttpClientResponse } from '../interfaces/httpclientreponse';
+
 import ReadableStream = NodeJS.ReadableStream;
 
 const createErrorStream = (error: string): ReadableStream => {

@@ -11,3 +11,16 @@ export * from './methoddecorator';
 export * from './middlewarefactory';
 export * from './responseheaders';
 export * from './classdecorator';
+/**
+ * Re-export some interfaces and types from
+ * bind-di
+ */
+export {
+  IfIocContainer,
+  IfIocComponent,
+  ComponentScope,
+  ComponentIdentity,
+  Identity,
+  Target,
+  Maybe,
+} from 'bind-di';

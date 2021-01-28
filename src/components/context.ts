@@ -199,6 +199,9 @@ export default class Context implements IScopedComponentStorage {
    * The BodyParam decorator may be used multiple times in the same
    * controller and each one will be calling the parseJsonBody.
    *
+   * @todo this should be a string and should be optional because
+   * initially it is null
+   *
    */
   parsedBody: any;
 }

@@ -8,14 +8,14 @@ const DEFAULT_CONTENT_TYPE = 'text/plain';
 const DEFAULT_STATUS_CODE = HttpResponseCode.OK;
 
 export default class AppResponse implements IAppResponse {
-  protected readonly responseBody: string;
+  protected responseBody: string;
 
   public readonly statusCode;
 
   public readonly headers;
 
   constructor(
-    readonly body: string = '',
+    public body: string = '',
     public status?: number,
     readonly hdrs?: IResponseHeaders,
     public cookies?: Array<IResponseCookie>,

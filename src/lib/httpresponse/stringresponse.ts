@@ -8,9 +8,8 @@ import { IAppResponse } from '../interfaces';
 export default class HttpStringResponse extends AppResponse implements IAppResponse {
   constructor(b: string = '', public statusCode: number, readonly headers: IncomingHttpHeaders) {
     super(b, statusCode, headers);
+    this.body = this.responseBody;
   }
 
-  get body(): string {
-    return this.responseBody;
-  }
+
 }

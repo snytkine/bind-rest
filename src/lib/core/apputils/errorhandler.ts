@@ -7,6 +7,7 @@ import { AppErrorHandlerFunc } from '../../interfaces';
 const debug = require('debug')('bind:rest:runtime:errorhandler');
 
 const TAG = 'DEFAULT-ERROR-HANDLER';
+/*
 
 const errorHandler: AppErrorHandlerFunc = (ctx: Context) => {
   let responseTime: number = 0;
@@ -57,3 +58,4 @@ const errorHandler: AppErrorHandlerFunc = (ctx: Context) => {
 };
 
 export default errorHandler;
+*/

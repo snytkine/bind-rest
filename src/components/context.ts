@@ -1,8 +1,8 @@
 import * as url from 'url';
-import { UrlWithStringQuery } from 'url';
+import {UrlWithStringQuery} from 'url';
 import * as http from 'http';
 import * as QueryString from 'querystring';
-import { ParsedUrlQuery } from 'querystring';
+import {ParsedUrlQuery} from 'querystring';
 import * as cookie from 'cookie';
 import {
   Component,
@@ -15,9 +15,11 @@ import {
   ComponentIdentity,
   Maybe,
 } from 'bind-di';
-import { IUriParams } from 'holiday-router';
-import { IAppResponse } from '../lib/interfaces/appresponse';
-import { IStoredComponent } from '../lib/interfaces/storedcomponent';
+import {IUriParams} from 'holiday-router';
+import {IAppResponse} from '../lib/interfaces/appresponse';
+import {IStoredComponent} from '../lib/interfaces/storedcomponent';
+import HttpStatusCode from "http-status-enum";
+import * as Http from "http";
 
 const debug = require('debug')('bind:rest:context');
 
@@ -30,8 +32,6 @@ export default class Context implements IScopedComponentStorage {
 
   public req: http.IncomingMessage;
 
-  public res: http.ServerResponse;
-
   private reqUrl: string;
 
   private uriInfo: UrlWithStringQuery;
@@ -42,6 +42,18 @@ export default class Context implements IScopedComponentStorage {
 
   private myRouteParams: IUriParams;
 
+  private responseHeaders: NodeJS.Dict<string> = {}
+
+  private responseStatusCode: HttpStatusCode;
+
+  public setHeader(key: string, value: string) {
+    this.responseHeaders[key] = value;
+  }
+
+  public setStatusCode(statusCode: HttpStatusCode) {
+    this.responseStatusCode = statusCode;
+  }
+
   /**
    * Parsed url query
    */
@@ -49,7 +61,25 @@ export default class Context implements IScopedComponentStorage {
 
   private requestStartTime: number = 0;
 
-  appResponse: IAppResponse;
+  private response: IAppResponse;
+
+  set appResponse(response: IAppResponse) {
+    this.response = response;
+  }
+
+  get appResponse(): Maybe<IAppResponse> {
+    if (!this.response) {
+      return undefined;
+    }
+
+    if (this.responseStatusCode) {
+      this.response.statusCode = this.responseStatusCode;
+    }
+
+    this.response.headers = {...this.response.headers, ...this.responseHeaders}
+
+    return this.response;
+  }
 
   private scopedComponents: Array<IStoredComponent> = [];
 
@@ -69,9 +99,8 @@ export default class Context implements IScopedComponentStorage {
 
   readonly scope = ComponentScope.REQUEST;
 
-  init(req: http.IncomingMessage, res: http.ServerResponse): Context {
+  init(req: http.IncomingMessage): Context {
     this.req = req;
-    this.res = res;
     this.reqUrl = req.url;
     this.requestStartTime = Date.now();
 
@@ -112,7 +141,7 @@ export default class Context implements IScopedComponentStorage {
        * component exists in scoped storage and only adds new object
        * into scoped storage if component is not found in storage
        */
-      this.scopedComponents.push({ identity, component });
+      this.scopedComponents.push({identity, component});
     }
   }
 
@@ -198,9 +227,6 @@ export default class Context implements IScopedComponentStorage {
    * made safely.
    * The BodyParam decorator may be used multiple times in the same
    * controller and each one will be calling the parseJsonBody.
-   *
-   * @todo this should be a string and should be optional because
-   * initially it is null
    *
    */
   parsedBody: any;

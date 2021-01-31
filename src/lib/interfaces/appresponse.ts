@@ -6,6 +6,8 @@ import ReadableStream = NodeJS.ReadableStream;
 
 /**
  * Controllers return a Promise of this interface
+ * This means that the response object of this type
+ * must have all properties of IBase response and MAY have body property
  */
 export interface IAppResponse {
   statusCode: HttpStatusCode;
@@ -14,6 +16,12 @@ export interface IAppResponse {
   readonly getReadStream: () => ReadableStream;
 }
 
-export interface IJsonResponse<T extends {}> extends IAppResponse {
+
+export interface IStringResponse extends IAppResponse {
+  body: string
+}
+
+
+export interface IJsonResponse<T extends {}> extends IStringResponse {
   json: T;
 }

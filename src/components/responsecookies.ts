@@ -9,6 +9,8 @@ import { IResponseCookieWriter } from '../lib/interfaces/responsecookiewriter';
  * provide their own implementation of library component
  * with the same component ID
  */
+/*
+
 @Component(RESPONSE_COOKIES_WRITER)
 @Singleton
 export default class ResponseCookies implements IResponseCookieWriter {
@@ -33,3 +35,4 @@ export default class ResponseCookies implements IResponseCookieWriter {
     return undefined;
   }
 }
+*/

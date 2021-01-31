@@ -168,11 +168,6 @@ export const Request = makeParamDecorator((c: IfIocContainer) => (context: Reque
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Response = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
-  context.res,
-);
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Container = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) => c);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

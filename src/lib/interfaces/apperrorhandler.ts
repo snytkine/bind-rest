@@ -11,6 +11,9 @@ import Context from '../../components/context';
  * handle error function should send out response to ctx.res but it should check
  * to make sure that response has not yet been sent.
  */
+/**
+ * @todo remove this, not used in new architecture
+ */
 export type AppErrorHandlerFunc = (ctx: Context) => (e: Maybe<Error>) => Maybe<Error>;
 
 export interface AppErrorHandler {

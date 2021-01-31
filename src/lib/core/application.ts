@@ -8,11 +8,13 @@ import rejectLater from './apputils/rejectlater';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
 import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
-import errorHandler from './apputils/errorhandler';
+import defaultErrorFormatter from './apputils/defaulterrorformatter';
 import getErrorHandlers from './apputils/geterrorhandlers';
 import registerProcessEventListeners from './apputils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
-import { IExitHandler } from '../interfaces';
+import {IAppResponse, IExitHandler} from '../interfaces';
+import {FormatErrorFunc, IErrorFormatter} from "../interfaces/errorformater";
+import getResponseFromContext from './apputils/getresponsefromcontext'
 
 const debug = require('debug')('bind:rest:runtime:application');
 
@@ -38,7 +40,7 @@ export const validateOptions = (options: ApplicationOptions): void => {
 export class Application implements IExitHandler {
   private middlewares: Array<MiddlewareFunc> = [];
 
-  private errHandlers: Array<AppErrorHandlerFunc> = [errorHandler];
+  //private errHandlers: Array<IErrorFormatter> = [defaultErrorFormatter];
 
   private bindContainer: IfIocContainer;
 
@@ -123,8 +125,8 @@ export class Application implements IExitHandler {
       this.middlewares = getMiddlewares(container);
       debug('%s got %d middleware functions', TAG, this.middlewares.length);
 
-      this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
-      debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
+      //this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
+      //debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
       /**
        * @todo using previous container was a way to redefine
@@ -173,6 +175,41 @@ export class Application implements IExitHandler {
   }
 
   /**
+   * @todo in the future look in container for component with special id like ERROR_FORMATTER
+   * passing context to container.getComponent because this component may be Context-Scoped.
+   *
+   * and return it if found otherwise return defaultErrorFormatter
+   * @param context
+   * @private
+   */
+  private getErrorFormatter(context: Context): FormatErrorFunc {
+    return defaultErrorFormatter
+  }
+
+
+  public getAppResponse(context: Context): Promise<IAppResponse> {
+    const handlerPromise = this.middlewares.reduce((prev, next) => {
+      return prev.then(next);
+    }, Promise.resolve(context));
+
+    const runners: Array<Promise<Context>> = [handlerPromise];
+
+    /**
+     * @Todo create way to deal with timeout.
+     * Probably best thing would be to reject with Error of type BindRest Error or with HttpResponseError with status code TIMEOUT
+     * Can also just return Promise of TimeoutResponse.
+     *
+     *
+     */
+
+    /*if (this.configOptions?.timeout > 0) {
+      runners.push(rejectLater(Math.floor(Math.abs(this.configOptions.timeout))));
+    }*/
+
+    return Promise.race(runners).catch(error => this.getErrorFormatter(context)).then(getResponseFromContext)
+  }
+
+  /**
    * Main application request/response function
    * This method will be used to handle node.js request and write response
    *
@@ -180,7 +217,8 @@ export class Application implements IExitHandler {
    * @param res Node.js response http.ServerResponse
    */
   public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-    const ctx = new Context().init(req, res);
+
+    const ctx = new Context().init(req);
 
     const handlerPromise = this.middlewares.reduce((prev, next) => {
       return prev.then(next);

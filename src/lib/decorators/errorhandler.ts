@@ -13,6 +13,11 @@ const debug = require('debug')('bind:rest:decorators');
 
 const TAG = '@ErrorHandler';
 
+/**
+ * @todo delete this, ErrorHandler no longer used. Now there will be ErrorFormatter.
+ * @param target
+ * @constructor
+ */
 export default function ErrorHandler(target: Constructor<AppErrorHandler>) {
   debug('Defining %s for constructor %s', TAG, target.name);
   Component(target);

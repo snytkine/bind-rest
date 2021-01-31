@@ -24,8 +24,8 @@ import {
   MiddlewareFunc,
   IMiddlewareFactory,
   AsyncContextParamValidator,
-  ControllerFunc,
 } from '../types';
+import { ControllerFunc } from '../types/controllers';
 import Context from '../../components/context';
 import ApplicationError from '../errors/applicationerror';
 import { toMWFuncFactory } from '../decorators/middlewares';

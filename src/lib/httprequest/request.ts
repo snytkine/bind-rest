@@ -50,7 +50,6 @@ export function setServiceOptions(options: IHttpRequestOptions): INormalizedRequ
       'utf8',
     ).toString('base64')}`;
     debug('%s Added AuthorizationHeader=%s', TAG, options.requestOptions.headers.Authorization);
-    options.requestOptions.headers.cookie = 'jive.user.loggedIn=true';
   }
 
   if (

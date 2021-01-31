@@ -1,8 +1,8 @@
 import * as url from 'url';
-import {UrlWithStringQuery} from 'url';
+import { UrlWithStringQuery } from 'url';
 import * as http from 'http';
 import * as QueryString from 'querystring';
-import {ParsedUrlQuery} from 'querystring';
+import { ParsedUrlQuery } from 'querystring';
 import * as cookie from 'cookie';
 import {
   Component,
@@ -15,11 +15,10 @@ import {
   ComponentIdentity,
   Maybe,
 } from 'bind-di';
-import {IUriParams} from 'holiday-router';
-import {IAppResponse} from '../lib/interfaces/appresponse';
-import {IStoredComponent} from '../lib/interfaces/storedcomponent';
-import HttpStatusCode from "http-status-enum";
-import * as Http from "http";
+import { IUriParams } from 'holiday-router';
+import HttpStatusCode from 'http-status-enum';
+import { IAppResponse } from '../lib/interfaces/appresponse';
+import { IStoredComponent } from '../lib/interfaces/storedcomponent';
 
 const debug = require('debug')('bind:rest:context');
 
@@ -42,7 +41,7 @@ export default class Context implements IScopedComponentStorage {
 
   private myRouteParams: IUriParams;
 
-  private responseHeaders: NodeJS.Dict<string> = {}
+  private responseHeaders: NodeJS.Dict<string> = {};
 
   private responseStatusCode: HttpStatusCode;
 
@@ -76,7 +75,7 @@ export default class Context implements IScopedComponentStorage {
       this.response.statusCode = this.responseStatusCode;
     }
 
-    this.response.headers = {...this.response.headers, ...this.responseHeaders}
+    this.response.headers = { ...this.response.headers, ...this.responseHeaders };
 
     return this.response;
   }
@@ -141,7 +140,7 @@ export default class Context implements IScopedComponentStorage {
        * component exists in scoped storage and only adds new object
        * into scoped storage if component is not found in storage
        */
-      this.scopedComponents.push({identity, component});
+      this.scopedComponents.push({ identity, component });
     }
   }
 

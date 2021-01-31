@@ -1,7 +1,8 @@
 import { IControllerContainer } from 'holiday-router';
 import Context from '../../components/context';
-import { IControllerMatcher, IController } from '../types';
+import { IControllerMatcher } from '../types/controllermatcher';
 import { IControllerDetails } from '../interfaces';
+import { IController } from '../types/controllers';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const defaultMatcher = (ctx: Context) => true;

@@ -1,8 +1,8 @@
 import charSet from 'charset';
 // import decompressResponse from 'decompress-response';
 import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
-import {IAppResponse, IStringResponse} from '../interfaces';
-import {AppResponse} from "../core";
+import { IAppResponse, IStringResponse } from '../interfaces';
+import { AppResponse } from '../core';
 
 const debug = require('debug')('bind:rest:httprequest');
 
@@ -21,9 +21,10 @@ const debug = require('debug')('bind:rest:httprequest');
  * @param resp: HttpResponse
  * @returns {Promise<HttpStringResponse>}
  */
-export default function stringifyBody(resp: IAppResponse & { body?: string}): Promise<IStringResponse> {
-
-  if(resp.body){
+export default function stringifyBody(
+  resp: IAppResponse & { body?: string },
+): Promise<IStringResponse> {
+  if (resp.body) {
     return Promise.resolve(resp as IStringResponse);
   }
 

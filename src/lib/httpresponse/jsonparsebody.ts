@@ -1,6 +1,6 @@
 import { JsonResponse } from '../core/appresponse';
 import ApplicationError from '../errors/applicationerror';
-import {IStringResponse} from "../interfaces";
+import { IStringResponse } from '../interfaces';
 
 export default function jsonParseBody<T>(resp: IStringResponse): Promise<JsonResponse<T>> {
   return new Promise((resolve, reject) => {

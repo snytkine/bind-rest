@@ -1,5 +1,6 @@
 import HTTPMethod from 'http-method-enum';
-import { IControllerMatcher, IController } from '../types';
+import { IController } from '../types/controllers';
+import { IControllerMatcher } from '../types/controllermatcher';
 
 export interface IControllerDetails {
   name: string;

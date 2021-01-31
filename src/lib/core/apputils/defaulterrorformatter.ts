@@ -1,5 +1,5 @@
-import {FormatErrorFunc} from "../../interfaces/errorformater";
-import {AppResponse, ErrorResponse} from "../appresponse";
+import { FormatErrorFunc } from '../../interfaces/errorformater';
+import { ErrorResponse } from '../appresponse';
 
 /**
  * @todo detect errors of type BindRestError, return JsonResponse, add category and code to error,
@@ -7,9 +7,8 @@ import {AppResponse, ErrorResponse} from "../appresponse";
  * @param error
  */
 const formatError: FormatErrorFunc = (error: any) => {
-
   if (!error) {
-    return new ErrorResponse(500)
+    return new ErrorResponse(500);
   }
 
   if (error && typeof error.statusCode === 'number' && typeof error.body === 'string') {
@@ -17,14 +16,14 @@ const formatError: FormatErrorFunc = (error: any) => {
   }
 
   if (typeof error === 'string') {
-    return new ErrorResponse(400, error)
+    return new ErrorResponse(400, error);
   }
 
   if (error instanceof Error) {
-    return new ErrorResponse(400, error.message)
+    return new ErrorResponse(400, error.message);
   }
 
-  return new ErrorResponse(500)
-}
+  return new ErrorResponse(500);
+};
 
 export default formatError;

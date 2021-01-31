@@ -1,20 +1,18 @@
 import http from 'http';
 import path from 'path';
-import { IfIocContainer, Container, load, Maybe, notEmpty, isDefined } from 'bind-di';
+import { IfIocContainer, Container, load, isDefined } from 'bind-di';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
-import rejectLater from './apputils/rejectlater';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
-import { AppErrorHandlerFunc } from '../interfaces/apperrorhandler';
 import defaultErrorFormatter from './apputils/defaulterrorformatter';
-import getErrorHandlers from './apputils/geterrorhandlers';
 import registerProcessEventListeners from './apputils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
-import {IAppResponse, IExitHandler} from '../interfaces';
-import {FormatErrorFunc, IErrorFormatter} from "../interfaces/errorformater";
-import getResponseFromContext from './apputils/getresponsefromcontext'
+import { IAppResponse, IExitHandler, WriteServerResponseFunc } from '../interfaces';
+import { FormatErrorFunc } from '../interfaces/errorformater';
+import getResponseFromContext from './apputils/getresponsefromcontext';
+import defaultResponseWriter from './apputils/defaultresponsewriter';
 
 const debug = require('debug')('bind:rest:runtime:application');
 
@@ -40,7 +38,7 @@ export const validateOptions = (options: ApplicationOptions): void => {
 export class Application implements IExitHandler {
   private middlewares: Array<MiddlewareFunc> = [];
 
-  //private errHandlers: Array<IErrorFormatter> = [defaultErrorFormatter];
+  // private errHandlers: Array<IErrorFormatter> = [defaultErrorFormatter];
 
   private bindContainer: IfIocContainer;
 
@@ -88,7 +86,7 @@ export class Application implements IExitHandler {
    *
    * @param container
    */
-  public async setContainer(container: IfIocContainer): Promise<Maybe<IfIocContainer>> {
+  public async setContainer(container: IfIocContainer): Promise<IfIocContainer> {
     load(
       container,
       [...this.configOptions.componentDirs, APPLICATION_COMPONENTS_DIR],
@@ -125,8 +123,8 @@ export class Application implements IExitHandler {
       this.middlewares = getMiddlewares(container);
       debug('%s got %d middleware functions', TAG, this.middlewares.length);
 
-      //this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
-      //debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
+      // this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
+      // debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
 
       /**
        * @todo using previous container was a way to redefine
@@ -183,9 +181,20 @@ export class Application implements IExitHandler {
    * @private
    */
   private getErrorFormatter(context: Context): FormatErrorFunc {
-    return defaultErrorFormatter
+    return defaultErrorFormatter;
   }
 
+  /**
+   * todo in the future may get component with ID RESPONSE_WRITER and use it
+   * if its available. On initiation try to get that component meta and set as responseWriteComponent
+   * Then from this function call components' get(context) so that component may be Context-scoped.
+   *
+   * @param context
+   * @private
+   */
+  private getResponseWriter(context: Context): WriteServerResponseFunc {
+    return defaultResponseWriter;
+  }
 
   public getAppResponse(context: Context): Promise<IAppResponse> {
     const handlerPromise = this.middlewares.reduce((prev, next) => {
@@ -202,11 +211,16 @@ export class Application implements IExitHandler {
      *
      */
 
-    /*if (this.configOptions?.timeout > 0) {
+    /* if (this.configOptions?.timeout > 0) {
       runners.push(rejectLater(Math.floor(Math.abs(this.configOptions.timeout))));
-    }*/
+    } */
 
-    return Promise.race(runners).catch(error => this.getErrorFormatter(context)).then(getResponseFromContext)
+    return Promise.race(runners)
+      .then(getResponseFromContext)
+      .catch((error) => {
+        const errorFormatter = this.getErrorFormatter(context);
+        return errorFormatter(error);
+      });
   }
 
   /**
@@ -217,50 +231,20 @@ export class Application implements IExitHandler {
    * @param res Node.js response http.ServerResponse
    */
   public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-
     const ctx = new Context().init(req);
 
-    const handlerPromise = this.middlewares.reduce((prev, next) => {
-      return prev.then(next);
-    }, Promise.resolve(ctx));
-
-    const runners: Array<Promise<Context>> = [handlerPromise];
-    if (this.configOptions?.timeout > 0) {
-      runners.push(rejectLater(Math.floor(Math.abs(this.configOptions.timeout))));
-    }
-
-    /**
-     * @todo
-     * it may be a better idea to not use this .race logic in the handler
-     * instead let individual controller have this logic, getting timeout value from
-     * own "Settings" object
-     * Also application may define own middleware to handle the timeout for all requests
-     * just start a timer in the middleware and have a function to check that response object has not been
-     * set yet and/or that response has not been sent yet and then set own appResponse object.
-     * A context object may also have a storage for all outgoing requests and other cancellable
-     * objects that initiated in the same request context. This way a function defined in timeout
-     * may be able to cancel all outgoing requests, database connections, ldap requests,
-     * close sockets, etc. in case a timeout for a request was reached.
-     */
-    Promise.race(runners).catch((e) => {
-      return this.errHandlers
-        .map((eh) => eh(ctx))
-        .reduceRight((acc: Maybe<Error>, next) => {
-          return next(acc);
-        }, e);
-    });
+    this.getAppResponse(ctx).then((appResponse) => this.getResponseWriter(ctx)(appResponse, res));
   }
 
   init(): Promise<http.RequestListener> {
     return this.setContainer(this.container).then((previous) => {
       debug('%s finished setContainer. has previousContainer %s', TAG, isDefined(previous));
-      return (req: http.IncomingMessage, res: http.ServerResponse) => {
-        return this.handleRequest(req, res);
-      };
+
+      return this.handleRequest.bind(this);
     });
   }
 
   toString() {
-    return `Application Instance with ${this.bindContainer.components.length} components`;
+    return `Application Instance with ${this.bindContainer?.components?.length ?? 0} components`;
   }
 }

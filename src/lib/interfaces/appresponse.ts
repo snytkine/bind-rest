@@ -16,11 +16,11 @@ export interface IAppResponse {
   readonly getReadStream: () => ReadableStream;
 }
 
+export type IMaybeStringResponse = IAppResponse & { body?: string };
 
 export interface IStringResponse extends IAppResponse {
-  body: string
+  body: string;
 }
-
 
 export interface IJsonResponse<T extends {}> extends IStringResponse {
   json: T;

@@ -1,6 +1,6 @@
 {
   "name": "bind-rest",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Framework for creating REST API with decorators and dependency injection",
   "private": false,
   "scripts": {
@@ -88,8 +88,8 @@
     "@types/through": "0.0.28",
     "@types/uuid": "^3.4.2",
     "@types/validator": "^5.7.35",
-    "@typescript-eslint/eslint-plugin": "^2.26.0",
-    "@typescript-eslint/parser": "^2.26.0",
+    "@typescript-eslint/eslint-plugin": "^4.13.0",
+    "@typescript-eslint/parser": "^4.13.0",
     "cross-env": "^7.0.2",
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",

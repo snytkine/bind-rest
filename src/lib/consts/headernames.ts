@@ -3,10 +3,10 @@
  * IncomingMessage.headers
  * or look in http2.constants
  */
-enum HeaderNames {
+enum MyHeaderNames {
   AUTHORIZATION = 'authorization',
   CONTENT_ENCODING = 'content-encoding',
   CONTENT_TYPE = 'content-type',
 }
 
-export default HeaderNames;
+export default MyHeaderNames;

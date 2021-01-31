@@ -1,5 +1,6 @@
 import Context from '../../components/context';
 import { IAppResponse } from '../interfaces/appresponse';
+
 export type ClassMethod = [{}, string];
 /**
  * Params validator take array of parameters and validates each parameter

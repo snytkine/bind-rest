@@ -16,7 +16,10 @@
   "rules": {
     "no-inner-declarations": "off",
     "no-restricted-syntax": "off",
-    "import/no-extraneous-dependencies": "off"
+    "no-redeclare": "off",
+    "import/no-extraneous-dependencies": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/no-redeclare": ["error"]
   },
   "overrides": [
     {

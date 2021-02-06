@@ -16,7 +16,8 @@ export interface IAppResponse {
   readonly getReadStream: () => ReadableStream;
 }
 
-export type IMaybeStringResponse = IAppResponse & { body?: string };
+export type IAppResponseMaybeBody = IAppResponse & { body?: string };
+export type IAppResponseMaybeJson = IAppResponseMaybeBody & { json?: any };
 
 export interface IStringResponse extends IAppResponse {
   body: string;

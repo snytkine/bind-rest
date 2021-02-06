@@ -180,6 +180,7 @@ export class Application implements IExitHandler {
    * @param context
    * @private
    */
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   private getErrorFormatter(context: Context): FormatErrorFunc {
     return defaultErrorFormatter;
   }
@@ -192,6 +193,7 @@ export class Application implements IExitHandler {
    * @param context
    * @private
    */
+  // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   private getResponseWriter(context: Context): WriteServerResponseFunc {
     return defaultResponseWriter;
   }
@@ -231,16 +233,16 @@ export class Application implements IExitHandler {
    * @param res Node.js response http.ServerResponse
    */
   public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
-    const ctx = new Context().init(req);
+    const ctx = Context.create(req);
 
     this.getAppResponse(ctx).then((appResponse) => this.getResponseWriter(ctx)(appResponse, res));
   }
 
-  init(): Promise<http.RequestListener> {
+  init(): Promise<boolean> {
     return this.setContainer(this.container).then((previous) => {
       debug('%s finished setContainer. has previousContainer %s', TAG, isDefined(previous));
 
-      return this.handleRequest.bind(this);
+      return true;
     });
   }
 

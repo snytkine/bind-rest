@@ -7,6 +7,8 @@ enum MyHeaderNames {
   AUTHORIZATION = 'authorization',
   CONTENT_ENCODING = 'content-encoding',
   CONTENT_TYPE = 'content-type',
+  CONTENT_LENGTH = 'content-length',
+  SET_COOKIE = 'set-cookie',
 }
 
 export default MyHeaderNames;

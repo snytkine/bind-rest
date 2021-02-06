@@ -58,6 +58,7 @@
     "jmespath": "^0.15.0",
     "jsonpath": "^1.0.2",
     "jsonschema": "1.1.1",
+    "lowercase-keys": "^2.0.0",
     "raw-body": "^2.2.0",
     "reflect-metadata": "^0.1.13",
     "require-from-string": "^2.0.2",

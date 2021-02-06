@@ -1,27 +1,19 @@
 import HttpResponseCode from 'http-status-enum';
+import stringToStream from 'string-to-stream';
 import { IResponseHeaders } from '../../types/responseheaders';
-import AppResponse from './appresponse';
 import { IJsonResponse } from '../../interfaces/appresponse';
 import { IResponseCookie } from '../../interfaces/responsecookie';
+import { CONTENT_TYPE, HEADER_NAMES } from '../../consts';
 
-const DEFAULT_CONTENT_TYPE = 'application/json';
-
-export default class JsonResponse<T> extends AppResponse implements IJsonResponse<T> {
+export default class JsonResponse<T> implements IJsonResponse<T> {
   constructor(
-    private readonly jsonObj: T,
-    statusCode = HttpResponseCode.OK,
-    readonly hdrs?: IResponseHeaders,
+    public json: T,
+    public statusCode = HttpResponseCode.OK,
+    public headers: IResponseHeaders = {
+      [HEADER_NAMES.CONTENT_TYPE]: CONTENT_TYPE.APPLICATION_JSON,
+    },
     public cookies?: Array<IResponseCookie>,
   ) {
-    /**
-     * @TODO why stringify at the time of constructor?
-     * Would it be better to stringify at time of getReadStream() call?
-     * There is a chance that this response object will not even be used in case of
-     * some exception thrown in afterware (after controller but before response writer)
-     * then this stringify call will be a waste.
-     *
-     */
-    super(JSON.stringify(jsonObj), statusCode, hdrs, cookies);
     /**
      * The content-type header will always be application/json
      * even if user supplied different value by mistake
@@ -31,10 +23,14 @@ export default class JsonResponse<T> extends AppResponse implements IJsonRespons
      * For this to work we should convert all header names to lower case, which
      * is extra performance hit.
      */
-    this.headers['content-type'] = DEFAULT_CONTENT_TYPE;
+    this.headers[HEADER_NAMES.CONTENT_TYPE] = CONTENT_TYPE.APPLICATION_JSON;
   }
 
-  get json() {
-    return this.jsonObj;
+  get body() {
+    return JSON.stringify(this.json);
+  }
+
+  public getReadStream() {
+    return stringToStream(this.body);
   }
 }

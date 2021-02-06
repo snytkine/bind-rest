@@ -1,8 +1,8 @@
 import * as Http from 'http';
-import { IMaybeStringResponse } from './appresponse';
+import { IAppResponseMaybeBody } from './appresponse';
 
 export type WriteServerResponseFunc = (
-  appResponse: IMaybeStringResponse,
+  appResponse: IAppResponseMaybeBody,
   res: Http.ServerResponse,
 ) => void;
 

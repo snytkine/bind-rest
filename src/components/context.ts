@@ -11,14 +11,15 @@ import {
   IScopedComponentStorage,
   isSameIdentity,
   Scope,
-  StringOrSymbol,
   ComponentIdentity,
   Maybe,
 } from 'bind-di';
 import { IUriParams } from 'holiday-router';
 import HttpStatusCode from 'http-status-enum';
-import { IAppResponse } from '../lib/interfaces/appresponse';
+import lowercaseKeys from 'lowercase-keys';
+import { IAppResponse, IAppResponseMaybeJson } from '../lib/interfaces/appresponse';
 import { IStoredComponent } from '../lib/interfaces/storedcomponent';
+import { IContextStore } from '../lib/types/contextstore';
 
 const debug = require('debug')('bind:rest:context');
 
@@ -28,6 +29,12 @@ const TAG = 'ContextClass';
 @Scope(ComponentScope.REQUEST)
 export default class Context implements IScopedComponentStorage {
   static readonly id: ComponentIdentity = Identity(Context);
+
+  public static readonly create = (req: http.IncomingMessage) => {
+    const instance = new Context();
+    instance.setRequest(req);
+    return instance;
+  };
 
   public req: http.IncomingMessage;
 
@@ -41,6 +48,10 @@ export default class Context implements IScopedComponentStorage {
 
   private myRouteParams: IUriParams;
 
+  /**
+   * @todo this should be something like ServerResponse.HttpResponseHeaders
+   * @private
+   */
   private responseHeaders: NodeJS.Dict<string> = {};
 
   private responseStatusCode: HttpStatusCode;
@@ -62,11 +73,11 @@ export default class Context implements IScopedComponentStorage {
 
   private response: IAppResponse;
 
-  set appResponse(response: IAppResponse) {
+  set appResponse(response: IAppResponseMaybeJson) {
     this.response = response;
   }
 
-  get appResponse(): Maybe<IAppResponse> {
+  get appResponse(): Maybe<IAppResponseMaybeJson> {
     if (!this.response) {
       return undefined;
     }
@@ -74,8 +85,16 @@ export default class Context implements IScopedComponentStorage {
     if (this.responseStatusCode) {
       this.response.statusCode = this.responseStatusCode;
     }
+    /**
+     * Normalize response headers to lower case names.
+     * Values set explicitely with context.setHeader() override values returned in IAppResponse
+     */
 
-    this.response.headers = { ...this.response.headers, ...this.responseHeaders };
+    /**
+     * @todo deal with cookies. Merge cookies from response with cookies set with setCookie.
+     * Append a set-cookie header with stringified value of all cookies
+     */
+    this.response.headers = { ...lowercaseKeys(this.responseHeaders), ...this.response.headers };
 
     return this.response;
   }
@@ -85,7 +104,7 @@ export default class Context implements IScopedComponentStorage {
   /**
    * Storage container for anything
    */
-  readonly storage: Map<StringOrSymbol, any>;
+  readonly storage: IContextStore = {};
 
   /**
    * Sometimes Errors that are not critical should not cause
@@ -98,7 +117,7 @@ export default class Context implements IScopedComponentStorage {
 
   readonly scope = ComponentScope.REQUEST;
 
-  init(req: http.IncomingMessage): Context {
+  setRequest(req: http.IncomingMessage): Context {
     this.req = req;
     this.reqUrl = req.url;
     this.requestStartTime = Date.now();
@@ -226,7 +245,7 @@ export default class Context implements IScopedComponentStorage {
    * made safely.
    * The BodyParam decorator may be used multiple times in the same
    * controller and each one will be calling the parseJsonBody.
-   *
+   * @todo maybe use setter and getter.
    */
   parsedBody: any;
 }

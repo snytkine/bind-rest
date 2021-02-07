@@ -1,7 +1,8 @@
 import Context from '../../components/context';
+import { IBindRestContext } from './icontext';
 
 export interface IMiddleware {
-  doFilter: (context: Context) => Promise<Context>;
+  doFilter: (context: IBindRestContext) => Promise<IBindRestContext>;
 
   /**
    * Currently not used.

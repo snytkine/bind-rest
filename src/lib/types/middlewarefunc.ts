@@ -1,3 +1,3 @@
-import Context from '../../components/context';
+import { IBindRestContext } from '../interfaces/icontext';
 
-export type MiddlewareFunc = (ctx: Context) => Promise<Context>;
+export type MiddlewareFunc = (ctx: IBindRestContext) => Promise<IBindRestContext>;

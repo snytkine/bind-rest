@@ -1,4 +1,4 @@
-import { ParamExtractorFactory } from '../types';
+import { ParamExtractorFactory } from '../types/controllerparamextractor';
 
 export interface IBodyParamExtractor {
   query: string;

@@ -12,8 +12,8 @@ import {
   SYM_MIDDLEWARE_PRIORITY,
 } from '../../decorators/metaprops';
 import { IMiddleware } from '../../interfaces/middleware';
-import Context from '../../../components/context';
 import ApplicationError from '../../errors/applicationerror';
+import { IBindRestContext } from '../../interfaces';
 
 const debug = require('debug')('bind:rest:runtime:middleware');
 
@@ -38,7 +38,7 @@ export default function getMiddlewares(ctr: IfIocContainer): Array<MiddlewareFun
     const mwName = getComponentNameFromIdentity(comp.identity);
     const priority = comp.componentMetaData[MIDDLEWARE_PRIORITY];
 
-    const func = (ctx: Context) => {
+    const func = (ctx: IBindRestContext) => {
       const mw = comp.get([ctx]);
       debug('%s applying middleware mw="%s" priority="%s"', TAG, mwName, priority);
       return mw.doFilter(ctx);

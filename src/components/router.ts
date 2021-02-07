@@ -4,9 +4,9 @@ import HTTPMethod from 'http-method-enum';
 import FrameworkController from '../lib/core/frameworkcontroller';
 import { Middleware } from '../lib/decorators';
 import { PRIORITY_ROUTER } from '../lib/consts';
-import Context from './context';
 import { toHTTPMethod } from '../lib/core/apputils';
 import { NotFoundError } from '../lib/errors';
+import { IBindRestContext } from '../lib';
 
 const debug = require('debug')('bind:rest:runtime');
 
@@ -33,11 +33,11 @@ class RouterMiddleware {
    *
    * @param context
    */
-  doFilter(context: Context): Promise<Context> {
-    const requestMethod = context.req.method;
+  doFilter(context: IBindRestContext): Promise<IBindRestContext> {
+    const { requestMethod } = context;
     debug('%s entered filter with method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
 
-    const httpMethod: HTTPMethod = toHTTPMethod(context.req.method);
+    const httpMethod: HTTPMethod = toHTTPMethod(requestMethod);
     debug('%s httpMethod="%s"', TAG, httpMethod);
     const { parsedUrl } = context;
     debug('%s parsedUrl="%o"', TAG, parsedUrl);

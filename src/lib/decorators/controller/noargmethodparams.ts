@@ -1,7 +1,6 @@
 import { HttpRouter } from 'holiday-router';
 import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
-import RequestContext from '../../../components/context';
 import { PARAM_TYPES, SYM_JSON_SCHEMA } from '../metaprops';
 import {
   CONTENT_TYPE_JSON,
@@ -18,6 +17,7 @@ import makeParamDecorator from './makeparamdecorator';
 import applyNoParamDecorator from './applysingledecorator';
 import getParamType from './getparamtype';
 import BadRequestError from '../../errors/http/badrequest';
+import { IBindRestContext } from '../../interfaces/icontext';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -44,7 +44,7 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
     const enableSchemaValidation = true;
     // const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
 
-    return function BodyExtractor(context: RequestContext) {
+    return function BodyExtractor(context: IBindRestContext) {
       /**
        * @todo this was supposed to be a way to turn off schema validation
        * in a running application, even if @Body type of request param
@@ -80,10 +80,10 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
        */
       debug('%s trying to get request content-type', TAG);
       if (
-        context.req?.headers?.['content-type'] &&
-        typeof context.req.headers['content-type'] === 'string'
+        context.requestHeaders?.['content-type'] &&
+        typeof context.requestHeaders['content-type'] === 'string'
       ) {
-        contentType = context.req.headers['content-type'].toLowerCase();
+        contentType = context.requestHeaders['content-type'].toLowerCase();
       }
 
       debug('%s in Body parser. contentType=%s', TAG, contentType);
@@ -94,7 +94,7 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         parsed = parseJsonBody(context, jsonSchema);
       } else {
         debug('%s will parse plain body', TAG);
-        parsed = parseBody(context.req);
+        parsed = parseBody(context);
       }
 
       return parsed.catch((err) => {
@@ -123,23 +123,23 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const QueryString = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const QueryString = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.querystring,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Cookies = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const Cookies = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.parsedCookies,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const ParsedQuery = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const ParsedQuery = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.parsedUrlQuery,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Headers = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
-  context.req.headers,
+export const Headers = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
+  context.requestHeaders,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -152,37 +152,39 @@ export const Router = makeParamDecorator((c: IfIocContainer) => {
    */
   const componentDetails = c.getComponentDetails(Identity(HttpRouter));
 
-  return (context: RequestContext): Promise<HttpRouter<FrameworkController>> => {
+  return (context: IBindRestContext): Promise<HttpRouter<FrameworkController>> => {
     return componentDetails.get([context]);
   };
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const UriInfo = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const UriInfo = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.parsedUrl,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Request = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const Request = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.req,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Container = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) => c);
+export const Container = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
+  c,
+);
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Context = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const Context = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const ContextStore = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
+export const ContextStore = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.storage,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const RequestMethod = makeParamDecorator((c: IfIocContainer) => (context: RequestContext) =>
-  context.req.method,
+export const RequestMethod = makeParamDecorator(
+  (c: IfIocContainer) => (context: IBindRestContext) => context.requestMethod,
 );
 
 /**

@@ -9,7 +9,12 @@ import getMiddlewares from './apputils/getmiddlewares';
 import defaultErrorFormatter from './apputils/defaulterrorformatter';
 import registerProcessEventListeners from './apputils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
-import { IAppResponse, IExitHandler, WriteServerResponseFunc } from '../interfaces';
+import {
+  IAppResponse,
+  IBindRestContext,
+  IExitHandler,
+  WriteServerResponseFunc,
+} from '../interfaces';
 import { FormatErrorFunc } from '../interfaces/errorformater';
 import getResponseFromContext from './apputils/getresponsefromcontext';
 import defaultResponseWriter from './apputils/defaultresponsewriter';
@@ -203,7 +208,7 @@ export class Application implements IExitHandler {
       return prev.then(next);
     }, Promise.resolve(context));
 
-    const runners: Array<Promise<Context>> = [handlerPromise];
+    const runners: Array<Promise<IBindRestContext>> = [handlerPromise];
 
     /**
      * @Todo create way to deal with timeout.

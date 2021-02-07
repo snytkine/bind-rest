@@ -11,3 +11,4 @@ export * from './bodyparamextractor';
 export * from './requestoptions';
 export * from './tunneloptions';
 export * from './serverresponsewriter';
+export * from './icontext';

@@ -1,16 +1,15 @@
 import HttpResponseCode from 'http-status-enum';
-import { IAppResponse, IAppResponseMaybeBody } from '../../interfaces';
-import Context from '../../../components/context';
+import { IAppResponse, IAppResponseMaybeBody, IBindRestContext } from '../../interfaces';
 import { ErrorResponse } from '../appresponse';
 import { CONTENT_TYPE, HEADER_NAMES } from '../../consts';
 import getByteLength from '../../utils/bytelength';
 
-export default function getResponseFromContext(context: Context): IAppResponse {
+export default function getResponseFromContext(context: IBindRestContext): IAppResponse {
   const response = context.appResponse;
   let ret: IAppResponseMaybeBody;
 
   if (!response) {
-    return new ErrorResponse(HttpResponseCode.NO_CONTENT, 'Response not processed');
+    return new ErrorResponse(HttpResponseCode.INTERNAL_SERVER_ERROR, 'Response not processed');
   }
 
   /**

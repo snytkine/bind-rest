@@ -8,7 +8,6 @@ import {
   Component,
   ComponentScope,
   Identity,
-  IScopedComponentStorage,
   isSameIdentity,
   Scope,
   ComponentIdentity,
@@ -17,9 +16,11 @@ import {
 import { IUriParams } from 'holiday-router';
 import HttpStatusCode from 'http-status-enum';
 import lowercaseKeys from 'lowercase-keys';
+import HTTPMethod from 'http-method-enum';
 import { IAppResponse, IAppResponseMaybeJson } from '../lib/interfaces/appresponse';
 import { IStoredComponent } from '../lib/interfaces/storedcomponent';
 import { IContextStore } from '../lib/types/contextstore';
+import { IBindRestContext } from '../lib/interfaces/icontext';
 
 const debug = require('debug')('bind:rest:context');
 
@@ -27,16 +28,20 @@ const TAG = 'ContextClass';
 
 @Component
 @Scope(ComponentScope.REQUEST)
-export default class Context implements IScopedComponentStorage {
+export default class Context implements IBindRestContext {
   static readonly id: ComponentIdentity = Identity(Context);
 
   public static readonly create = (req: http.IncomingMessage) => {
     const instance = new Context();
-    instance.setRequest(req);
+    instance.req = req;
     return instance;
   };
 
-  public req: http.IncomingMessage;
+  private httpRequestBody: string;
+
+  private httpRequest?: http.IncomingMessage;
+
+  private httpRequestMethod: HTTPMethod;
 
   private reqUrl: string;
 
@@ -44,7 +49,7 @@ export default class Context implements IScopedComponentStorage {
 
   private cookies;
 
-  private myControllerName = '';
+  private myControllerName: string = '';
 
   private myRouteParams: IUriParams;
 
@@ -64,11 +69,42 @@ export default class Context implements IScopedComponentStorage {
     this.responseStatusCode = statusCode;
   }
 
+  get req(): http.IncomingMessage {
+    return this.httpRequest;
+  }
+
+  set req(req: http.IncomingMessage) {
+    this.httpRequest = req;
+    this.reqUrl = req.url;
+    this.httpRequestMethod = req.method.toUpperCase() as HTTPMethod;
+    this.requestStartTime = Date.now();
+  }
+
+  get requestHeaders(): http.IncomingHttpHeaders {
+    return this.req.headers;
+  }
+
+  get requestBody(): string | undefined {
+    return this.httpRequestBody;
+  }
+
+  set requestBody(body: string) {
+    this.httpRequestBody = body;
+  }
+
+  get requestMethod(): HTTPMethod {
+    return this.httpRequestMethod;
+  }
+
   /**
    * Parsed url query
    */
   private query: ParsedUrlQuery;
 
+  /**
+   * @todo change type to Date object. It's a much more precise type than number
+   * @private
+   */
   private requestStartTime: number = 0;
 
   private response: IAppResponse;
@@ -115,20 +151,19 @@ export default class Context implements IScopedComponentStorage {
    */
   readonly errors: Array<Error> = [];
 
+  /**
+   * Implements IScopedComponentStorage
+   */
   readonly scope = ComponentScope.REQUEST;
-
-  setRequest(req: http.IncomingMessage): Context {
-    this.req = req;
-    this.reqUrl = req.url;
-    this.requestStartTime = Date.now();
-
-    return this;
-  }
 
   get startTime() {
     return this.requestStartTime;
   }
 
+  /**
+   * Implements IComponentStorage
+   * @param id
+   */
   getComponent(id: ComponentIdentity): Maybe<Object> {
     /**
      * Special case if looking for instance of Context (this object)
@@ -146,6 +181,11 @@ export default class Context implements IScopedComponentStorage {
     return res?.component;
   }
 
+  /**
+   * Implements IComponentStorage
+   * @param identity
+   * @param component
+   */
   setComponent(identity: ComponentIdentity, component: any): void {
     /**
      * Special case do not set Context instance (instance of this class)
@@ -207,7 +247,7 @@ export default class Context implements IScopedComponentStorage {
 
   get querystring(): string {
     const uri = this.parsedUrl;
-    return uri?.query;
+    return uri?.query || '';
   }
 
   get parsedUrlQuery(): ParsedUrlQuery {
@@ -221,9 +261,9 @@ export default class Context implements IScopedComponentStorage {
   get parsedCookies() {
     if (this.cookies) return this.cookies;
 
-    if (this.req.headers?.cookie) {
+    if (this.requestHeaders.cookie) {
       try {
-        this.cookies = cookie.parse(this.req.headers.cookie);
+        this.cookies = cookie.parse(this.requestHeaders.cookie);
       } catch (e) {
         debug('% Failed to parse cooke header %s', TAG, e.mesage);
         this.cookies = {};

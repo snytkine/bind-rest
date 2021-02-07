@@ -1,5 +1,6 @@
 import Context from '../../components/context';
 import { IAppResponse } from '../interfaces/appresponse';
+import { IBindRestContext } from '../interfaces/icontext';
 
 export type ClassMethod = [{}, string];
 /**
@@ -14,4 +15,4 @@ export type ParamsValidator = (params: Array<any>) => Array<any>;
 export type contextToParam = (ctx: Context) => any;
 
 export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>;
-export type IController = (ctx: Context) => Promise<IAppResponse>;
+export type IController = (ctx: IBindRestContext) => Promise<IAppResponse>;

@@ -11,7 +11,7 @@ import {
   IfIocContainer,
   TargetStereoType,
 } from 'bind-di';
-import { IMiddleware } from '../interfaces';
+import { IBindRestContext, IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
 import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
 import Context from '../../components/context';
@@ -39,7 +39,7 @@ export const toMWFuncFactory = (arr: Array<IMiddlewareFactory>): IMiddlewareFact
   return (container: IfIocContainer) => {
     const aMW: Array<MiddlewareFunc> = arr.map((f) => f(container));
 
-    return (context: Context): Promise<Context> => {
+    return (context: IBindRestContext): Promise<IBindRestContext> => {
       return aMW.reduce((acc, next) => {
         return acc.then(next);
       }, Promise.resolve(context));

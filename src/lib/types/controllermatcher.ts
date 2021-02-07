@@ -1,3 +1,3 @@
-import Context from '../../components/context';
+import { IBindRestContext } from '../interfaces/icontext';
 
-export type IControllerMatcher = (ctx: Context) => boolean;
+export type IControllerMatcher = (ctx: IBindRestContext) => boolean;

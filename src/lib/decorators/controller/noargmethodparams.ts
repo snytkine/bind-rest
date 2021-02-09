@@ -1,7 +1,7 @@
 import { HttpRouter } from 'holiday-router';
-import { getMethodParamName, Identity, IfIocContainer, ClassPrototype } from 'bind-di';
+import { getMethodParamName, Identity, IfIocContainer, ClassPrototype, PARAM_TYPES } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
-import { PARAM_TYPES, SYM_JSON_SCHEMA } from '../metaprops';
+import { SYM_JSON_SCHEMA } from '../metaprops';
 import {
   CONTENT_TYPE_JSON,
   PARAM_TYPE_BOOLEAN,
@@ -168,8 +168,8 @@ export const Request = makeParamDecorator((c: IfIocContainer) => (context: IBind
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const Container = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
-  c,
+export const BindContainer = makeParamDecorator(
+  (c: IfIocContainer) => (context: IBindRestContext) => c,
 );
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

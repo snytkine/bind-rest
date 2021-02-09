@@ -1,6 +1,12 @@
 import 'reflect-metadata';
-import { getTargetStereotype, Target, TargetStereoType, getMethodParamName } from 'bind-di';
-import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
+import {
+  getTargetStereotype,
+  Target,
+  TargetStereoType,
+  getMethodParamName,
+  PARAM_TYPES,
+} from 'bind-di';
+import { SYM_METHOD_PARAMS } from '../metaprops';
 import { PathDetailsParam } from '../../interfaces/pathdetailsparams';
 import ControllerParamType from '../../enums/controllerparamtype';
 import { IControllerParamMeta } from '../../interfaces/controllerparammeta';

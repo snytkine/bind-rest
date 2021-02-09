@@ -1,7 +1,7 @@
-import { Target, getMethodParamName } from 'bind-di';
+import { Target, getMethodParamName, PARAM_TYPES } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
 import { ParamExtractorFactory } from '../../types/controllerparamextractor';
-import { PARAM_TYPES, SYM_METHOD_PARAMS } from '../metaprops';
+import { SYM_METHOD_PARAMS } from '../metaprops';
 import { IControllerParamMeta } from '../../interfaces/controllerparammeta';
 import getParamType from './getparamtype';
 

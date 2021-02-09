@@ -1,8 +1,9 @@
-import { Maybe, getOrElse, ClassPrototype } from 'bind-di';
+import { Maybe, getOrElse, ClassPrototype, RETURN_TYPE } from 'bind-di';
 import HTTPMethod from 'http-method-enum';
-import { RETURN_TYPE, SYM_REQUEST_METHOD } from '../metaprops';
-import { ControllerFunc, IMethodDecorator } from '../../types';
+import { SYM_REQUEST_METHOD } from '../metaprops';
+import { ControllerFunc, IControllerMethodDecorator, IMethodDecorator } from '../../types';
 import Path from '../controller/pathdecorator';
+import { IAppResponse } from '../../interfaces';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -77,17 +78,17 @@ export const decorate = (
    */
   return addMethodAnnotation(pathOrTarget, propertyKey, method, descriptor);
 };
-
-export function GET(target: string): IMethodDecorator<ControllerFunc>;
+// export function GET: IGetDecorator
+export function GET(target: string): IControllerMethodDecorator;
 export function GET(
   target: ClassPrototype,
   propertyKey: string,
-  descriptor: TypedPropertyDescriptor<ControllerFunc>,
+  descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<IAppResponse>>,
 ): void;
 export function GET(
   target: string | ClassPrototype,
   propertyKey?: string,
-  descriptor?: TypedPropertyDescriptor<ControllerFunc>,
+  descriptor?: TypedPropertyDescriptor<(...args: any[]) => Promise<IAppResponse>>,
 ) {
   return decorate(target, propertyKey, HTTPMethod.GET, descriptor);
 }

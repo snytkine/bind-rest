@@ -1,9 +1,9 @@
 export const SYM_METHOD_PARAMS = Symbol.for('method-params');
 export const SYM_REQUEST_METHOD = Symbol.for('http-request-method');
 export const SYM_REQUEST_PATH = Symbol.for('request-path');
-export const DESIGN_TYPE = 'design:type';
-export const RETURN_TYPE = 'design:returntype';
-export const PARAM_TYPES = 'design:paramtypes';
+// export const DESIGN_TYPE = 'design:type';
+// export const RETURN_TYPE = 'design:returntype';
+// export const PARAM_TYPES = 'design:paramtypes';
 export const SYM_MIDDLEWARE_PRIORITY = Symbol.for('middleware:priority');
 export const SYM_MIDDLEWARE_NAME = Symbol.for('middleware:name');
 export const SYM_COMPONENT_FACTORY_METHODS = Symbol.for('componentfactory:methods');

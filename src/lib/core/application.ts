@@ -186,7 +186,7 @@ export class Application implements IExitHandler {
    * @private
    */
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  private getErrorFormatter(context: Context): FormatErrorFunc {
+  private getErrorFormatter(context: IBindRestContext): FormatErrorFunc {
     return defaultErrorFormatter;
   }
 
@@ -199,11 +199,11 @@ export class Application implements IExitHandler {
    * @private
    */
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
-  private getResponseWriter(context: Context): WriteServerResponseFunc {
+  private getResponseWriter(context: IBindRestContext): WriteServerResponseFunc {
     return defaultResponseWriter;
   }
 
-  public getAppResponse(context: Context): Promise<IAppResponse> {
+  public getAppResponse(context: IBindRestContext): Promise<IAppResponse> {
     const handlerPromise = this.middlewares.reduce((prev, next) => {
       return prev.then(next);
     }, Promise.resolve(context));

@@ -1,36 +1,36 @@
 import HttpResponseCode from 'http-status-enum';
-import { IAppResponse, IAppResponseMaybeBody, IBindRestContext } from '../../interfaces';
+import { IAppResponse, IBindRestContext, isAppResponseWithBody } from '../../interfaces';
 import { ErrorResponse } from '../appresponse';
-import { CONTENT_TYPE, HEADER_NAMES } from '../../consts';
+import { HEADER_NAMES } from '../../consts';
 import getByteLength from '../../utils/bytelength';
 
 export default function getResponseFromContext(context: IBindRestContext): IAppResponse {
   const response = context.appResponse;
-  let ret: IAppResponseMaybeBody;
+  let ret: IAppResponse;
 
   if (!response) {
     return new ErrorResponse(HttpResponseCode.INTERNAL_SERVER_ERROR, 'Response not processed');
   }
 
   /**
-   * If response is JsonResponse then it will have .json prop
+   * @todo if appResponse has cookies then convert cookies into set-cookie header
+   * and add set-cookie to response.headers
+   * The result cookie can be used by default response writer for node as well as
+   * by Lambda (it is required by lambda to use set-cookie header instead of having cookies)
+   * And after parsing cookies and setting set-cookie header the cookies property must be deleted from object
+   * because otherwise it will break lambda response.
    */
-  if (response.json) {
-    Reflect.set(response.headers, HEADER_NAMES.CONTENT_TYPE, CONTENT_TYPE.APPLICATION_JSON);
-  }
 
   /**
-   * IStringResponse are special. Convert to generic object that does not have extra properties
+   * IAppResponseWithBody are special. Convert to generic object that does not have extra properties
    * Also set content-length header
    */
-
-  const { body } = response;
-  if (typeof body === 'string') {
-    response.headers[HEADER_NAMES.CONTENT_LENGTH] = `${getByteLength(body)}`;
+  if (isAppResponseWithBody(response)) {
+    response.headers[HEADER_NAMES.CONTENT_LENGTH] = `${getByteLength(response.body)}`;
     ret = {
       statusCode: response.statusCode,
       headers: response.headers,
-      body,
+      body: response.body,
       getReadStream: response.getReadStream.bind(response),
     };
   } else {

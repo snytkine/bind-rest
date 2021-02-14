@@ -7,8 +7,16 @@ export type IMethodDecorator<T> = (
   descriptor: TypedPropertyDescriptor<T>,
 ) => void;
 
-export type IControllerMethodDecorator = (
+/* export type IControllerMethodDecorator = (
   target: ClassPrototype,
   propertyKey: string,
   descriptor: TypedPropertyDescriptor<ControllerFunc>,
-) => void;
+) => void; */
+
+export interface IControllerMethodDecorator {
+  (
+    target: ClassPrototype,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<ControllerFunc>,
+  ): void;
+}

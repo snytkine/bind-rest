@@ -1,2 +1,2 @@
-export { default as RequestContext } from './context';
+export { default as BindRestContext } from './context';
 export { default as JsonSchemaValidator } from './jsonschemavalidator';

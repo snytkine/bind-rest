@@ -158,11 +158,6 @@ export const Router = makeParamDecorator((c: IfIocContainer) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const UriInfo = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
-  context.parsedUrl,
-);
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const Request = makeParamDecorator((c: IfIocContainer) => (context: IBindRestContext) =>
   context.req,
 );

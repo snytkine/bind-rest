@@ -33,6 +33,9 @@ export function parseBody(ctx: IBindRestContext): Promise<string> {
     return Promise.resolve(ctx.requestBody);
   }
 
+  /**
+   * Here we use inflate to decompress potentially gzipped payload
+   */
   const ret: Promise<string> = raw(inflate(ctx.req))
     .then((rawBody): string => {
       const res = String(rawBody);
@@ -59,7 +62,9 @@ export function parseBody(ctx: IBindRestContext): Promise<string> {
  * @param req node's http.IncomingMessage
  * @param schema
  *
- * @todo use uncompressResponse then stringifyBody then JSON.parse
+ * @todo there is a separate uncompressResponse function that should be run before this one.
+ * ex: getHttpResponseSomehow (usually with makeRequest) .then(decompressResponse).then(stringifyBody)
+ * .then(jsonParseBody)
  *
  * @return Promise<Object>
  */

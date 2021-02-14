@@ -12,17 +12,22 @@ import ReadableStream = NodeJS.ReadableStream;
 export interface IAppResponse {
   statusCode: HttpStatusCode;
   headers: IResponseHeaders;
+  body?: string;
   cookies?: Array<IResponseCookie>;
   readonly getReadStream: () => ReadableStream;
 }
 
-export type IAppResponseMaybeBody = IAppResponse & { body?: string };
-export type IAppResponseMaybeJson = IAppResponseMaybeBody & { json?: any };
+// export type IAppResponseMaybeBody = IAppResponse & { body?: string };
+// export type IAppResponseMaybeJson = IAppResponseMaybeBody & { json?: any };
 
-export interface IStringResponse extends IAppResponse {
-  body: string;
+export type IAppResponseWithBody = Required<Omit<IAppResponse, 'cookies'>> & {cookies?: Array<IResponseCookie>}
+
+export function isAppResponseWithBody(
+  appResponse: IAppResponse,
+): appResponse is IAppResponseWithBody {
+  return appResponse.body !== undefined;
 }
 
-export interface IJsonResponse<T extends {}> extends IStringResponse {
+export interface IJsonResponse<T extends {}> extends IAppResponseWithBody {
   json: T;
 }

@@ -14,5 +14,9 @@ export type ClassMethod = [{}, string];
 export type ParamsValidator = (params: Array<any>) => Array<any>;
 export type contextToParam = (ctx: Context) => any;
 
-export type ControllerFunc = (...args: any[]) => Promise<IAppResponse>;
+// export type ControllerFunc = (...args: any[]) => IAppResponse | Promise<IAppResponse>;
+export interface ControllerFunc {
+  (...args: any[]): Promise<IAppResponse>;
+}
+
 export type IController = (ctx: IBindRestContext) => Promise<IAppResponse>;

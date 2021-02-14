@@ -1,7 +1,7 @@
 import HttpResponseCode from 'http-status-enum';
-import { IAppResponse } from '../../interfaces';
 import { IResponseHeaders } from '../../types/responseheaders';
 import { IResponseCookie } from '../../interfaces/responsecookie';
+import { IAppResponse } from '../../interfaces';
 
 export default class StreamResponse implements IAppResponse {
   public readonly headers;

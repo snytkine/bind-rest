@@ -1,6 +1,6 @@
-import { IAppResponse } from '../interfaces';
+import { IHttpClientResponse } from '../interfaces/httpclientreponse';
 
-export default class HttpResponse implements IAppResponse {
+export default class HttpResponse implements IHttpClientResponse {
   constructor(
     public statusCode: number,
     public headers: { [key: string]: any },

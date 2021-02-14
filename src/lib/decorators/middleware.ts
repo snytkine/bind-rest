@@ -82,6 +82,16 @@ export function Afterware(priority: number) {
   };
 }
 
+/**
+ * @todo this should probably be removed
+ * because it cannot work in Lambda based setup because we cannot do anything
+ * after response was returned to Lambda.
+ *
+ * This was used mostly to log response time or to fire off some async event after
+ * response was already sent. This login can be moved to responseWriter.
+ * @param priority
+ * @constructor
+ */
 export function AfterResponse(priority: number) {
   return function middlewareDecorator(constructor: Constructor<IMiddleware>) {
     decorateMiddleware(constructor, priority + 1000, 'AfterResponse');

@@ -34,16 +34,17 @@ class RouterMiddleware {
    * @param context
    */
   doFilter(context: IBindRestContext): Promise<IBindRestContext> {
-    const { requestMethod } = context;
-    debug('%s entered filter with method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
+    const requestMethod = context.requestMethod;
+    const path = context.path;
+    debug('%s entered filter with contextType=%s method="%s" url="%s"', TAG, context.contextType, requestMethod, context.path);
 
     const httpMethod: HTTPMethod = toHTTPMethod(requestMethod);
     debug('%s httpMethod="%s"', TAG, httpMethod);
-    const { parsedUrl } = context;
-    debug('%s parsedUrl="%o"', TAG, parsedUrl);
-    const routeMatch = this.router.getRouteMatch(httpMethod, parsedUrl.pathname);
+
+    debug('%s path="%o"', TAG, path);
+    const routeMatch = this.router.getRouteMatch(httpMethod, path);
     if (!routeMatch) {
-      debug('%s NO match for method="%s" url="%s"', TAG, requestMethod, context.requestUrl);
+      debug('%s NO match for method="%s" url="%s"', TAG, requestMethod, path);
 
       return Promise.reject(
         new NotFoundError(`

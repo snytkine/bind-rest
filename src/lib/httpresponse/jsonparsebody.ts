@@ -1,8 +1,8 @@
 import { JsonResponse } from '../core/appresponse';
 import ApplicationError from '../errors/applicationerror';
-import { IStringResponse } from '../interfaces';
+import { IAppResponseWithBody } from '../interfaces';
 
-export default function jsonParseBody<T>(resp: IStringResponse): Promise<JsonResponse<T>> {
+export default function jsonParseBody<T>(resp: IAppResponseWithBody): Promise<JsonResponse<T>> {
   return new Promise((resolve, reject) => {
     const { body } = resp;
     const contentType = resp.headers['content-type'] || '';

@@ -7,4 +7,5 @@ export interface ApplicationOptions {
     jsonSchema?: boolean;
   };
   extraComponents?: Array<any>;
+  maxBodySize?: number;
 }

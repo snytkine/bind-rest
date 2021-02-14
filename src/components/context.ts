@@ -17,7 +17,7 @@ import { IUriParams } from 'holiday-router';
 import HttpStatusCode from 'http-status-enum';
 import lowercaseKeys from 'lowercase-keys';
 import HTTPMethod from 'http-method-enum';
-import { IAppResponse, IAppResponseMaybeJson } from '../lib/interfaces/appresponse';
+import { IAppResponse } from '../lib/interfaces/appresponse';
 import { IStoredComponent } from '../lib/interfaces/storedcomponent';
 import { IContextStore } from '../lib/types/contextstore';
 import { IBindRestContext } from '../lib/interfaces/icontext';
@@ -28,38 +28,51 @@ const TAG = 'ContextClass';
 
 @Component
 @Scope(ComponentScope.REQUEST)
-export default class Context implements IBindRestContext {
-  static readonly id: ComponentIdentity = Identity(Context);
+export default class BindRestContext implements IBindRestContext {
+  static readonly id: ComponentIdentity = Identity(BindRestContext);
+
+  public contextType = 'BindRestContext';
 
   public static readonly create = (req: http.IncomingMessage) => {
-    const instance = new Context();
+    const instance = new BindRestContext();
     instance.req = req;
     return instance;
   };
 
-  private httpRequestBody: string;
+  protected httpRequestBody: string;
 
-  private httpRequest?: http.IncomingMessage;
+  protected httpRequest?: http.IncomingMessage;
 
-  private httpRequestMethod: HTTPMethod;
+  protected httpRequestMethod: HTTPMethod;
 
-  private reqUrl: string;
+  protected reqUrl: string;
 
-  private uriInfo: UrlWithStringQuery;
+  protected uriInfo: UrlWithStringQuery;
 
-  private cookies;
+  protected cookies;
 
-  private myControllerName: string = '';
+  /**
+   * Parsed url query
+   */
+  protected query: ParsedUrlQuery;
 
-  private myRouteParams: IUriParams;
+  protected myControllerName: string = '';
+
+  protected myRouteParams: IUriParams;
 
   /**
    * @todo this should be something like ServerResponse.HttpResponseHeaders
-   * @private
    */
-  private responseHeaders: NodeJS.Dict<string> = {};
+  protected responseHeaders: NodeJS.Dict<string> = {};
 
-  private responseStatusCode: HttpStatusCode;
+  protected responseStatusCode: HttpStatusCode;
+
+  /**
+   * @todo change type to Date object. It's a much more precise type than number
+   */
+  protected requestStartTime: number = 0;
+
+  protected response: IAppResponse;
 
   public setHeader(key: string, value: string) {
     this.responseHeaders[key] = value;
@@ -96,24 +109,11 @@ export default class Context implements IBindRestContext {
     return this.httpRequestMethod;
   }
 
-  /**
-   * Parsed url query
-   */
-  private query: ParsedUrlQuery;
-
-  /**
-   * @todo change type to Date object. It's a much more precise type than number
-   * @private
-   */
-  private requestStartTime: number = 0;
-
-  private response: IAppResponse;
-
-  set appResponse(response: IAppResponseMaybeJson) {
+  set appResponse(response: IAppResponse) {
     this.response = response;
   }
 
-  get appResponse(): Maybe<IAppResponseMaybeJson> {
+  get appResponse(): Maybe<IAppResponse> {
     if (!this.response) {
       return undefined;
     }
@@ -135,7 +135,7 @@ export default class Context implements IBindRestContext {
     return this.response;
   }
 
-  private scopedComponents: Array<IStoredComponent> = [];
+  protected scopedComponents: Array<IStoredComponent> = [];
 
   /**
    * Storage container for anything
@@ -166,11 +166,11 @@ export default class Context implements IBindRestContext {
    */
   getComponent(id: ComponentIdentity): Maybe<Object> {
     /**
-     * Special case if looking for instance of Context (this object)
+     * Special case if looking for instance of BindRestContext (this object)
      * then just return this
      * otherwise look in scopedComponents map
      */
-    if (isSameIdentity(id, Context.id)) {
+    if (isSameIdentity(id, BindRestContext.id)) {
       debug('%s getComponent Returning instance of self', TAG);
 
       return this;
@@ -188,10 +188,10 @@ export default class Context implements IBindRestContext {
    */
   setComponent(identity: ComponentIdentity, component: any): void {
     /**
-     * Special case do not set Context instance (instance of this class)
+     * Special case do not set BindRestContext instance (instance of this class)
      * into storage
      */
-    if (!isSameIdentity(identity, Context.id)) {
+    if (!isSameIdentity(identity, BindRestContext.id)) {
       /**
        * Not testing if component with same identity
        * already exists before adding it. The consumer of this method
@@ -230,14 +230,14 @@ export default class Context implements IBindRestContext {
   }
 
   get path() {
-    return this.parsedUrl.pathname;
+    return this.parseUrl().pathname;
   }
 
   get requestUrl() {
     return this.reqUrl;
   }
 
-  get parsedUrl(): UrlWithStringQuery {
+  private parseUrl(): UrlWithStringQuery {
     if (!this.uriInfo) {
       this.uriInfo = url.parse(this.reqUrl);
     }
@@ -246,7 +246,7 @@ export default class Context implements IBindRestContext {
   }
 
   get querystring(): string {
-    const uri = this.parsedUrl;
+    const uri = this.parseUrl();
     return uri?.query || '';
   }
 

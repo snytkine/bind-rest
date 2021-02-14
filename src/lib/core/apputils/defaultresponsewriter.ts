@@ -1,12 +1,12 @@
 import * as Http from 'http';
-import { IAppResponseMaybeBody, WriteServerResponseFunc } from '../../interfaces';
+import { IAppResponse, WriteServerResponseFunc } from '../../interfaces';
 
 const debug = require('debug')('bind:rest:runtime:responsewriter');
 
 const TAG = 'DEFAULT_RESPONSE_WRITER';
 
 const defaultResponseWriter: WriteServerResponseFunc = (
-  appResponse: IAppResponseMaybeBody,
+  appResponse: IAppResponse,
   res: Http.ServerResponse,
 ) => {
   if (res.writableFinished) {

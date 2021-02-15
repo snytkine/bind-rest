@@ -21,6 +21,7 @@ import { IAppResponse } from '../lib/interfaces/appresponse';
 import { IStoredComponent } from '../lib/interfaces/storedcomponent';
 import { IContextStore } from '../lib/types/contextstore';
 import { IBindRestContext } from '../lib/interfaces/icontext';
+import { IResponseCookieValue } from '../lib/interfaces/responsecookie';
 
 const debug = require('debug')('bind:rest:context');
 
@@ -32,6 +33,8 @@ export default class BindRestContext implements IBindRestContext {
   static readonly id: ComponentIdentity = Identity(BindRestContext);
 
   public contextType = 'BindRestContext';
+
+  protected readonly responseCookies: NodeJS.Dict<IResponseCookieValue> = {};
 
   public static readonly create = (req: http.IncomingMessage) => {
     const instance = new BindRestContext();
@@ -49,6 +52,10 @@ export default class BindRestContext implements IBindRestContext {
 
   protected uriInfo: UrlWithStringQuery;
 
+  /**
+   * These are name=>value for parsed Request Cookies
+   * @protected
+   */
   protected cookies;
 
   /**
@@ -288,4 +295,12 @@ export default class BindRestContext implements IBindRestContext {
    * @todo maybe use setter and getter.
    */
   parsedBody: any;
+
+  getResponseCookies(): NodeJS.Dict<IResponseCookieValue> {
+    return this.responseCookies;
+  }
+
+  setResponseCookie(name: string, value: IResponseCookieValue): void {
+    this.responseCookies[name] = value;
+  }
 }

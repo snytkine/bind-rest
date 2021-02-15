@@ -1,9 +1,9 @@
 import { IfIocContainer, Maybe } from 'bind-di';
-import Context from '../../components/context';
+import { IBindRestContext } from '../interfaces/icontext';
 
 export type IntoPromise<T> = (val: T) => Promise<T>;
 export type AsyncParamValidator = (param: any) => Maybe<Error> | Promise<Maybe<Error>>;
-export type AsyncContextParamValidator = (ctx: Context) => AsyncParamValidator;
+export type AsyncContextParamValidator = (ctx: IBindRestContext) => AsyncParamValidator;
 
 /**
  * AsyncParamValidator has access to container and Context

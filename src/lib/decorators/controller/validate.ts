@@ -6,8 +6,7 @@ import {
   AsyncContextParamValidator,
   ParamValidator,
 } from '../../types';
-import Context from '../../../components/context';
-import { IControllerParamMeta } from '../../interfaces';
+import { IBindRestContext, IControllerParamMeta } from '../../interfaces';
 import { SYM_METHOD_PARAMS } from '../metaprops';
 import { DOTTED_LINE } from '../../consts';
 
@@ -19,7 +18,7 @@ import { DOTTED_LINE } from '../../consts';
  */
 export const toAsyncValidator = (validator: ParamValidator): AsyncValidator => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return (c: IfIocContainer) => (ctx: Context) => validator;
+  return (c: IfIocContainer) => (ctx: IBindRestContext) => validator;
 };
 
 /**
@@ -47,7 +46,7 @@ export function Validate(...validators: AsyncValidator[]): IParamDecorator {
        * if it has RequestScope dependency it can at least get ComponentDetails
        * and then get actual dependency when it gets the context.
        */
-      return function paramValidator2(ctx: Context) {
+      return function paramValidator2(ctx: IBindRestContext) {
         return function paramValidator3(param: any): Promise<Maybe<Error>> {
           const validationResults: Array<Maybe<Error> | Promise<Maybe<Error>>> = validators
             .map((f: AsyncValidator) => f(container))

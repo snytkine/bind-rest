@@ -14,7 +14,6 @@ import {
 import { IBindRestContext, IMiddleware } from '../interfaces';
 import { SYM_CONTROLLER_MIDDLEWARES } from './metaprops';
 import { ControllerFunc, IMiddlewareFactory, MiddlewareFunc } from '../types';
-import Context from '../../components/context';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -27,7 +26,7 @@ export const toMWFactory = (middleware: Constructor<IMiddleware>): IMiddlewareFa
 
     const componentDetails: IfIocComponent = container.getComponentDetails(mwID);
 
-    return (context: Context) => {
+    return (context: IBindRestContext) => {
       const oMW = <IMiddleware>componentDetails.get([context]);
 
       return oMW.doFilter(context);

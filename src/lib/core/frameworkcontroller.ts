@@ -1,11 +1,10 @@
 import { IControllerContainer } from 'holiday-router';
-import Context from '../../components/context';
 import { IControllerMatcher } from '../types/controllermatcher';
-import { IControllerDetails } from '../interfaces';
+import { IBindRestContext, IControllerDetails } from '../interfaces';
 import { IController } from '../types/controllers';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const defaultMatcher = (ctx: Context) => true;
+const defaultMatcher = (ctx: IBindRestContext) => true;
 
 export default class FrameworkController implements IControllerContainer {
   public readonly controller: IController;

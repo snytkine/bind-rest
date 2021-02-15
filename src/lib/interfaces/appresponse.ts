@@ -1,5 +1,5 @@
 import HttpStatusCode from 'http-status-enum';
-import { IResponseCookie } from './responsecookie';
+import { IResponseCookieValue } from './responsecookie';
 import { IResponseHeaders } from '../types/responseheaders';
 
 import ReadableStream = NodeJS.ReadableStream;
@@ -13,14 +13,16 @@ export interface IAppResponse {
   statusCode: HttpStatusCode;
   headers: IResponseHeaders;
   body?: string;
-  cookies?: Array<IResponseCookie>;
+  cookies?: NodeJS.Dict<IResponseCookieValue>;
   readonly getReadStream: () => ReadableStream;
 }
 
 // export type IAppResponseMaybeBody = IAppResponse & { body?: string };
 // export type IAppResponseMaybeJson = IAppResponseMaybeBody & { json?: any };
 
-export type IAppResponseWithBody = Required<Omit<IAppResponse, 'cookies'>> & {cookies?: Array<IResponseCookie>}
+export type IAppResponseWithBody = Required<Omit<IAppResponse, 'cookies'>> & {
+  cookies?: NodeJS.Dict<IResponseCookieValue>;
+};
 
 export function isAppResponseWithBody(
   appResponse: IAppResponse,

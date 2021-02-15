@@ -1,9 +1,9 @@
 import { IfIocContainer } from 'bind-di';
 import { search } from 'jmespath';
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
-import Context from '../../components/context';
 import { parseJsonBody } from './parsebody';
 import ApplicationError from '../errors/applicationerror';
+import { IBindRestContext } from '../interfaces';
 
 export default function JMESPath(q: string): ParamExtractorFactory {
   try {
@@ -18,7 +18,7 @@ export default function JMESPath(q: string): ParamExtractorFactory {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return (c: IfIocContainer) => (ctx: Context) => {
+  return (c: IfIocContainer) => (ctx: IBindRestContext) => {
     return parseJsonBody(ctx).then((body) => {
       try {
         return search(body, q);

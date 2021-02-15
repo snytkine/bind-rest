@@ -6,12 +6,19 @@ import { ComponentScope, IScopedComponentStorage } from 'bind-di';
 import { IUriParams } from 'holiday-router';
 import { IContextStore } from '../types/contextstore';
 import { IAppResponse } from './appresponse';
+import { IResponseCookieValue } from './responsecookie';
 
 export interface IBindRestContext extends IScopedComponentStorage {
   contextType: string;
   startTime: number;
+
   setHeader(key: string, value: string): void;
+
   setStatusCode(statusCode: HttpStatusCode): void;
+
+  setResponseCookie(name: string, value: IResponseCookieValue): void;
+  getResponseCookies(): NodeJS.Dict<IResponseCookieValue>;
+
   storage: IContextStore;
   req: http.IncomingMessage;
   requestMethod: HTTPMethod;

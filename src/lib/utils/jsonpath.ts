@@ -1,8 +1,8 @@
 import { IfIocContainer } from 'bind-di';
 import { parse, value } from 'jsonpath';
 import { ParamExtractorFactory } from '../types/controllerparamextractor';
-import Context from '../../components/context';
 import { parseJsonBody } from './parsebody';
+import { IBindRestContext } from '../interfaces/icontext';
 
 export default function JSONPath(q: string): ParamExtractorFactory {
   try {
@@ -17,7 +17,7 @@ export default function JSONPath(q: string): ParamExtractorFactory {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  return (c: IfIocContainer) => (ctx: Context) => {
+  return (c: IfIocContainer) => (ctx: IBindRestContext) => {
     return parseJsonBody(ctx).then((body) => {
       try {
         return value(body, q);

@@ -34,9 +34,15 @@ class RouterMiddleware {
    * @param context
    */
   doFilter(context: IBindRestContext): Promise<IBindRestContext> {
-    const requestMethod = context.requestMethod;
-    const path = context.path;
-    debug('%s entered filter with contextType=%s method="%s" url="%s"', TAG, context.contextType, requestMethod, context.path);
+    const { requestMethod } = context;
+    const { path } = context;
+    debug(
+      '%s entered filter with contextType=%s method="%s" url="%s"',
+      TAG,
+      context.contextType,
+      requestMethod,
+      context.path,
+    );
 
     const httpMethod: HTTPMethod = toHTTPMethod(requestMethod);
     debug('%s httpMethod="%s"', TAG, httpMethod);

@@ -1,5 +1,5 @@
 import { Maybe } from 'bind-di';
-import Context from '../../components/context';
+import { IBindRestContext } from './icontext';
 
 /**
  * Error Handle Class must have handleError method which takes
@@ -14,7 +14,7 @@ import Context from '../../components/context';
 /**
  * @todo remove this, not used in new architecture
  */
-export type AppErrorHandlerFunc = (ctx: Context) => (e: Maybe<Error>) => Maybe<Error>;
+export type AppErrorHandlerFunc = (ctx: IBindRestContext) => (e: Maybe<Error>) => Maybe<Error>;
 
 export interface AppErrorHandler {
   handleError: AppErrorHandlerFunc;

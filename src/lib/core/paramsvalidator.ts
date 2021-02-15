@@ -1,5 +1,5 @@
 import { Maybe, isDefined } from 'bind-di';
-import { IControllerParamMeta } from '../interfaces';
+import { IBindRestContext, IControllerParamMeta } from '../interfaces';
 import {
   PARAM_TYPE_ARRAY,
   PARAM_TYPE_BOOLEAN,
@@ -15,7 +15,6 @@ import {
   AsyncParamValidator,
   IntoPromise,
 } from '../types/paramvalidatorfunc';
-import Context from '../../components/context';
 import { DOTTED_LINE } from '../consts/dottedline';
 
 const debug = require('debug')('bind:rest:runtime:validation');
@@ -286,7 +285,7 @@ function makeParamsValidator(meta: Array<IControllerParamMeta>, controllerName: 
 }
 
 function makeValidateAsync(
-  context: Context,
+  context: IBindRestContext,
   validators: Array<AsyncContextParamValidator>,
   controllerName: string,
 ): IntoPromise<Array<any>> {

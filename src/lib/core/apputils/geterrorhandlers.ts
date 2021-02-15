@@ -1,7 +1,7 @@
 import { IfIocContainer, IfIocComponent, Maybe, isDefined } from 'bind-di';
 import { AppErrorHandler, AppErrorHandlerFunc } from '../../interfaces/apperrorhandler';
 import { IS_ERROR_HANDLER } from '../../decorators/metaprops';
-import Context from '../../../components/context';
+import { IBindRestContext } from '../../interfaces/icontext';
 
 const debug = require('debug')('bind:rest:init');
 
@@ -17,7 +17,7 @@ export default function getErrorHandlers(ctr: IfIocContainer): Array<AppErrorHan
     return [];
   }
 
-  const aErrHandlers = ret.map((component) => (ctx: Context) => {
+  const aErrHandlers = ret.map((component) => (ctx: IBindRestContext) => {
     const errorHandler = component.get([ctx]);
     return errorHandler.handleError(ctx);
   });

@@ -2,7 +2,7 @@ import HttpResponseCode from 'http-status-enum';
 import stringToStream from 'string-to-stream';
 import { IResponseHeaders } from '../../types/responseheaders';
 import { IJsonResponse } from '../../interfaces/appresponse';
-import { IResponseCookie } from '../../interfaces/responsecookie';
+import { IResponseCookie, IResponseCookieValue } from '../../interfaces/responsecookie';
 import { CONTENT_TYPE, HEADER_NAMES } from '../../consts';
 
 export default class JsonResponse<T> implements IJsonResponse<T> {
@@ -12,7 +12,7 @@ export default class JsonResponse<T> implements IJsonResponse<T> {
     public headers: IResponseHeaders = {
       [HEADER_NAMES.CONTENT_TYPE]: CONTENT_TYPE.APPLICATION_JSON,
     },
-    public cookies?: Array<IResponseCookie>,
+    public cookies: NodeJS.Dict<IResponseCookieValue> = {},
   ) {
     /**
      * The content-type header will always be application/json

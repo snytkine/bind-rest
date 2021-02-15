@@ -9,6 +9,7 @@ enum MyHeaderNames {
   CONTENT_TYPE = 'content-type',
   CONTENT_LENGTH = 'content-length',
   SET_COOKIE = 'set-cookie',
+  REDIRECT = 'redirect',
 }
 
 export default MyHeaderNames;

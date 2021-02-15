@@ -45,12 +45,15 @@ export interface IResponseCookieOptions {
   overwrite?: boolean;
 }
 
-export interface IResponseCookie {
-  name: string;
+export interface IResponseCookieValue {
   /**
    * If value is not supplied or an empty string, cookie will be send with expires value
    * in the past. This is a way to delete a cookie.
    */
   value: string;
   options?: IResponseCookieOptions;
+}
+
+export interface IResponseCookie extends IResponseCookieValue {
+  name: string;
 }

@@ -1,6 +1,6 @@
 import { Maybe } from 'bind-di';
-import Context from '../../components/context';
+import { IBindRestContext } from './icontext';
 
 export interface IResponseCookieWriter {
-  sendCookies(ctx: Context): Maybe<Array<Error>>;
+  sendCookies(ctx: IBindRestContext): Maybe<Array<Error>>;
 }

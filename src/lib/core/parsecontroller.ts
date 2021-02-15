@@ -9,7 +9,7 @@ import {
   StringToAny,
 } from 'bind-di';
 import HTTPMethod from 'http-method-enum';
-import { IControllerDetails, IControllerParamMeta } from '../interfaces';
+import { IBindRestContext, IControllerDetails, IControllerParamMeta } from '../interfaces';
 import {
   CONTROLLER_MATCHER,
   IS_CONTROLLER,
@@ -26,7 +26,6 @@ import {
   AsyncContextParamValidator,
 } from '../types';
 import { ControllerFunc } from '../types/controllers';
-import Context from '../../components/context';
 import ApplicationError from '../errors/applicationerror';
 import { toMWFuncFactory } from '../decorators/middlewares';
 
@@ -123,7 +122,7 @@ export default function parseController(container: IfIocContainer) {
            * returns a no-op function.
            */
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          return (ctx: Context) => (val) => undefined;
+          return (ctx: IBindRestContext) => (val) => undefined;
         });
         const validateParams = makeParamsValidator(paramsMeta, controllerName);
 
@@ -140,7 +139,7 @@ export default function parseController(container: IfIocContainer) {
          * validateRequired = paramsMeta.map(makeRequiredValidators)
          * customValidators = paramsMeta.map(makeCustomValidators)
          */
-        const ctrl: ControllerFunc = (context: Context) => {
+        const ctrl: ControllerFunc = (context: IBindRestContext) => {
           Reflect.set(context, 'controllerName', controllerName);
 
           const validateAsync = makeValidateAsync(context, validators, controllerName);
@@ -224,7 +223,7 @@ export default function parseController(container: IfIocContainer) {
          */
         if (controllerMiddleware) {
           debug('%s adding controller middleware for controller="%s"', TAG, controllerName);
-          ctrlWithMiddleware = (context: Context) => {
+          ctrlWithMiddleware = (context: IBindRestContext) => {
             return controllerMiddleware(context).then(ctrl);
           };
         }

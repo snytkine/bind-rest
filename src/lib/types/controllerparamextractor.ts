@@ -1,5 +1,5 @@
 import { IfIocContainer } from 'bind-di';
-import Context from '../../components/context';
+import { IBindRestContext } from '../interfaces/icontext';
 
 /**
  * FutureParam function can return value or Promise<value>
@@ -8,6 +8,6 @@ import Context from '../../components/context';
  * array of Promises or Iterable of values
  * all<TAll>(values: Iterable<TAll | PromiseLike<TAll>>): Promise<TAll[]>;
  */
-export type FutureParam = (context: Context) => any;
+export type FutureParam = (context: IBindRestContext) => any;
 export type ParamExtractor = FutureParam;
 export type ParamExtractorFactory = (container: IfIocContainer) => ParamExtractor;

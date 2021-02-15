@@ -1,4 +1,4 @@
-import SystemError from '../../errors/systemerror';
+import SystemError from '../errors/systemerror';
 /**
  * Helper function that returns promise that rejects after number of milliseconds
  *

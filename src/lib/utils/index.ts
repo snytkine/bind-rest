@@ -5,3 +5,7 @@ export { default as isStringOrNumberOrBoolean } from './isstringnumberboolean';
 export { default as validateResponseCode } from './validateresponsecode';
 export { default as createServer } from './createserver';
 export { default as getByteLength } from './bytelength';
+export { default as rejectLater } from './rejectlater';
+export { default as registerProcessEventListeners } from './processexithelper';
+export { default as copyHeaders } from './copyheaders';
+export * from './httpmethodsmap';

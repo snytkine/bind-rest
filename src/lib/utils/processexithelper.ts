@@ -1,4 +1,4 @@
-import { IExitHandler } from '../../interfaces/exithandler';
+import { IExitHandler } from '../interfaces/exithandler';
 
 const debug = require('debug')('bind:rest:core');
 

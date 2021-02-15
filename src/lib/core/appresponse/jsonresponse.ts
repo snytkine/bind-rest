@@ -2,7 +2,7 @@ import HttpResponseCode from 'http-status-enum';
 import stringToStream from 'string-to-stream';
 import { IResponseHeaders } from '../../types/responseheaders';
 import { IJsonResponse } from '../../interfaces/appresponse';
-import { IResponseCookie, IResponseCookieValue } from '../../interfaces/responsecookie';
+import { IResponseCookieValue } from '../../interfaces/responsecookie';
 import { CONTENT_TYPE, HEADER_NAMES } from '../../consts';
 
 export default class JsonResponse<T> implements IJsonResponse<T> {

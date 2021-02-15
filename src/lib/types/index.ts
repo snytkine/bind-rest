@@ -12,16 +12,3 @@ export * from './middlewarefactory';
 export * from './responseheaders';
 export * from './classdecorator';
 export * from './contextstore';
-/**
- * Re-export some interfaces and types from
- * bind-di
- */
-export {
-  IfIocContainer,
-  IfIocComponent,
-  ComponentScope,
-  ComponentIdentity,
-  Identity,
-  Target,
-  Maybe,
-} from 'bind-di';

@@ -4,7 +4,7 @@ import HTTPMethod from 'http-method-enum';
 import FrameworkController from '../lib/core/frameworkcontroller';
 import { Middleware } from '../lib/decorators';
 import { PRIORITY_ROUTER } from '../lib/consts';
-import { toHTTPMethod } from '../lib/core/apputils';
+import { toHTTPMethod } from '../lib/utils';
 import { NotFoundError } from '../lib/errors';
 import { IBindRestContext } from '../lib';
 

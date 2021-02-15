@@ -1,5 +1,5 @@
 import HTTPMethod from 'http-method-enum';
-import { stringToHttpMethod } from '../../types';
+import { stringToHttpMethod } from '../types';
 
 const httpMethodsMap: stringToHttpMethod = {
   GET: HTTPMethod.GET,

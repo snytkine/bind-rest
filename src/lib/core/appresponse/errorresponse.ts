@@ -1,7 +1,7 @@
 import HttpResponseCode from 'http-status-enum';
 import { IResponseHeaders } from '../../types';
 import AppResponse from './appresponse';
-import { IResponseCookie, IResponseCookieValue } from '../../interfaces/responsecookie';
+import { IResponseCookieValue } from '../../interfaces/responsecookie';
 
 export default class ErrorResponse extends AppResponse {
   constructor(

@@ -4,6 +4,8 @@ import { IResponseHeaders } from '../types';
 import { IHttpIncomingMessageResponse } from '../interfaces/httpclientreponse';
 
 export default class IncomingMessageResponse implements IHttpIncomingMessageResponse {
+  // public readonly cookies: string[];
+
   constructor(private im: http.IncomingMessage, public readonly requestID: string = '-') {}
 
   public getReadStream(): http.IncomingMessage {

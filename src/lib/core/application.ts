@@ -7,16 +7,16 @@ import { MiddlewareFunc } from '../types/middlewarefunc';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
 import defaultErrorFormatter from './apputils/defaulterrorformatter';
-import registerProcessEventListeners from './apputils/processexithelper';
+import registerProcessEventListeners from '../utils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
 import {
-  IAppResponse,
   IBindRestContext,
   IExitHandler,
+  IServerResponse,
   WriteServerResponseFunc,
 } from '../interfaces';
 import { FormatErrorFunc } from '../interfaces/errorformater';
-import getResponseFromContext from './apputils/getresponsefromcontext';
+import { filterStringOnlyHeaders, getResponseFromContext } from './apputils/getresponsefromcontext';
 import defaultResponseWriter from './apputils/defaultresponsewriter';
 
 const debug = require('debug')('bind:rest:runtime:application');
@@ -203,7 +203,7 @@ export class Application implements IExitHandler {
     return defaultResponseWriter;
   }
 
-  public getAppResponse(context: IBindRestContext): Promise<IAppResponse> {
+  public getAppResponse(context: IBindRestContext): Promise<IServerResponse> {
     const handlerPromise = this.middlewares.reduce((prev, next) => {
       return prev.then(next);
     }, Promise.resolve(context));
@@ -226,7 +226,13 @@ export class Application implements IExitHandler {
       .then(getResponseFromContext)
       .catch((error) => {
         const errorFormatter = this.getErrorFormatter(context);
-        return errorFormatter(error);
+        const appError = errorFormatter(error);
+        return {
+          statusCode: appError.statusCode,
+          headers: filterStringOnlyHeaders(appError.headers),
+          body: appError.body,
+          getReadStream: appError.getReadStream.bind(appError),
+        };
       });
   }
 
@@ -240,7 +246,9 @@ export class Application implements IExitHandler {
   public handleRequest(req: http.IncomingMessage, res: http.ServerResponse) {
     const ctx = Context.create(req);
 
-    this.getAppResponse(ctx).then((appResponse) => this.getResponseWriter(ctx)(appResponse, res));
+    this.getAppResponse(ctx).then((serverResponse) =>
+      this.getResponseWriter(ctx)(serverResponse, res),
+    );
   }
 
   init(): Promise<boolean> {

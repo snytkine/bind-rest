@@ -1,6 +1,6 @@
 import HttpResponseCode from 'http-status-enum';
 import { IResponseHeaders } from '../../types/responseheaders';
-import { IResponseCookie, IResponseCookieValue } from '../../interfaces/responsecookie';
+import { IResponseCookieValue } from '../../interfaces/responsecookie';
 import { IAppResponse } from '../../interfaces';
 
 export default class StreamResponse implements IAppResponse {

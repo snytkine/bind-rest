@@ -1,7 +1,10 @@
 import * as Http from 'http';
-import { IAppResponse } from './appresponse';
+import { IServerResponse } from './appresponse';
 
-export type WriteServerResponseFunc = (appResponse: IAppResponse, res: Http.ServerResponse) => void;
+export type WriteServerResponseFunc = (
+  serverResponse: IServerResponse,
+  res: Http.ServerResponse,
+) => void;
 
 export interface IResponseWriter {
   writeResponse: WriteServerResponseFunc;

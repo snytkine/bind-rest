@@ -1,5 +1,5 @@
 import { IfIocContainer, IfIocComponent } from 'bind-di';
-import { IS_CONTROLLER } from '../../decorators/metaprops';
+import { IS_CONTROLLER } from '../decorators/metaprops';
 
 /**
  * This function is for filtering out only Controller components

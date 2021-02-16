@@ -18,6 +18,7 @@ import applyNoParamDecorator from './applysingledecorator';
 import getParamType from './getparamtype';
 import BadRequestError from '../../errors/http/badrequest';
 import { IBindRestContext } from '../../interfaces/icontext';
+import HEADER_NAMES from '../../consts/headernames';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -80,10 +81,10 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
        */
       debug('%s trying to get request content-type', TAG);
       if (
-        context.requestHeaders?.['content-type'] &&
-        typeof context.requestHeaders['content-type'] === 'string'
+        context.requestHeaders?.[HEADER_NAMES.CONTENT_TYPE] &&
+        typeof context.requestHeaders[HEADER_NAMES.CONTENT_TYPE] === 'string'
       ) {
-        contentType = context.requestHeaders['content-type'].toLowerCase();
+        contentType = context.requestHeaders[HEADER_NAMES.CONTENT_TYPE].toLowerCase();
       }
 
       debug('%s in Body parser. contentType=%s', TAG, contentType);

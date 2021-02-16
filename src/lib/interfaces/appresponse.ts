@@ -3,6 +3,10 @@ import * as http from 'http';
 import { IResponseCookieValue } from './responsecookie';
 
 import ReadableStream = NodeJS.ReadableStream;
+import {SYM_HAS_BODY} from "../consts/appcomponents";
+
+const debug = require('debug')('bind:rest:runtime:application');
+const TAG = 'APP_RESPONSE';
 
 /**
  * Controllers return a Promise of this interface
@@ -27,7 +31,10 @@ export type IAppResponseWithBody = Required<Omit<IAppResponse, 'cookies'>> & {
 export function isAppResponseWithBody(
   appResponse: Omit<IAppResponse, 'cookies'>,
 ): appResponse is IAppResponseWithBody {
-  return appResponse.body !== undefined;
+  const hasBodyFlag = Reflect.has(appResponse, SYM_HAS_BODY);
+  const ret = hasBodyFlag || appResponse.body !== undefined;
+  debug('returning from isAppResponseWithBody=%s hasBodyFlag=%s', ret, hasBodyFlag);
+  return ret;
 }
 
 export interface IJsonResponse<T extends {}> extends IAppResponseWithBody {

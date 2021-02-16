@@ -69,10 +69,13 @@ const filterStringOnlyHeaders = (headers: IResponseHeaders): NodeJS.Dict<string>
  * @param context
  */
 const getResponseFromContext = (context: IBindRestContext): IServerResponse => {
+  debug('%s entered getResponseFromContext', TAG);
   const response =
     context.appResponse ||
     new ErrorResponse(HttpResponseCode.INTERNAL_SERVER_ERROR, 'Response not processed');
   let responseCookies: string[];
+
+
 
   try {
     responseCookies = toStringCookies(response);
@@ -90,9 +93,16 @@ const getResponseFromContext = (context: IBindRestContext): IServerResponse => {
   /**
    * IAppResponseWithBody are special. set content-length header
    */
-  if (isAppResponseWithBody(ret)) {
-    ret.headers[HEADER_NAMES.CONTENT_LENGTH] = `${getByteLength(response.body)}`;
+  if (isAppResponseWithBody(response)) {
+    debug('%s response has body', TAG);
     ret.body = response.body;
+    /**
+     * Order of this line is important. First get the body from response and assign to this ret object
+     * and then get the length of it.
+     * If we attempt to use original response.body here then in case of JsonResponse (or any other type that
+     * has body as a getter, the getter will be called every time the .body is accessed.
+     */
+    ret.headers[HEADER_NAMES.CONTENT_LENGTH] = `${getByteLength(ret.body)}`;
   }
 
   return ret;

@@ -130,7 +130,7 @@ export default class BindRestContext implements IBindRestContext {
     }
     /**
      * Normalize response headers to lower case names.
-     * Values set explicitely with context.setHeader() override values returned in IAppResponse
+     * Values set explicitly with context.setHeader() override values returned in IAppResponse
      */
 
     /**

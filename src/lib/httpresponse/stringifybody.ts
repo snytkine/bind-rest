@@ -1,9 +1,9 @@
 import charSet from 'charset';
-// import decompressResponse from 'decompress-response';
 import SUPPORTED_ENCODINGS from '../consts/supportedencodings';
 import { IAppResponse, IAppResponseWithBody, isAppResponseWithBody } from '../interfaces';
 import { AppResponse } from '../core';
 import HTTP_BODY_MAX_BYTES from '../consts/maxhttpbodysize';
+import HEADER_NAMES from '../consts/headernames';
 
 const debug = require('debug')('bind:rest:httprequest');
 
@@ -31,10 +31,11 @@ const TAG = 'STRINGIFY_BODY';
  * @returns {Promise<IAppResponseWithBody>}
  */
 const stringifyBody = (maxBytes: number = HTTP_BODY_MAX_BYTES) => (
-  resp: IAppResponse,
+  resp: Omit<IAppResponse, 'cookies'>,
 ): Promise<IAppResponseWithBody> => {
   if (isAppResponseWithBody(resp)) {
-    return Promise.resolve(resp as IAppResponseWithBody);
+    debug('%s response already has body %s', TAG, resp.body);
+    return Promise.resolve(resp);
   }
 
   const is = resp.getReadStream();
@@ -43,17 +44,26 @@ const stringifyBody = (maxBytes: number = HTTP_BODY_MAX_BYTES) => (
   const bufs: Buffer[] = [];
 
   /**
+   * @todo if content-type is determined to be a binary content
+   * then we should not even attempt to stringify it
+   * instead should throw Error here.
+   */
+
+  /**
    * Response may be in compressed format.
    * Important to first uncompress the response
+   * Default will be utf-8
+   * In case we cannot determine actual charset this default value can cause problem
+   * For example if content-type is binary then we will have problem stringifying it.
    */
-  let cs: string;
+  let cs: string = 'utf-8';
 
   /**
    * Determine content-type
    */
-  if (resp.headers && resp.headers['content-type']) {
-    debug('Have content-type header in response: %s', resp.headers['content-type']);
-    cs = charSet(resp.headers['content-type']);
+  if (resp.headers && resp.headers[HEADER_NAMES.CONTENT_TYPE]) {
+    debug('Have content-type header in response: %s', resp.headers[HEADER_NAMES.CONTENT_TYPE]);
+    cs = charSet(resp.headers[HEADER_NAMES.CONTENT_TYPE]);
     cs = cs && cs.toLocaleLowerCase();
     debug(`Charset from response: %s`, cs);
     /**
@@ -73,6 +83,9 @@ const stringifyBody = (maxBytes: number = HTTP_BODY_MAX_BYTES) => (
   if (cs) {
     if (!SUPPORTED_ENCODINGS.includes(cs)) {
       debug('Unknown encoding: ', cs);
+      /**
+       *
+       */
     } else {
       /**
        * This is where charset encoding is set for the whole stream

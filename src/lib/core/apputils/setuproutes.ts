@@ -1,6 +1,6 @@
 import { IfIocContainer, arrayNotEmpty, Identity } from 'bind-di';
 import { HttpRouter } from 'holiday-router';
-import getControllerComponents from './getcontrollercomponents';
+import getControllerComponents from '../../utils/getcontrollercomponents';
 import parseController from '../parsecontroller';
 import { IControllerDetails } from '../../interfaces/controller';
 import ApplicationError from '../../errors/applicationerror';

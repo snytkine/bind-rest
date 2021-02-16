@@ -1,4 +1,4 @@
-import { IResponseCookie, IResponseCookieOptions } from '../../interfaces/responsecookie';
+import { IResponseCookie, IResponseCookieOptions } from '../interfaces/responsecookie';
 
 /**
  * Helper factory function to create IResponseCookie object

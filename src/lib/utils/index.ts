@@ -8,4 +8,6 @@ export { default as getByteLength } from './bytelength';
 export { default as rejectLater } from './rejectlater';
 export { default as registerProcessEventListeners } from './processexithelper';
 export { default as copyHeaders } from './copyheaders';
+export { default as ResponseCookie } from './cookie';
+export { default as getControllerComponents } from './getcontrollercomponents';
 export * from './httpmethodsmap';

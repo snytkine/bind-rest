@@ -1,11 +1,12 @@
 import { JsonResponse } from '../core/appresponse';
 import ApplicationError from '../errors/applicationerror';
 import { IAppResponseWithBody } from '../interfaces';
+import HEADER_NAMES from '../consts/headernames';
 
 export default function jsonParseBody<T>(resp: IAppResponseWithBody): Promise<JsonResponse<T>> {
   return new Promise((resolve, reject) => {
     const { body } = resp;
-    const contentType = resp.headers['content-type'] || '';
+    const contentType = resp.headers[HEADER_NAMES.CONTENT_TYPE] || '';
 
     try {
       const json = JSON.parse(body);

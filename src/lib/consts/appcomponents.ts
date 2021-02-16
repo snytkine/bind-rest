@@ -4,3 +4,4 @@ export const RESPONSE_COOKIES_WRITER = Symbol.for('bind:rest:ResponseCookies');
 export const CONFIGURATION_COMPONENT = Symbol.for('bind:rest:Configuration');
 export const REQUEST_COOKIES_PARSER = Symbol.for('bind:rest:RequestCookies');
 export const SYM_ERROR_HANDLER = Symbol.for('bind:rest:ErrorHandler');
+export const SYM_HAS_BODY = Symbol.for('bind:rest:response_has_body');

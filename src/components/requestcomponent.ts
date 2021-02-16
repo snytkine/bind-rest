@@ -1,6 +1,7 @@
 import { Component, ComponentScope, Scope } from 'bind-di';
 import { SERVER_REQUEST } from '../lib/consts';
 import { IBindRestContext } from '../lib/interfaces';
+import BindRestContext from "./context";
 
 @Component(SERVER_REQUEST)
 @Scope(ComponentScope.REQUEST)
@@ -10,9 +11,9 @@ export default class RequestComponent {
    * will be returned as instance of constructed class
    * the result of calling new RequestComponent(context)
    * will be context.req
-   * @param context
+   * @param context this cannot be interface, must be concrete class or DI will not work because its unnamed injection.
    */
-  constructor(context: IBindRestContext) {
+  constructor(context: BindRestContext) {
     return context.req;
   }
 }

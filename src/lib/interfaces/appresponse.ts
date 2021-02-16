@@ -32,6 +32,9 @@ export function isAppResponseWithBody(
   appResponse: Omit<IAppResponse, 'cookies'>,
 ): appResponse is IAppResponseWithBody {
   const hasBodyFlag = Reflect.has(appResponse, SYM_HAS_BODY);
+  /**
+   * checking for undefined instead of truethy because empty string still counts as body
+   */
   const ret = hasBodyFlag || appResponse.body !== undefined;
   debug('returning from isAppResponseWithBody=%s hasBodyFlag=%s', ret, hasBodyFlag);
   return ret;

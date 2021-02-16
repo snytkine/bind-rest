@@ -129,15 +129,20 @@ export default class BindRestContext implements IBindRestContext {
       this.response.statusCode = this.responseStatusCode;
     }
     /**
-     * Normalize response headers to lower case names.
+     *
      * Values set explicitly with context.setHeader() override values returned in IAppResponse
      */
-
-    /**
-     * @todo deal with cookies. Merge cookies from response with cookies set with setCookie.
-     * Append a set-cookie header with stringified value of all cookies
-     */
     this.response.headers = { ...lowercaseKeys(this.responseHeaders), ...this.response.headers };
+    /**
+     * Merge cookies from response with cookies set with setCookie. cookie set with context setResponseCookie
+     * overrides cookies passed in IAppResponse
+     */
+    if(this.appResponse.cookies){
+      this.appResponse.cookies = {...this.appResponse.cookies, ...this.responseCookies }
+    } else {
+      this.appResponse.cookies = this.responseCookies;
+    }
+
 
     return this.response;
   }

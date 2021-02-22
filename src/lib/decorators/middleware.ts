@@ -7,8 +7,8 @@ import {
   ComponentScope,
   Constructor,
 } from 'bind-di';
-import { MIDDLEWARE_PRIORITY } from './metaprops';
-import { IMiddleware } from '../interfaces/middleware';
+import {MIDDLEWARE_PRIORITY} from './metaprops';
+import {IMiddleware} from '../interfaces/middleware';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -28,10 +28,10 @@ const validatePriority = (i: any): boolean => {
  * @param target
  * @param priority
  */
-function decorateMiddleware(
+export function decorateMiddleware(
   target: Constructor<IMiddleware>,
-  priority?: number,
-  decoratorName?: string,
+  priority: number,
+  decoratorName: string = 'Middleware',
 ) {
   debug('Defining %s for constructor %s. decoratorName=%s', TAG, target.name, decoratorName);
   Component(target);
@@ -45,13 +45,12 @@ function decorateMiddleware(
    */
   defineMetadata(DEFAULT_SCOPE, ComponentScope.NEWINSTANCE, target)();
 
-  if (priority) {
-    const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
+  const metaData = Reflect.getMetadata(COMPONENT_META_DATA, target) || {};
 
-    metaData[MIDDLEWARE_PRIORITY] = priority;
+  metaData[MIDDLEWARE_PRIORITY] = priority;
 
-    defineMetadata(COMPONENT_META_DATA, metaData, target)();
-  }
+  defineMetadata(COMPONENT_META_DATA, metaData, target)();
+
 }
 
 export function Middleware(constructor: Constructor<IMiddleware>);
@@ -68,7 +67,7 @@ export function Middleware(val: NumberOrMiddleware) {
       decorateMiddleware(constructor, Number.MIN_SAFE_INTEGER + val, 'Middleware');
     };
   }
-  decorateMiddleware(val);
+  decorateMiddleware(val, -1);
 }
 
 export function Afterware(priority: number) {

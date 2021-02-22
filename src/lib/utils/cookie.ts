@@ -1,4 +1,4 @@
-import { IResponseCookie, IResponseCookieOptions } from '../interfaces/responsecookie';
+import { IResponseCookieOptions, IResponseCookieValue } from '../interfaces/responsecookie';
 
 /**
  * Helper factory function to create IResponseCookie object
@@ -9,10 +9,9 @@ import { IResponseCookie, IResponseCookieOptions } from '../interfaces/responsec
  *
  */
 const ResponseCookie = (
-  name: string,
   value: string = '',
   options?: IResponseCookieOptions,
-): IResponseCookie => {
+): IResponseCookieValue => {
   /**
    * @todo validate name and value for disallowed chars?
    * There are also some rules specific to options
@@ -21,7 +20,6 @@ const ResponseCookie = (
    * to client over http?
    */
   return {
-    name,
     value,
     options,
   };

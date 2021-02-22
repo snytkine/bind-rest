@@ -37,7 +37,8 @@ const defaultResponseWriter: WriteServerResponseFunc = (
       }
     }
 
-    if (serverResponse.cookies) {
+    if (serverResponse.cookies && serverResponse.cookies.length > 0) {
+      debug('%s serverResponse has %s cookie ', TAG, serverResponse.cookies.length);
       serverResponse.cookies.forEach((cookie) => {
         debug('%s Setting set-cookie with %s', TAG, cookie);
         try {
@@ -46,10 +47,13 @@ const defaultResponseWriter: WriteServerResponseFunc = (
           debug('%s error setting cookie "%s" error="%s"', TAG, cookie, e);
         }
       });
+    } else {
+      debug('%s serverResponse does not have cookies', TAG);
     }
   }
 
   if (serverResponse.body) {
+    debug('%s serverResponse has body', TAG);
     res.end(serverResponse.body);
   } else {
     serverResponse.getReadStream().pipe(res);

@@ -1,6 +1,6 @@
 import http from 'http';
 import path from 'path';
-import { IfIocContainer, Container, load, isDefined } from 'bind-di';
+import { IfIocContainer, Container, load, isDefined, addComponent } from 'bind-di';
 import Context from '../../components/context';
 import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
@@ -97,6 +97,14 @@ export class Application implements IExitHandler {
       [...this.configOptions.componentDirs, APPLICATION_COMPONENTS_DIR],
       this.settings.envOverrideVar,
     );
+
+    if (this.settings.extraComponents) {
+      try {
+        this.settings.extraComponents.forEach(addComponent);
+      } catch (e) {
+        throw new ApplicationError(`Failed to add extra component ${e.message}`, e);
+      }
+    }
     /**
      * @todo add extra components here, before parsing controllers because
      * extra components may contain controllers and middlewares

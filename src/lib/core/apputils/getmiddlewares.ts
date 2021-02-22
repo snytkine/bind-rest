@@ -5,15 +5,15 @@ import {
   IfIocComponent,
   getComponentNameFromIdentity,
 } from 'bind-di';
-import { MiddlewareFunc } from '../../types/middlewarefunc';
+import {MiddlewareFunc} from '../../types/middlewarefunc';
 import {
   MIDDLEWARE_PRIORITY,
   SYM_MIDDLEWARE_NAME,
   SYM_MIDDLEWARE_PRIORITY,
 } from '../../decorators/metaprops';
-import { IMiddleware } from '../../interfaces/middleware';
+import {IMiddleware} from '../../interfaces/middleware';
 import ApplicationError from '../../errors/applicationerror';
-import { IBindRestContext } from '../../interfaces';
+import {IBindRestContext} from '../../interfaces';
 
 const debug = require('debug')('bind:rest:runtime:middleware');
 
@@ -24,7 +24,7 @@ export default function getMiddlewares(ctr: IfIocContainer): Array<MiddlewareFun
     return c.componentMetaData?.[MIDDLEWARE_PRIORITY] !== undefined;
   });
 
-  if (!isDefined(ret)) {
+  if (!isDefined(ret) || ret.length === 0) {
     throw new ApplicationError(`No Middleware components found in container.
     Container should have at least the RouterMiddleware which is part of this framework.
     Looks like RouterMiddleware was not loaded`);

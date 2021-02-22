@@ -1,11 +1,12 @@
 import HttpStatusCode from 'http-status-enum';
 import * as http from 'http';
 import { IResponseCookieValue } from './responsecookie';
+import { SYM_HAS_BODY } from '../consts/appcomponents';
 
 import ReadableStream = NodeJS.ReadableStream;
-import {SYM_HAS_BODY} from "../consts/appcomponents";
 
 const debug = require('debug')('bind:rest:runtime:application');
+
 const TAG = 'APP_RESPONSE';
 
 /**

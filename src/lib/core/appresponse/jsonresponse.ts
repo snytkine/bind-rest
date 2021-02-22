@@ -3,13 +3,13 @@ import stringToStream from 'string-to-stream';
 import { IResponseHeaders } from '../../types/responseheaders';
 import { IJsonResponse } from '../../interfaces/appresponse';
 import { IResponseCookieValue } from '../../interfaces/responsecookie';
-import {CONTENT_TYPE, HEADER_NAMES, SYM_HAS_BODY} from '../../consts';
+import { CONTENT_TYPE, HEADER_NAMES, SYM_HAS_BODY } from '../../consts';
 
 const debug = require('debug')('bind:rest:application');
+
 const TAG = 'JSON_RESPONSE';
 
 export default class JsonResponse<T> implements IJsonResponse<T> {
-
   public [SYM_HAS_BODY] = true;
 
   constructor(

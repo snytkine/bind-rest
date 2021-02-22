@@ -1,7 +1,7 @@
-import { HttpRouter } from 'holiday-router';
-import { getMethodParamName, Identity, IfIocContainer, ClassPrototype, PARAM_TYPES } from 'bind-di';
+import {HttpRouter} from 'holiday-router';
+import {getMethodParamName, Identity, IfIocContainer, ClassPrototype, PARAM_TYPES} from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
-import { SYM_JSON_SCHEMA } from '../metaprops';
+import {SYM_JSON_SCHEMA} from '../metaprops';
 import {
   CONTENT_TYPE_JSON,
   PARAM_TYPE_BOOLEAN,
@@ -12,12 +12,12 @@ import {
 } from '../../consts/controllermethodparams';
 import FrameworkController from '../../core/frameworkcontroller';
 
-import { parseBody, parseJsonBody } from '../../utils/parsebody';
+import {parseBody, parseJsonBody} from '../../utils/parsebody';
 import makeParamDecorator from './makeparamdecorator';
 import applyNoParamDecorator from './applysingledecorator';
 import getParamType from './getparamtype';
 import BadRequestError from '../../errors/http/badrequest';
-import { IBindRestContext } from '../../interfaces/icontext';
+import {IBindRestContext} from '../../interfaces/icontext';
 import HEADER_NAMES from '../../consts/headernames';
 
 const debug = require('debug')('bind:rest:decorators');
@@ -28,6 +28,27 @@ export function Required(target: ClassPrototype, propertyKey: string, parameterI
   return applyNoParamDecorator(target, propertyKey, parameterIndex, true);
 }
 
+/**
+ * Logic for parsing @Body decorated param:
+ * If param type is: string | number | boolean
+ * then just turn that body into a string (later a function will attemp
+ * to convert that string into desired type)
+ *
+ *
+ * If param type is some custom class (not just Object) then try to see get JsonSchema from that class
+ * If class had @JsonSchema decorator attached then:
+ * 1. Body must be first parsed into string, then into json
+ * 2. result object must validate against Json Schema
+ *
+ * If there is a request header 'content-type' that starts with application/json
+ * AND explicit type is NOT a primitive type then attempt to convert body
+ * into Json object.
+ *
+ * @param target
+ * @param propertyKey
+ * @param parameterIndex
+ * @constructor
+ */
 export function Body(target: ClassPrototype, propertyKey: string, parameterIndex: number) {
   const paramTypes = Reflect.getMetadata(PARAM_TYPES, target, propertyKey);
   const controllerName = `${target.constructor.name}.${propertyKey}`;
@@ -40,32 +61,26 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         @Body param cannot be of type Promise.`);
   }
 
+  const primitiveType = (paramType === PARAM_TYPE_STRING ||
+    paramType === PARAM_TYPE_BOOLEAN ||
+    paramType === PARAM_TYPE_NUMBER)
+
+  const shouldJsonParseBody: boolean = (
+    !primitiveType &&
+    paramType !== PARAM_TYPE_BOOLEAN
+  );
+
   /* eslint-disable  @typescript-eslint/no-unused-vars */
   const paramFactory = (c: IfIocContainer) => {
-    const enableSchemaValidation = true;
-    // const application: Application = c.getComponent(Identity(APPLICATION_COMPONENT));
 
     return function BodyExtractor(context: IBindRestContext) {
-      /**
-       * @todo this was supposed to be a way to turn off schema validation
-       * in a running application, even if @Body type of request param
-       * already had object with @JsonSchema decoration.
-       *
-       *
-       */
-      // const enableSchemaValidation = application.settings?.validation?.jsonSchema;
       let jsonSchema;
 
-      // debug('%s in Body paramFactory enableSchemaValidation=%s', TAG, enableSchemaValidation);
       /**
        * If paramType is component decorated with JsonSchema then validate schema.
        */
       if (
-        enableSchemaValidation &&
-        paramType !== PARAM_TYPE_STRING &&
-        paramType !== PARAM_TYPE_BOOLEAN &&
-        paramType !== PARAM_TYPE_OBJECT &&
-        paramType !== PARAM_TYPE_NUMBER
+        shouldJsonParseBody
       ) {
         try {
           jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
@@ -74,23 +89,23 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         }
         debug('%s jsonSchema=%o', TAG, jsonSchema);
       }
-
-      let contentType: string;
       /**
        * Use content-type header
        */
       debug('%s trying to get request content-type', TAG);
-      if (
-        context.requestHeaders?.[HEADER_NAMES.CONTENT_TYPE] &&
-        typeof context.requestHeaders[HEADER_NAMES.CONTENT_TYPE] === 'string'
-      ) {
-        contentType = context.requestHeaders[HEADER_NAMES.CONTENT_TYPE].toLowerCase();
-      }
+      const contentType: string = context.requestHeaders?.[HEADER_NAMES.CONTENT_TYPE]?.toLowerCase() || '';
 
       debug('%s in Body parser. contentType=%s', TAG, contentType);
       let parsed: Promise<any>;
 
-      if (contentType.startsWith(CONTENT_TYPE_JSON) || jsonSchema) {
+      /**
+       * If content-type header says its application/json
+       * then parse body into json object
+       *
+       * otherwise just turn into a string.
+       */
+
+      if ((!primitiveType && contentType.startsWith(CONTENT_TYPE_JSON)) || jsonSchema) {
         debug('%s will parseJsonBody', TAG);
         parsed = parseJsonBody(context, jsonSchema);
       } else {

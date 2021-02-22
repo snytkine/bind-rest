@@ -56,7 +56,7 @@ export default class BindRestContext implements IBindRestContext {
    * These are name=>value for parsed Request Cookies
    * @protected
    */
-  protected cookies;
+  protected cookies: NodeJS.Dict<string>;
 
   /**
    * Parsed url query
@@ -121,6 +121,7 @@ export default class BindRestContext implements IBindRestContext {
   }
 
   get appResponse(): Maybe<IAppResponse> {
+    debug('%s enter get appResponse()', TAG);
     if (!this.response) {
       return undefined;
     }
@@ -137,12 +138,11 @@ export default class BindRestContext implements IBindRestContext {
      * Merge cookies from response with cookies set with setCookie. cookie set with context setResponseCookie
      * overrides cookies passed in IAppResponse
      */
-    if(this.appResponse.cookies){
-      this.appResponse.cookies = {...this.appResponse.cookies, ...this.responseCookies }
+    if (this.response.cookies) {
+      this.response.cookies = { ...this.response.cookies, ...this.responseCookies };
     } else {
-      this.appResponse.cookies = this.responseCookies;
+      this.response.cookies = this.responseCookies;
     }
-
 
     return this.response;
   }
@@ -270,7 +270,7 @@ export default class BindRestContext implements IBindRestContext {
     return this.query;
   }
 
-  get parsedCookies() {
+  get parsedCookies(): NodeJS.Dict<string> {
     if (this.cookies) return this.cookies;
 
     if (this.requestHeaders.cookie) {

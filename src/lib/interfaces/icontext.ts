@@ -32,7 +32,7 @@ export interface IBindRestContext extends IScopedComponentStorage {
   controllerArguments: Array<any>;
   parsedBody: any;
   appResponse?: IAppResponse;
-  parsedCookies: { [key: string]: string };
+  parsedCookies: NodeJS.Dict<string>;
   routeParams: IUriParams;
   // IScopedComponentStorage scope must be a REQUEST scope
   scope: ComponentScope.REQUEST;

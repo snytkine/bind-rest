@@ -1,12 +1,12 @@
-import { HttpRouter } from 'holiday-router';
-import { Component, Singleton, Inject } from 'bind-di';
+import {HttpRouter} from 'holiday-router';
+import {Component, Singleton, Inject} from 'bind-di';
 import HTTPMethod from 'http-method-enum';
 import FrameworkController from '../lib/core/frameworkcontroller';
-import { Middleware } from '../lib/decorators';
-import { PRIORITY_ROUTER } from '../lib/consts';
-import { toHTTPMethod } from '../lib/utils';
-import { NotFoundError } from '../lib/errors';
-import { IBindRestContext } from '../lib';
+import {decorateMiddleware} from '../lib/decorators';
+import {PRIORITY_ROUTER} from '../lib/consts';
+import {toHTTPMethod} from '../lib/utils';
+import {NotFoundError} from '../lib/errors';
+import {IBindRestContext} from '../lib';
 
 const debug = require('debug')('bind:rest:runtime');
 
@@ -21,7 +21,7 @@ const TAG = 'RouterMiddleware';
 Component(HttpRouter);
 Singleton(HttpRouter);
 
-@Middleware(PRIORITY_ROUTER)
+//@Middleware(PRIORITY_ROUTER)
 @Singleton
 class RouterMiddleware {
   @Inject
@@ -34,8 +34,8 @@ class RouterMiddleware {
    * @param context
    */
   doFilter(context: IBindRestContext): Promise<IBindRestContext> {
-    const { requestMethod } = context;
-    const { path } = context;
+    const {requestMethod} = context;
+    const {path} = context;
     debug(
       '%s entered filter with contextType=%s method="%s" url="%s"',
       TAG,
@@ -88,10 +88,11 @@ class RouterMiddleware {
   }
 }
 
+decorateMiddleware(RouterMiddleware, PRIORITY_ROUTER, 'RouterMiddleware')
 /**
  * Now that HttpRouter is decorated as Component
  * Must export HttpRouter so that Component Loader will register
  * HttpRouter as a container component
  *
  */
-export { HttpRouter, RouterMiddleware };
+export {HttpRouter, RouterMiddleware};

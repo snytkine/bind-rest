@@ -27,10 +27,12 @@ const TAG = 'GET_RESPONSE_FROM_CONTEXT';
  * @param cookies
  */
 const toStringCookies = (appResponse: IAppResponse): Maybe<string[]> => {
+  debug('%s entered toStringCookies', TAG);
   const { cookies } = appResponse;
   const { headers } = appResponse;
   let ret: string[];
   if (cookies) {
+    debug('%s appResponse has cookies', TAG);
     ret = Object.entries(cookies).map(([key, val]) => {
       return new Cookies.Cookie(key, val.value, val.options).toHeader();
     });
@@ -40,10 +42,12 @@ const toStringCookies = (appResponse: IAppResponse): Maybe<string[]> => {
    * If response headers include set-cookie then
    */
   if (headers && headers[HEADER_NAMES.SET_COOKIE]) {
+    debug('%s appResponse has own set-cookie header', TAG);
     ret = ret || [];
     ret = ret.concat(headers[HEADER_NAMES.SET_COOKIE]);
   }
 
+  debug('%s returning from toStringCookies ret=%s', TAG, ret);
   return ret;
 };
 
@@ -74,8 +78,6 @@ const getResponseFromContext = (context: IBindRestContext): IServerResponse => {
     context.appResponse ||
     new ErrorResponse(HttpResponseCode.INTERNAL_SERVER_ERROR, 'Response not processed');
   let responseCookies: string[];
-
-
 
   try {
     responseCookies = toStringCookies(response);

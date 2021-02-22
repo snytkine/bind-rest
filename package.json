@@ -14,7 +14,7 @@
     "test": "cross-env NODE_ENV=TEST NODE_ENC=TEST jest",
     "test:watch": "cross-env NODE_ENV=TEST NODE_ENC=TEST jest --watch",
     "test:coverage": "cross-env NODE_ENV=TEST NODE_ENC=TEST jest --coverage",
-    "prettier": "prettier --config ./.prettierrc --write ./src/**/*.ts",
+    "prettier": "prettier --config .prettierrc.js --write ./src/**/*.ts",
     "format": "eslint src --ext .ts --fix",
     "lint": "eslint src --ext .ts"
   },

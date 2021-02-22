@@ -1,10 +1,19 @@
 {
   "name": "bind-rest",
-  "version": "1.4.5",
+  "version": "1.4.6",
   "description": "Framework for creating REST API with decorators and dependency injection",
   "private": false,
   "license": "MIT",
-  "keywords": ["Framework", "IOC", "Dependency Injection", "Typescript", "Rest", "Decorators", "Annotations", "Swagger"],
+  "keywords": [
+    "Framework",
+    "IOC",
+    "Dependency Injection",
+    "Typescript",
+    "Rest",
+    "Decorators",
+    "Annotations",
+    "Swagger"
+  ],
   "scripts": {
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",

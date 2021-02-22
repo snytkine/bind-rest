@@ -5,15 +5,15 @@ import {
   IfIocComponent,
   getComponentNameFromIdentity,
 } from 'bind-di';
-import {MiddlewareFunc} from '../../types/middlewarefunc';
+import { MiddlewareFunc } from '../../types/middlewarefunc';
 import {
   MIDDLEWARE_PRIORITY,
   SYM_MIDDLEWARE_NAME,
   SYM_MIDDLEWARE_PRIORITY,
 } from '../../decorators/metaprops';
-import {IMiddleware} from '../../interfaces/middleware';
+import { IMiddleware } from '../../interfaces/middleware';
 import ApplicationError from '../../errors/applicationerror';
-import {IBindRestContext} from '../../interfaces';
+import { IBindRestContext } from '../../interfaces';
 
 const debug = require('debug')('bind:rest:runtime:middleware');
 

@@ -7,8 +7,8 @@ import {
   ComponentScope,
   Constructor,
 } from 'bind-di';
-import {MIDDLEWARE_PRIORITY} from './metaprops';
-import {IMiddleware} from '../interfaces/middleware';
+import { MIDDLEWARE_PRIORITY } from './metaprops';
+import { IMiddleware } from '../interfaces/middleware';
 
 const debug = require('debug')('bind:rest:decorators');
 
@@ -50,7 +50,6 @@ export function decorateMiddleware(
   metaData[MIDDLEWARE_PRIORITY] = priority;
 
   defineMetadata(COMPONENT_META_DATA, metaData, target)();
-
 }
 
 export function Middleware(constructor: Constructor<IMiddleware>);

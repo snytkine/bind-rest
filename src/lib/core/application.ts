@@ -6,7 +6,7 @@ import { ApplicationOptions } from '../interfaces/application';
 import { MiddlewareFunc } from '../types/middlewarefunc';
 import setupRoutes from './apputils/setuproutes';
 import getMiddlewares from './apputils/getmiddlewares';
-import defaultErrorFormatter from './apputils/defaulterrorformatter';
+import { getErrorFormatter } from './apputils/defaulterrorformatter';
 import registerProcessEventListeners from '../utils/processexithelper';
 import ApplicationError from '../errors/applicationerror';
 import {
@@ -17,7 +17,7 @@ import {
 } from '../interfaces';
 import { FormatErrorFunc } from '../interfaces/errorformater';
 import { filterStringOnlyHeaders, getResponseFromContext } from './apputils/getresponsefromcontext';
-import defaultResponseWriter from './apputils/defaultresponsewriter';
+import { getResponseWriter } from './apputils/defaultresponsewriter';
 
 const debug = require('debug')('bind:rest:runtime:application');
 
@@ -43,11 +43,13 @@ export const validateOptions = (options: ApplicationOptions): void => {
 export class Application implements IExitHandler {
   private middlewares: Array<MiddlewareFunc> = [];
 
-  // private errHandlers: Array<IErrorFormatter> = [defaultErrorFormatter];
-
   private bindContainer: IfIocContainer;
 
   private configOptions: ApplicationOptions;
+
+  private defaultErrorFormatter: FormatErrorFunc;
+
+  private defaultResponseWriter: WriteServerResponseFunc;
 
   /**
    * parse routes
@@ -99,17 +101,14 @@ export class Application implements IExitHandler {
     );
 
     if (this.settings.extraComponents) {
+      debug('%s have %s extraComponents to set', TAG, this.settings.extraComponents.length);
       try {
-        this.settings.extraComponents.forEach(addComponent);
+        this.settings.extraComponents.forEach((component) => addComponent(container, component));
       } catch (e) {
         throw new ApplicationError(`Failed to add extra component ${e.message}`, e);
       }
     }
-    /**
-     * @todo add extra components here, before parsing controllers because
-     * extra components may contain controllers and middlewares
-     *
-     */
+
     try {
       await container.initialize();
 
@@ -136,8 +135,9 @@ export class Application implements IExitHandler {
       this.middlewares = getMiddlewares(container);
       debug('%s got %d middleware functions', TAG, this.middlewares.length);
 
-      // this.errHandlers = this.errHandlers.concat(getErrorHandlers(container)).filter(notEmpty);
-      // debug('%s count errHandlers=%s', TAG, this.errHandlers.length);
+      this.defaultResponseWriter = getResponseWriter(container);
+
+      this.defaultErrorFormatter = getErrorFormatter(container);
 
       /**
        * @todo using previous container was a way to redefine
@@ -195,7 +195,7 @@ export class Application implements IExitHandler {
    */
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   private getErrorFormatter(context: IBindRestContext): FormatErrorFunc {
-    return defaultErrorFormatter;
+    return this.defaultErrorFormatter;
   }
 
   /**
@@ -208,7 +208,7 @@ export class Application implements IExitHandler {
    */
   // eslint-disable-next-line  @typescript-eslint/no-unused-vars
   private getResponseWriter(context: IBindRestContext): WriteServerResponseFunc {
-    return defaultResponseWriter;
+    return this.defaultResponseWriter;
   }
 
   public getAppResponse(context: IBindRestContext): Promise<IServerResponse> {

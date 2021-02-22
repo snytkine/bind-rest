@@ -1,6 +1,5 @@
 import { Component, ComponentScope, Scope } from 'bind-di';
 import { SERVER_REQUEST } from '../lib/consts';
-import { IBindRestContext } from '../lib/interfaces';
 import BindRestContext from './context';
 
 @Component(SERVER_REQUEST)

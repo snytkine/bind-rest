@@ -4,7 +4,6 @@ import { IAppResponse, IAppResponseWithBody, isAppResponseWithBody } from '../in
 import { AppResponse } from '../core';
 import HTTP_BODY_MAX_BYTES from '../consts/maxhttpbodysize';
 import HEADER_NAMES from '../consts/headernames';
-import { IResponseCookieValue } from '../interfaces/responsecookie';
 
 const debug = require('debug')('bind:rest:httprequest');
 

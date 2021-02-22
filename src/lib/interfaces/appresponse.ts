@@ -1,5 +1,5 @@
 import HttpStatusCode from 'http-status-enum';
-import * as http from 'http';
+import http from 'http';
 import { IResponseCookieValue } from './responsecookie';
 import { SYM_HAS_BODY } from '../consts/appcomponents';
 
@@ -22,9 +22,6 @@ export interface IAppResponse {
   readonly getReadStream: () => ReadableStream;
 }
 
-// export type IAppResponseMaybeBody = IAppResponse & { body?: string };
-// export type IAppResponseMaybeJson = IAppResponseMaybeBody & { json?: any };
-
 export type IAppResponseWithBody = Required<Omit<IAppResponse, 'cookies'>> & {
   cookies?: NodeJS.Dict<IResponseCookieValue>;
 };
@@ -37,7 +34,7 @@ export function isAppResponseWithBody(
    * checking for undefined instead of truethy because empty string still counts as body
    */
   const ret = hasBodyFlag || appResponse.body !== undefined;
-  debug('returning from isAppResponseWithBody=%s hasBodyFlag=%s', ret, hasBodyFlag);
+  debug('%s returning from isAppResponseWithBody=%s hasBodyFlag=%s', TAG, ret, hasBodyFlag);
   return ret;
 }
 

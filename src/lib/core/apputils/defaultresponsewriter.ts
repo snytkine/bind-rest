@@ -1,4 +1,5 @@
 import Http from 'http';
+import { IfIocContainer } from 'bind-di';
 import { IServerResponse, WriteServerResponseFunc } from '../../interfaces';
 import HeaderNames from '../../consts/headernames';
 
@@ -62,4 +63,14 @@ const defaultResponseWriter: WriteServerResponseFunc = (
   return undefined;
 };
 
-export default defaultResponseWriter;
+const getResponseWriter = (cntr: IfIocContainer): WriteServerResponseFunc => {
+  /**
+   * @todo in the future look for special type of component that can be identified as responsewriter
+   * and if found then convert it into a function that implements WriteServerResponseFunc
+   * and return that function.
+   */
+  debug('%s entered getResponseWriter. %s', TAG, cntr);
+  return defaultResponseWriter;
+};
+
+export { defaultResponseWriter, getResponseWriter };

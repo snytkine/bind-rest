@@ -1,7 +1,7 @@
-import {HttpRouter} from 'holiday-router';
-import {getMethodParamName, Identity, IfIocContainer, ClassPrototype, PARAM_TYPES} from 'bind-di';
+import { HttpRouter } from 'holiday-router';
+import { getMethodParamName, Identity, IfIocContainer, ClassPrototype, PARAM_TYPES } from 'bind-di';
 import ControllerParamType from '../../enums/controllerparamtype';
-import {SYM_JSON_SCHEMA} from '../metaprops';
+import { SYM_JSON_SCHEMA } from '../metaprops';
 import {
   CONTENT_TYPE_JSON,
   PARAM_TYPE_BOOLEAN,
@@ -12,12 +12,12 @@ import {
 } from '../../consts/controllermethodparams';
 import FrameworkController from '../../core/frameworkcontroller';
 
-import {parseBody, parseJsonBody} from '../../utils/parsebody';
+import { parseBody, parseJsonBody } from '../../utils/parsebody';
 import makeParamDecorator from './makeparamdecorator';
 import applyNoParamDecorator from './applysingledecorator';
 import getParamType from './getparamtype';
 import BadRequestError from '../../errors/http/badrequest';
-import {IBindRestContext} from '../../interfaces/icontext';
+import { IBindRestContext } from '../../interfaces/icontext';
 import HEADER_NAMES from '../../consts/headernames';
 
 const debug = require('debug')('bind:rest:decorators');
@@ -61,27 +61,30 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
         @Body param cannot be of type Promise.`);
   }
 
-  const primitiveType = (paramType === PARAM_TYPE_STRING ||
+  const primitiveType =
+    paramType === PARAM_TYPE_STRING ||
     paramType === PARAM_TYPE_BOOLEAN ||
-    paramType === PARAM_TYPE_NUMBER)
+    paramType === PARAM_TYPE_NUMBER;
 
-  const shouldJsonParseBody: boolean = (
-    !primitiveType &&
-    paramType !== PARAM_TYPE_BOOLEAN
+  const shouldJsonParseBody: boolean = !primitiveType && paramType !== PARAM_TYPE_OBJECT;
+  debug(
+    '%s Body decorator. propertyKey=%s parameterInded=%s primitiveType=%s shouldJsonParseBody=%s',
+    TAG,
+    propertyKey,
+    parameterIndex,
+    primitiveType,
+    shouldJsonParseBody,
   );
 
   /* eslint-disable  @typescript-eslint/no-unused-vars */
   const paramFactory = (c: IfIocContainer) => {
-
     return function BodyExtractor(context: IBindRestContext) {
       let jsonSchema;
 
       /**
        * If paramType is component decorated with JsonSchema then validate schema.
        */
-      if (
-        shouldJsonParseBody
-      ) {
+      if (shouldJsonParseBody) {
         try {
           jsonSchema = Reflect.getMetadata(SYM_JSON_SCHEMA, paramType);
         } catch (e) {
@@ -93,7 +96,8 @@ export function Body(target: ClassPrototype, propertyKey: string, parameterIndex
        * Use content-type header
        */
       debug('%s trying to get request content-type', TAG);
-      const contentType: string = context.requestHeaders?.[HEADER_NAMES.CONTENT_TYPE]?.toLowerCase() || '';
+      const contentType: string =
+        context.requestHeaders?.[HEADER_NAMES.CONTENT_TYPE]?.toLowerCase() || '';
 
       debug('%s in Body parser. contentType=%s', TAG, contentType);
       let parsed: Promise<any>;

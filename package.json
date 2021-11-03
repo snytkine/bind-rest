@@ -75,7 +75,7 @@
     "string-to-stream": "^3.0.1",
     "tunnel": "0.0.6",
     "uuid": "^3.1.0",
-    "validator": "6.3.0",
+    "validator": "13.7.0",
     "winston": "^2.4.0"
   },
   "devDependencies": {
